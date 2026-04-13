@@ -1,0 +1,35 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: usuarios-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/usuarios_db
+    username: rocker
+    password: rocker123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  jackson:
+    default-property-inclusion: non_null
+
+jwt:
+  secret: ${JWT_SECRET:trocar-essa-chave-em-producao-rockepilates}
+  expiration: 86400000
+
+viacep:
+  url: https://viacep.com.br/ws
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
