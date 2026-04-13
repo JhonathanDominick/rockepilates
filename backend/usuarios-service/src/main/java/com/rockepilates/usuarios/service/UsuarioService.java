@@ -1,0 +1,38 @@
+package com.rockepilates.usuarios.service;
+
+import com.rockepilates.usuarios.domain.Role;
+import com.rockepilates.usuarios.domain.Usuario;
+import com.rockepilates.usuarios.dto.CreateUsuarioRequest;
+import com.rockepilates.usuarios.dto.UsuarioResponse;
+import com.rockepilates.usuarios.exception.ConflictException;
+import com.rockepilates.usuarios.mapper.UsuarioMapper;
+import com.rockepilates.usuarios.repository.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class UsuarioService {
+
+    private final UsuarioRepository usuarioRepository;
+    private final UsuarioMapper usuarioMapper;
+    private final PasswordEncoder passwordEncoder;
+
+    public UsuarioResponse criarUsuario(CreateUsuarioRequest request) {
+
+        if (usuarioRepository.existsByEmail(request.email())) {
+            throw new ConflictException("Email já cadastrado");
+        }
+
+        Usuario usuario = usuarioMapper.toEntity(request);
+
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+        usuario.setRole(Role.USER);
+        usuario.setAtivo(true);
+
+        Usuario usuarioSalvo = usuarioRepository.save(usuario);
+
+        return usuarioMapper.toResponse(usuarioSalvo);
+    }
+}
