@@ -2,10 +2,7 @@ package com.rockepilates.usuarios.service;
 
 import com.rockepilates.usuarios.domain.Role;
 import com.rockepilates.usuarios.domain.Usuario;
-import com.rockepilates.usuarios.dto.CreateUsuarioRequest;
-import com.rockepilates.usuarios.dto.PagedResponse;
-import com.rockepilates.usuarios.dto.UpdateUsuarioRequest;
-import com.rockepilates.usuarios.dto.UsuarioResponse;
+import com.rockepilates.usuarios.dto.*;
 import com.rockepilates.usuarios.exception.ConflictException;
 import com.rockepilates.usuarios.exception.ResourceNotFoundException;
 import com.rockepilates.usuarios.mapper.UsuarioMapper;
@@ -80,5 +77,20 @@ public class UsuarioService {
         Usuario atualizado = usuarioRepository.save(usuario);
 
         return usuarioMapper.toResponse(atualizado);
+    }
+
+    public void alterarSenha(Long id, UpdateSenhaRequest request) {
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        // valida senha atual
+        if (!passwordEncoder.matches(request.senhaAtual(), usuario.getSenha())) {
+            throw new ConflictException("Senha atual inválida");
+        }
+
+        usuario.setSenha(passwordEncoder.encode(request.novaSenha()));
+
+        usuarioRepository.save(usuario);
     }
 }

@@ -1,9 +1,6 @@
 package com.rockepilates.usuarios.controller;
 
-import com.rockepilates.usuarios.dto.CreateUsuarioRequest;
-import com.rockepilates.usuarios.dto.PagedResponse;
-import com.rockepilates.usuarios.dto.UpdateUsuarioRequest;
-import com.rockepilates.usuarios.dto.UsuarioResponse;
+import com.rockepilates.usuarios.dto.*;
 import com.rockepilates.usuarios.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,5 +40,14 @@ public class UsuarioController {
             @RequestBody @Valid UpdateUsuarioRequest request) {
 
         return usuarioService.atualizarUsuario(id, request);
+    }
+
+    @PatchMapping("/{id}/senha")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void alterarSenha(
+            @PathVariable Long id,
+            @RequestBody @Valid UpdateSenhaRequest request) {
+
+        usuarioService.alterarSenha(id, request);
     }
 }
