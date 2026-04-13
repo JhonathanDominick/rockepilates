@@ -1,11 +1,14 @@
 package com.rockepilates.usuarios.controller;
 
 import com.rockepilates.usuarios.dto.CreateUsuarioRequest;
+import com.rockepilates.usuarios.dto.PagedResponse;
 import com.rockepilates.usuarios.dto.UsuarioResponse;
 import com.rockepilates.usuarios.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,5 +29,10 @@ public class UsuarioController {
     @GetMapping("/{id}")
     public UsuarioResponse buscarPorId(@PathVariable Long id) {
         return usuarioService.buscarPorId(id);
+    }
+
+    @GetMapping
+    public PagedResponse<UsuarioResponse> listarUsuarios(Pageable pageable) {
+        return usuarioService.listarUsuarios(pageable);
     }
 }
