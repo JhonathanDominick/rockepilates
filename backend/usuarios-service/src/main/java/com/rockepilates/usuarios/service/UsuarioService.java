@@ -5,6 +5,7 @@ import com.rockepilates.usuarios.domain.Usuario;
 import com.rockepilates.usuarios.dto.CreateUsuarioRequest;
 import com.rockepilates.usuarios.dto.UsuarioResponse;
 import com.rockepilates.usuarios.exception.ConflictException;
+import com.rockepilates.usuarios.exception.ResourceNotFoundException;
 import com.rockepilates.usuarios.mapper.UsuarioMapper;
 import com.rockepilates.usuarios.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,5 +35,12 @@ public class UsuarioService {
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
 
         return usuarioMapper.toResponse(usuarioSalvo);
+    }
+
+    public UsuarioResponse buscarPorId(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        return usuarioMapper.toResponse(usuario);
     }
 }

@@ -1,0 +1,30 @@
+package com.rockepilates.usuarios.controller;
+
+import com.rockepilates.usuarios.dto.CreateUsuarioRequest;
+import com.rockepilates.usuarios.dto.UsuarioResponse;
+import com.rockepilates.usuarios.service.UsuarioService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/usuarios")
+@RequiredArgsConstructor
+public class UsuarioController {
+
+    private final UsuarioService usuarioService;
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public UsuarioResponse criarUsuario(
+            @RequestBody @Valid CreateUsuarioRequest request
+    ) {
+        return usuarioService.criarUsuario(request);
+    }
+
+    @GetMapping("/{id}")
+    public UsuarioResponse buscarPorId(@PathVariable Long id) {
+        return usuarioService.buscarPorId(id);
+    }
+}
