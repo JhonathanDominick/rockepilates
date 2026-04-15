@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,5 +50,11 @@ public class UsuarioController {
             @RequestBody @Valid UpdateSenhaRequest request) {
 
         usuarioService.alterarSenha(id, request);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
+        String token = usuarioService.login(request.email(), request.senha());
+        return ResponseEntity.ok(new LoginResponse(token));
     }
 }
