@@ -1,14 +1,22 @@
 package com.rockepilates.usuarios.controller;
 
-import com.rockepilates.usuarios.dto.*;
+import com.rockepilates.usuarios.dto.CreateUsuarioRequest;
+import com.rockepilates.usuarios.dto.LoginRequest;
+import com.rockepilates.usuarios.dto.LoginResponse;
+import com.rockepilates.usuarios.dto.PagedResponse;
+import com.rockepilates.usuarios.dto.SuccessResponse;
+import com.rockepilates.usuarios.dto.UpdateSenhaRequest;
+import com.rockepilates.usuarios.dto.UpdateUsuarioRequest;
+import com.rockepilates.usuarios.dto.UsuarioResponse;
 import com.rockepilates.usuarios.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -18,43 +26,87 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public UsuarioResponse criarUsuario(
+    public ResponseEntity<SuccessResponse<UsuarioResponse>> criarUsuario(
             @RequestBody @Valid CreateUsuarioRequest request
     ) {
-        return usuarioService.criarUsuario(request);
+        UsuarioResponse response = usuarioService.criarUsuario(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        HttpStatus.CREATED.value(),
+                        "Usuário criado com sucesso",
+                        response
+                )
+        );
     }
 
     @GetMapping("/{id}")
-    public UsuarioResponse buscarPorId(@PathVariable Long id) {
-        return usuarioService.buscarPorId(id);
+    public ResponseEntity<SuccessResponse<UsuarioResponse>> buscarPorId(@PathVariable Long id) {
+        UsuarioResponse response = usuarioService.buscarPorId(id);
+
+        return ResponseEntity.ok(
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        HttpStatus.OK.value(),
+                        "Usuário encontrado com sucesso",
+                        response
+                )
+        );
     }
 
     @GetMapping
-    public PagedResponse<UsuarioResponse> listarUsuarios(Pageable pageable) {
-        return usuarioService.listarUsuarios(pageable);
+    public ResponseEntity<PagedResponse<UsuarioResponse>> listarUsuarios(Pageable pageable) {
+        return ResponseEntity.ok(usuarioService.listarUsuarios(pageable));
     }
 
     @PutMapping("/{id}")
-    public UsuarioResponse atualizarUsuario(
+    public ResponseEntity<SuccessResponse<UsuarioResponse>> atualizarUsuario(
             @PathVariable Long id,
-            @RequestBody @Valid UpdateUsuarioRequest request) {
+            @RequestBody @Valid UpdateUsuarioRequest request
+    ) {
+        UsuarioResponse response = usuarioService.atualizarUsuario(id, request);
 
-        return usuarioService.atualizarUsuario(id, request);
+        return ResponseEntity.ok(
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        HttpStatus.OK.value(),
+                        "Usuário atualizado com sucesso",
+                        response
+                )
+        );
     }
 
     @PatchMapping("/{id}/senha")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void alterarSenha(
+    public ResponseEntity<SuccessResponse<Void>> alterarSenha(
             @PathVariable Long id,
-            @RequestBody @Valid UpdateSenhaRequest request) {
-
+            @RequestBody @Valid UpdateSenhaRequest request
+    ) {
         usuarioService.alterarSenha(id, request);
+
+        return ResponseEntity.ok(
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        HttpStatus.OK.value(),
+                        "Senha alterada com sucesso",
+                        null
+                )
+        );
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
+    public ResponseEntity<SuccessResponse<LoginResponse>> login(
+            @RequestBody @Valid LoginRequest request
+    ) {
         String token = usuarioService.login(request.email(), request.senha());
-        return ResponseEntity.ok(new LoginResponse(token));
+
+        return ResponseEntity.ok(
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        HttpStatus.OK.value(),
+                        "Login realizado com sucesso",
+                        new LoginResponse(token)
+                )
+        );
     }
 }
