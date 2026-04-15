@@ -99,6 +99,10 @@ public class UsuarioService {
             throw new ConflictException("Senha inválida");
         }
 
-        return jwtService.generateToken(usuario.getEmail());
+        return jwtService.generateToken(
+                usuario.getId(),
+                usuario.getEmail(),
+                usuario.getRole()
+        );
     }
 }
