@@ -14,8 +14,9 @@ import com.rockepilates.usuarios.repository.UsuarioRepository;
 import com.rockepilates.usuarios.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ public class UsuarioService {
     private final UsuarioMapper usuarioMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final AuthorizationService authorizationService;
 
     public UsuarioResponse criarUsuario(CreateUsuarioRequest request) {
         if (usuarioRepository.existsByEmail(request.email())) {
@@ -32,17 +34,17 @@ public class UsuarioService {
         }
 
         Usuario usuario = usuarioMapper.toEntity(request);
-
         usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         usuario.setRole(Role.USER);
         usuario.setAtivo(true);
 
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
-
         return usuarioMapper.toResponse(usuarioSalvo);
     }
 
-    public UsuarioResponse buscarPorId(Long id) {
+    public UsuarioResponse buscarPorId(Long id, Authentication authentication) {
+        authorizationService.validateSelfOrAdmin(id, authentication);
+
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
@@ -62,7 +64,9 @@ public class UsuarioService {
         );
     }
 
-    public UsuarioResponse atualizarUsuario(Long id, UpdateUsuarioRequest request) {
+    public UsuarioResponse atualizarUsuario(Long id, UpdateUsuarioRequest request, Authentication authentication) {
+        authorizationService.validateSelfOrAdmin(id, authentication);
+
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
@@ -74,12 +78,13 @@ public class UsuarioService {
         usuario.setNome(request.nome());
         usuario.setEmail(request.email());
 
-        Usuario atualizado = usuarioRepository.save(usuario);
-
-        return usuarioMapper.toResponse(atualizado);
+        Usuario usuarioAtualizado = usuarioRepository.save(usuario);
+        return usuarioMapper.toResponse(usuarioAtualizado);
     }
 
-    public void alterarSenha(Long id, UpdateSenhaRequest request) {
+    public void alterarSenha(Long id, UpdateSenhaRequest request, Authentication authentication) {
+        authorizationService.validateSelfOrAdmin(id, authentication);
+
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 

@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -42,8 +43,11 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SuccessResponse<UsuarioResponse>> buscarPorId(@PathVariable Long id) {
-        UsuarioResponse response = usuarioService.buscarPorId(id);
+    public ResponseEntity<SuccessResponse<UsuarioResponse>> buscarPorId(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        UsuarioResponse response = usuarioService.buscarPorId(id, authentication);
 
         return ResponseEntity.ok(
                 new SuccessResponse<>(
@@ -63,9 +67,10 @@ public class UsuarioController {
     @PutMapping("/{id}")
     public ResponseEntity<SuccessResponse<UsuarioResponse>> atualizarUsuario(
             @PathVariable Long id,
-            @RequestBody @Valid UpdateUsuarioRequest request
+            @RequestBody @Valid UpdateUsuarioRequest request,
+            Authentication authentication
     ) {
-        UsuarioResponse response = usuarioService.atualizarUsuario(id, request);
+        UsuarioResponse response = usuarioService.atualizarUsuario(id, request, authentication);
 
         return ResponseEntity.ok(
                 new SuccessResponse<>(
@@ -80,9 +85,10 @@ public class UsuarioController {
     @PatchMapping("/{id}/senha")
     public ResponseEntity<SuccessResponse<Void>> alterarSenha(
             @PathVariable Long id,
-            @RequestBody @Valid UpdateSenhaRequest request
+            @RequestBody @Valid UpdateSenhaRequest request,
+            Authentication authentication
     ) {
-        usuarioService.alterarSenha(id, request);
+        usuarioService.alterarSenha(id, request, authentication);
 
         return ResponseEntity.ok(
                 new SuccessResponse<>(
