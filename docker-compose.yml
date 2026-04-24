@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-rockepilates
+    restart: always
+    environment:
+      POSTGRES_DB: usuarios_db
+      POSTGRES_USER: rocker
+      POSTGRES_PASSWORD: rocker123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  usuarios-service:
+    build:
+      context: .
+      dockerfile: backend/usuarios-service/Dockerfile
+    container_name: usuarios-service
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/usuarios_db
+      DB_USERNAME: rocker
+      DB_PASSWORD: rocker123
+      JWT_SECRET: NPOV4SQF9JGL7qUwFFUXy_68nLyjj9KMOPckZl2qZF6XbFE9NI0XKJ0wL3bev-LB
+    ports:
+      - "8081:8081"
+
+volumes:
+  postgres_data:
