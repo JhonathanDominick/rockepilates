@@ -1,6 +1,8 @@
 package com.rockepilates.bff.service;
 
 import com.rockepilates.bff.client.UsuariosClient;
+import com.rockepilates.bff.dto.PagedResponse;
+import com.rockepilates.bff.dto.UsuarioResponse;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,7 +18,7 @@ public class UsuariosService {
         return client.getUsuariosHealth();
     }
 
-    public String listarUsuarios(String authorizationHeader) {
+    public PagedResponse<UsuarioResponse> listarUsuarios(String authorizationHeader) {
         return client.listarUsuarios(authorizationHeader);
     }
 }
