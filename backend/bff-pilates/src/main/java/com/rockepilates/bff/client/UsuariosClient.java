@@ -1,5 +1,8 @@
 package com.rockepilates.bff.client;
 
+import com.rockepilates.bff.dto.PagedResponse;
+import com.rockepilates.bff.dto.UsuarioResponse;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -18,17 +21,17 @@ public class UsuariosClient {
         );
     }
 
-    public String listarUsuarios(String authorizationHeader) {
+    public PagedResponse<UsuarioResponse> listarUsuarios(String authorizationHeader) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", authorizationHeader);
 
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(
+        ResponseEntity<PagedResponse<UsuarioResponse>> response = restTemplate.exchange(
                 USUARIOS_SERVICE_URL + "/usuarios",
                 HttpMethod.GET,
                 entity,
-                String.class
+                new ParameterizedTypeReference<>() {}
         );
 
         return response.getBody();
