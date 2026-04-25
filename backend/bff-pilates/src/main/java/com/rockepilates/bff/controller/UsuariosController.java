@@ -1,5 +1,7 @@
 package com.rockepilates.bff.controller;
 
+import com.rockepilates.bff.dto.PagedResponse;
+import com.rockepilates.bff.dto.UsuarioResponse;
 import com.rockepilates.bff.service.UsuariosService;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +20,7 @@ public class UsuariosController {
     }
 
     @GetMapping("/bff/usuarios")
-    public String listarUsuarios(
+    public PagedResponse<UsuarioResponse> listarUsuarios(
             @RequestHeader("Authorization") String authorizationHeader
     ) {
         return service.listarUsuarios(authorizationHeader);
