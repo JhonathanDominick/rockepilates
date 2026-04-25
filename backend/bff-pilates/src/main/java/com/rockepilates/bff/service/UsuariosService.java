@@ -15,4 +15,8 @@ public class UsuariosService {
     public String buscarHealthUsuarios() {
         return client.getUsuariosHealth();
     }
+
+    public String listarUsuarios(String authorizationHeader) {
+        return client.listarUsuarios(authorizationHeader);
+    }
 }
