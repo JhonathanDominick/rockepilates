@@ -21,8 +21,10 @@ public class UsuariosController {
 
     @GetMapping("/bff/usuarios")
     public PagedResponse<UsuarioResponse> listarUsuarios(
-            @RequestHeader("Authorization") String authorizationHeader
+            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
     ) {
-        return service.listarUsuarios(authorizationHeader);
+        return service.listarUsuarios(authorizationHeader, page, size);
     }
 }

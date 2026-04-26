@@ -18,7 +18,11 @@ public class UsuariosService {
         return client.getUsuariosHealth();
     }
 
-    public PagedResponse<UsuarioResponse> listarUsuarios(String authorizationHeader) {
-        return client.listarUsuarios(authorizationHeader);
+    public PagedResponse<UsuarioResponse> listarUsuarios(
+            String authorizationHeader,
+            int page,
+            int size
+    ) {
+        return client.listarUsuarios(authorizationHeader, page, size);
     }
 }
