@@ -21,14 +21,20 @@ public class UsuariosClient {
         );
     }
 
-    public PagedResponse<UsuarioResponse> listarUsuarios(String authorizationHeader) {
+    public PagedResponse<UsuarioResponse> listarUsuarios(
+            String authorizationHeader,
+            int page,
+            int size
+    ) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", authorizationHeader);
 
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
+        String url = USUARIOS_SERVICE_URL + "/usuarios?page=" + page + "&size=" + size;
+
         ResponseEntity<PagedResponse<UsuarioResponse>> response = restTemplate.exchange(
-                USUARIOS_SERVICE_URL + "/usuarios",
+                url,
                 HttpMethod.GET,
                 entity,
                 new ParameterizedTypeReference<>() {}
