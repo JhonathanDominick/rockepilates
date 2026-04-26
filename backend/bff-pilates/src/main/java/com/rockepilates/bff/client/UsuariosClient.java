@@ -6,6 +6,8 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import com.rockepilates.bff.exception.UsuariosServiceIntegrationException;
+import org.springframework.web.client.RestClientException;
 
 @Component
 public class UsuariosClient {
@@ -26,20 +28,27 @@ public class UsuariosClient {
             int page,
             int size
     ) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", authorizationHeader);
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", authorizationHeader);
 
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-        String url = USUARIOS_SERVICE_URL + "/usuarios?page=" + page + "&size=" + size;
+            String url = USUARIOS_SERVICE_URL + "/usuarios?page=" + page + "&size=" + size;
 
-        ResponseEntity<PagedResponse<UsuarioResponse>> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                new ParameterizedTypeReference<>() {}
-        );
+            ResponseEntity<PagedResponse<UsuarioResponse>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<>() {}
+            );
 
-        return response.getBody();
+            return response.getBody();
+
+        } catch (RestClientException ex) {
+            throw new UsuariosServiceIntegrationException(
+                    "Erro ao comunicar com usuarios-service"
+            );
+        }
     }
 }
