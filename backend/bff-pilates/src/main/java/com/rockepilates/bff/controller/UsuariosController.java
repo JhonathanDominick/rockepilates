@@ -14,12 +14,7 @@ public class UsuariosController {
         this.service = service;
     }
 
-    @GetMapping("/bff/usuarios/health")
-    public String healthUsuarios() {
-        return service.buscarHealthUsuarios();
-    }
-
-    @GetMapping("/bff/usuarios")
+      @GetMapping("/bff/usuarios")
     public PagedResponse<UsuarioResponse> listarUsuarios(
             @RequestHeader("Authorization") String authorizationHeader,
             @RequestParam(defaultValue = "0") int page,
