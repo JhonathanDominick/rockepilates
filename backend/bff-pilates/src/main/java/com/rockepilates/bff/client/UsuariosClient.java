@@ -12,7 +12,7 @@ import org.springframework.web.client.RestClientException;
 @Component
 public class UsuariosClient {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     private static final String USUARIOS_SERVICE_URL = "http://localhost:8081";
 
@@ -22,6 +22,11 @@ public class UsuariosClient {
                 String.class
         );
     }
+
+    public UsuariosClient(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
 
     public PagedResponse<UsuarioResponse> listarUsuarios(
             String authorizationHeader,
