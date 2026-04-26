@@ -14,10 +14,6 @@ public class UsuariosService {
         this.client = client;
     }
 
-    public String buscarHealthUsuarios() {
-        return client.getUsuariosHealth();
-    }
-
     public PagedResponse<UsuarioResponse> listarUsuarios(
             String authorizationHeader,
             int page,
