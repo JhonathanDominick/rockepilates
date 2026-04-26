@@ -4,3 +4,8 @@ server:
 spring:
   application:
     name: bff-pilates
+
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
