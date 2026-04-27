@@ -1,11 +1,13 @@
 package com.rockepilates.bff.client;
 
+import com.rockepilates.bff.dto.CreateUsuarioRequest;
 import com.rockepilates.bff.dto.PagedResponse;
+import com.rockepilates.bff.dto.SuccessResponse;
 import com.rockepilates.bff.dto.UsuarioResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import com.rockepilates.bff.dto.SuccessResponse;
+
 import java.util.Collections;
 
 @Component
@@ -29,7 +31,6 @@ public class UsuariosClientFallback implements UsuariosClient {
             int page,
             int size
     ) {
-
         log.error("Fallback acionado para usuarios-service. page={}, size={}", page, size);
 
         return new PagedResponse<>(
@@ -39,5 +40,15 @@ public class UsuariosClientFallback implements UsuariosClient {
                 0,
                 0
         );
+    }
+
+    @Override
+    public SuccessResponse<UsuarioResponse> criarUsuario(
+            String authorizationHeader,
+            CreateUsuarioRequest request
+    ) {
+        log.error("Fallback acionado para criação de usuário. email={}", request.email());
+
+        throw new RuntimeException("Erro ao criar usuário no usuarios-service");
     }
 }
