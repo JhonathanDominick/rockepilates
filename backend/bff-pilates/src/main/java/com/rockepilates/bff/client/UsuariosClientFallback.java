@@ -6,6 +6,7 @@ import com.rockepilates.bff.dto.LoginResponse;
 import com.rockepilates.bff.dto.PagedResponse;
 import com.rockepilates.bff.dto.SuccessResponse;
 import com.rockepilates.bff.dto.UsuarioResponse;
+import com.rockepilates.bff.dto.UpdateSenhaRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -51,6 +52,17 @@ public class UsuariosClientFallback implements UsuariosClient {
         log.error("Fallback acionado para criação de usuário. email={}", request.email());
 
         throw new RuntimeException("Erro ao criar usuário no usuarios-service");
+    }
+
+    @Override
+    public void atualizarSenha(
+            String authorizationHeader,
+            Long id,
+            UpdateSenhaRequest request
+    ) {
+        log.error("Fallback acionado para atualização de senha. id={}", id);
+
+        throw new RuntimeException("Erro ao atualizar senha no usuarios-service");
     }
 
     @Override

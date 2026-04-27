@@ -45,4 +45,14 @@ public class UsuariosController {
     public LoginResponse login(@RequestBody LoginRequest request) {
         return service.login(request);
     }
+
+    @PatchMapping("/bff/usuarios/{id}/senha")
+    public ResponseEntity<Void> atualizarSenha(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long id,
+            @RequestBody UpdateSenhaRequest request
+    ) {
+        service.atualizarSenha(authorizationHeader, id, request);
+        return ResponseEntity.noContent().build();
+    }
 }

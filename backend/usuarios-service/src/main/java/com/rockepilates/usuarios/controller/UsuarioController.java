@@ -1,13 +1,6 @@
 package com.rockepilates.usuarios.controller;
 
-import com.rockepilates.usuarios.dto.CreateUsuarioRequest;
-import com.rockepilates.usuarios.dto.LoginRequest;
-import com.rockepilates.usuarios.dto.LoginResponse;
-import com.rockepilates.usuarios.dto.PagedResponse;
-import com.rockepilates.usuarios.dto.SuccessResponse;
-import com.rockepilates.usuarios.dto.UpdateSenhaRequest;
-import com.rockepilates.usuarios.dto.UpdateUsuarioRequest;
-import com.rockepilates.usuarios.dto.UsuarioResponse;
+import com.rockepilates.usuarios.dto.*;
 import com.rockepilates.usuarios.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -83,21 +76,13 @@ public class UsuarioController {
     }
 
     @PatchMapping("/{id}/senha")
-    public ResponseEntity<SuccessResponse<Void>> alterarSenha(
+    public ResponseEntity<Void> alterarSenha(
             @PathVariable Long id,
             @RequestBody @Valid UpdateSenhaRequest request,
             Authentication authentication
     ) {
         usuarioService.alterarSenha(id, request, authentication);
-
-        return ResponseEntity.ok(
-                new SuccessResponse<>(
-                        LocalDateTime.now(),
-                        HttpStatus.OK.value(),
-                        "Senha alterada com sucesso",
-                        null
-                )
-        );
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/login")
