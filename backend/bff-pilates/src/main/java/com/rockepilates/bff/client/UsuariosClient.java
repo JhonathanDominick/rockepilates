@@ -7,13 +7,13 @@ import com.rockepilates.bff.dto.LoginResponse;
 import com.rockepilates.bff.dto.PagedResponse;
 import com.rockepilates.bff.dto.SuccessResponse;
 import com.rockepilates.bff.dto.UsuarioResponse;
+import com.rockepilates.bff.dto.UpdateSenhaRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
 @FeignClient(
         name = "usuarios-service",
         url = "http://localhost:8081",
-        fallback = UsuariosClientFallback.class,
         configuration = FeignConfig.class
 )
 public interface UsuariosClient {
@@ -35,6 +35,13 @@ public interface UsuariosClient {
     SuccessResponse<UsuarioResponse> criarUsuario(
             @RequestHeader("Authorization") String authorizationHeader,
             @RequestBody CreateUsuarioRequest request
+    );
+
+    @PatchMapping("/usuarios/{id}/senha")
+    void atualizarSenha(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long id,
+            @RequestBody UpdateSenhaRequest request
     );
 
     @PostMapping("/usuarios/login")

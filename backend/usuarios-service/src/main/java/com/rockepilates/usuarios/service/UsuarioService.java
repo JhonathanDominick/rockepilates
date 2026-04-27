@@ -17,10 +17,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @RequiredArgsConstructor
 public class UsuarioService {
+
+    private static final Logger log = LoggerFactory.getLogger(UsuarioService.class);
 
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
@@ -83,6 +87,9 @@ public class UsuarioService {
     }
 
     public void alterarSenha(Long id, UpdateSenhaRequest request, Authentication authentication) {
+
+        log.info("Authentication recebido: {}", authentication);
+
         authorizationService.validateSelfOrAdmin(id, authentication);
 
         Usuario usuario = usuarioRepository.findById(id)
