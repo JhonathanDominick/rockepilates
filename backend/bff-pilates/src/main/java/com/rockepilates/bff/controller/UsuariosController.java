@@ -1,8 +1,6 @@
 package com.rockepilates.bff.controller;
 
-import com.rockepilates.bff.dto.CreateUsuarioRequest;
-import com.rockepilates.bff.dto.PagedResponse;
-import com.rockepilates.bff.dto.UsuarioResponse;
+import com.rockepilates.bff.dto.*;
 import com.rockepilates.bff.service.UsuariosService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,5 +39,10 @@ public class UsuariosController {
     ) {
         var usuario = service.criarUsuario(authorizationHeader, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
+    }
+
+    @PostMapping("/bff/usuarios/login")
+    public LoginResponse login(@RequestBody LoginRequest request) {
+        return service.login(request);
     }
 }

@@ -2,6 +2,8 @@ package com.rockepilates.bff.client;
 
 import com.rockepilates.bff.config.FeignConfig;
 import com.rockepilates.bff.dto.CreateUsuarioRequest;
+import com.rockepilates.bff.dto.LoginRequest;
+import com.rockepilates.bff.dto.LoginResponse;
 import com.rockepilates.bff.dto.PagedResponse;
 import com.rockepilates.bff.dto.SuccessResponse;
 import com.rockepilates.bff.dto.UsuarioResponse;
@@ -33,5 +35,10 @@ public interface UsuariosClient {
     SuccessResponse<UsuarioResponse> criarUsuario(
             @RequestHeader("Authorization") String authorizationHeader,
             @RequestBody CreateUsuarioRequest request
+    );
+
+    @PostMapping("/usuarios/login")
+    LoginResponse login(
+            @RequestBody LoginRequest request
     );
 }
