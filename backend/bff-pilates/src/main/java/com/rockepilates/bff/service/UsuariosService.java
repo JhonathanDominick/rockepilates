@@ -1,12 +1,7 @@
 package com.rockepilates.bff.service;
 
 import com.rockepilates.bff.client.UsuariosClient;
-import com.rockepilates.bff.dto.CreateUsuarioRequest;
-import com.rockepilates.bff.dto.LoginRequest;
-import com.rockepilates.bff.dto.LoginResponse;
-import com.rockepilates.bff.dto.PagedResponse;
-import com.rockepilates.bff.dto.SuccessResponse;
-import com.rockepilates.bff.dto.UsuarioResponse;
+import com.rockepilates.bff.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -69,6 +64,20 @@ public class UsuariosService {
         var response = client.criarUsuario(authorizationHeader, request);
 
         log.info("Usuário criado com sucesso. id={}", response.data().id());
+
+        return response.data();
+    }
+
+    public UsuarioResponse atualizarUsuario(
+            String authorizationHeader,
+            Long id,
+            UpdateUsuarioRequest request
+    ) {
+        log.info("Iniciando atualização de usuário. id={}", id);
+
+        var response = client.atualizarUsuario(authorizationHeader, id, request);
+
+        log.info("Usuário atualizado com sucesso. id={}", id);
 
         return response.data();
     }

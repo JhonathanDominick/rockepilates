@@ -1,11 +1,6 @@
 package com.rockepilates.bff.client;
 
-import com.rockepilates.bff.dto.CreateUsuarioRequest;
-import com.rockepilates.bff.dto.LoginRequest;
-import com.rockepilates.bff.dto.LoginResponse;
-import com.rockepilates.bff.dto.PagedResponse;
-import com.rockepilates.bff.dto.SuccessResponse;
-import com.rockepilates.bff.dto.UsuarioResponse;
+import com.rockepilates.bff.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -54,9 +49,21 @@ public class UsuariosClientFallback implements UsuariosClient {
     }
 
     @Override
+    public SuccessResponse<UsuarioResponse> atualizarUsuario(
+            String authorizationHeader,
+            Long id,
+            UpdateUsuarioRequest request
+    ) {
+        log.error("Fallback acionado para atualização de usuário. id={}", id);
+
+        throw new RuntimeException("Erro ao atualizar usuário no usuarios-service");
+    }
+
+    @Override
     public LoginResponse login(LoginRequest request) {
         log.error("Fallback acionado para login. email={}", request.email());
 
         throw new RuntimeException("Erro ao realizar login no usuarios-service");
     }
+
 }

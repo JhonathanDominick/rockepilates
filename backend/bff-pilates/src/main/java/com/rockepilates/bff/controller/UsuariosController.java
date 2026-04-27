@@ -45,4 +45,13 @@ public class UsuariosController {
     public LoginResponse login(@RequestBody LoginRequest request) {
         return service.login(request);
     }
+
+    @PutMapping("/bff/usuarios/{id}")
+    public UsuarioResponse atualizarUsuario(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long id,
+            @RequestBody UpdateUsuarioRequest request
+    ) {
+        return service.atualizarUsuario(authorizationHeader, id, request);
+    }
 }
