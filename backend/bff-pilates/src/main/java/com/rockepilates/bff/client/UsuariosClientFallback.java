@@ -2,6 +2,8 @@ package com.rockepilates.bff.client;
 
 import com.rockepilates.bff.dto.PagedResponse;
 import com.rockepilates.bff.dto.UsuarioResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -9,12 +11,17 @@ import java.util.Collections;
 @Component
 public class UsuariosClientFallback implements UsuariosClient {
 
+    private static final Logger log = LoggerFactory.getLogger(UsuariosClientFallback.class);
+
     @Override
     public PagedResponse<UsuarioResponse> listarUsuarios(
             String authorizationHeader,
             int page,
             int size
     ) {
+
+        log.error("Fallback acionado para usuarios-service. page={}, size={}", page, size);
+
         return new PagedResponse<>(
                 Collections.emptyList(),
                 page,
