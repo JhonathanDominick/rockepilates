@@ -1,6 +1,7 @@
 package com.rockepilates.bff.service;
 
 import com.rockepilates.bff.client.UsuariosClient;
+import com.rockepilates.bff.dto.CreateUsuarioRequest;
 import com.rockepilates.bff.dto.PagedResponse;
 import com.rockepilates.bff.dto.SuccessResponse;
 import com.rockepilates.bff.dto.UsuarioResponse;
@@ -54,6 +55,20 @@ public class UsuariosService {
         long duracao = System.currentTimeMillis() - inicio;
 
         log.info("Busca finalizada id={}, duracaoMs={}", id, duracao);
+
+        return response.data();
+    }
+
+    public UsuarioResponse criarUsuario(
+            String authorizationHeader,
+            CreateUsuarioRequest request
+    ) {
+
+        log.info("Iniciando criação de usuário. email={}", request.email());
+
+        var response = client.criarUsuario(authorizationHeader, request);
+
+        log.info("Usuário criado com sucesso. id={}", response.data().id());
 
         return response.data();
     }

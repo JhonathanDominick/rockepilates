@@ -1,8 +1,11 @@
 package com.rockepilates.bff.controller;
 
+import com.rockepilates.bff.dto.CreateUsuarioRequest;
 import com.rockepilates.bff.dto.PagedResponse;
 import com.rockepilates.bff.dto.UsuarioResponse;
 import com.rockepilates.bff.service.UsuariosService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,7 +17,7 @@ public class UsuariosController {
         this.service = service;
     }
 
-      @GetMapping("/bff/usuarios")
+    @GetMapping("/bff/usuarios")
     public PagedResponse<UsuarioResponse> listarUsuarios(
             @RequestHeader("Authorization") String authorizationHeader,
             @RequestParam(defaultValue = "0") int page,
@@ -29,5 +32,14 @@ public class UsuariosController {
             @PathVariable Long id
     ) {
         return service.buscarUsuarioPorId(authorizationHeader, id);
+    }
+
+    @PostMapping("/bff/usuarios")
+    public ResponseEntity<UsuarioResponse> criarUsuario(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestBody CreateUsuarioRequest request
+    ) {
+        var usuario = service.criarUsuario(authorizationHeader, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
     }
 }

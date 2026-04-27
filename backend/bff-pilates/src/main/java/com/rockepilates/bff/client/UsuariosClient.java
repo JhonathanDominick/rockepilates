@@ -1,14 +1,12 @@
 package com.rockepilates.bff.client;
 
+import com.rockepilates.bff.config.FeignConfig;
+import com.rockepilates.bff.dto.CreateUsuarioRequest;
 import com.rockepilates.bff.dto.PagedResponse;
 import com.rockepilates.bff.dto.SuccessResponse;
 import com.rockepilates.bff.dto.UsuarioResponse;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import com.rockepilates.bff.config.FeignConfig;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
 @FeignClient(
         name = "usuarios-service",
@@ -29,5 +27,11 @@ public interface UsuariosClient {
     SuccessResponse<UsuarioResponse> buscarUsuarioPorId(
             @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Long id
+    );
+
+    @PostMapping("/usuarios")
+    SuccessResponse<UsuarioResponse> criarUsuario(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestBody CreateUsuarioRequest request
     );
 }
