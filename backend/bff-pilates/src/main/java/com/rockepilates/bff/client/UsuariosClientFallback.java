@@ -5,13 +5,23 @@ import com.rockepilates.bff.dto.UsuarioResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
+import com.rockepilates.bff.dto.SuccessResponse;
 import java.util.Collections;
 
 @Component
 public class UsuariosClientFallback implements UsuariosClient {
 
     private static final Logger log = LoggerFactory.getLogger(UsuariosClientFallback.class);
+
+    @Override
+    public SuccessResponse<UsuarioResponse> buscarUsuarioPorId(
+            String authorizationHeader,
+            Long id
+    ) {
+        log.error("Fallback acionado para buscar usuario por id={}", id);
+
+        return null;
+    }
 
     @Override
     public PagedResponse<UsuarioResponse> listarUsuarios(

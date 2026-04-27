@@ -22,4 +22,12 @@ public class UsuariosController {
     ) {
         return service.listarUsuarios(authorizationHeader, page, size);
     }
+
+    @GetMapping("/bff/usuarios/{id}")
+    public UsuarioResponse buscarUsuarioPorId(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long id
+    ) {
+        return service.buscarUsuarioPorId(authorizationHeader, id);
+    }
 }

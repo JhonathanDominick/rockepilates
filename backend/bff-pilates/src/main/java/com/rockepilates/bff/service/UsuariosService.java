@@ -2,6 +2,7 @@ package com.rockepilates.bff.service;
 
 import com.rockepilates.bff.client.UsuariosClient;
 import com.rockepilates.bff.dto.PagedResponse;
+import com.rockepilates.bff.dto.SuccessResponse;
 import com.rockepilates.bff.dto.UsuarioResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,5 +41,20 @@ public class UsuariosService {
         );
 
         return response;
+    }
+
+    public UsuarioResponse buscarUsuarioPorId(String authorizationHeader, Long id) {
+
+        long inicio = System.currentTimeMillis();
+
+        log.info("Buscando usuário por id={}", id);
+
+        SuccessResponse<UsuarioResponse> response = client.buscarUsuarioPorId(authorizationHeader, id);
+
+        long duracao = System.currentTimeMillis() - inicio;
+
+        log.info("Busca finalizada id={}, duracaoMs={}", id, duracao);
+
+        return response.data();
     }
 }
