@@ -1,12 +1,15 @@
 package com.rockepilates.bff.service;
 
 import com.rockepilates.bff.client.UsuariosClient;
-import com.rockepilates.bff.dto.PagedResponse;
-import com.rockepilates.bff.dto.UsuarioResponse;
+import com.rockepilates.bff.dto.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UsuariosService {
+
+    private static final Logger log = LoggerFactory.getLogger(UsuariosService.class);
 
     private final UsuariosClient client;
 
@@ -19,6 +22,73 @@ public class UsuariosService {
             int page,
             int size
     ) {
-        return client.listarUsuarios(authorizationHeader, page, size);
+        long inicio = System.currentTimeMillis();
+
+        log.info("Iniciando chamada ao usuarios-service para listar usuários. page={}, size={}", page, size);
+
+        PagedResponse<UsuarioResponse> response = client.listarUsuarios(authorizationHeader, page, size);
+
+        long duracao = System.currentTimeMillis() - inicio;
+
+        log.info(
+                "Chamada ao usuarios-service finalizada com sucesso. page={}, size={}, totalElements={}, duracaoMs={}",
+                page,
+                size,
+                response.totalElements(),
+                duracao
+        );
+
+        return response;
+    }
+
+    public UsuarioResponse buscarUsuarioPorId(String authorizationHeader, Long id) {
+        long inicio = System.currentTimeMillis();
+
+        log.info("Buscando usuário por id={}", id);
+
+        SuccessResponse<UsuarioResponse> response = client.buscarUsuarioPorId(authorizationHeader, id);
+
+        long duracao = System.currentTimeMillis() - inicio;
+
+        log.info("Busca finalizada id={}, duracaoMs={}", id, duracao);
+
+        return response.data();
+    }
+
+    public UsuarioResponse criarUsuario(
+            String authorizationHeader,
+            CreateUsuarioRequest request
+    ) {
+        log.info("Iniciando criação de usuário. email={}", request.email());
+
+        var response = client.criarUsuario(authorizationHeader, request);
+
+        log.info("Usuário criado com sucesso. id={}", response.data().id());
+
+        return response.data();
+    }
+
+    public UsuarioResponse atualizarUsuario(
+            String authorizationHeader,
+            Long id,
+            UpdateUsuarioRequest request
+    ) {
+        log.info("Iniciando atualização de usuário. id={}", id);
+
+        var response = client.atualizarUsuario(authorizationHeader, id, request);
+
+        log.info("Usuário atualizado com sucesso. id={}", id);
+
+        return response.data();
+    }
+
+    public LoginResponse login(LoginRequest request) {
+        log.info("Iniciando login de usuário. email={}", request.email());
+
+        LoginResponse response = client.login(request);
+
+        log.info("Login realizado com sucesso. email={}", request.email());
+
+        return response;
     }
 }
