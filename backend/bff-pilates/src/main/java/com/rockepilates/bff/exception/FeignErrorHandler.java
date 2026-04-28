@@ -10,29 +10,33 @@ public class FeignErrorHandler {
 
         int status = ex.status();
 
-        if (status == 400) {
-            return new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+        // 🔴 quando serviço está offline / timeout
+        if (status == -1) {
+            return new ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "usuarios-service indisponível"
+            );
         }
 
-        if (status == 401) {
-            return new ResponseStatusException(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        HttpStatus httpStatus;
+
+        try {
+            httpStatus = HttpStatus.valueOf(status);
+        } catch (Exception e) {
+            httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         }
 
-        if (status == 403) {
-            return new ResponseStatusException(HttpStatus.FORBIDDEN, ex.getMessage());
-        }
+        // 🔴 limpa mensagem (Feign manda lixo às vezes)
+        String message = extractMessage(ex);
 
-        if (status == 404) {
-            return new ResponseStatusException(HttpStatus.NOT_FOUND, ex.getMessage());
-        }
+        return new ResponseStatusException(httpStatus, message);
+    }
 
-        if (status == 409) {
-            return new ResponseStatusException(HttpStatus.CONFLICT, ex.getMessage());
+    private static String extractMessage(FeignException ex) {
+        try {
+            return ex.contentUTF8();
+        } catch (Exception e) {
+            return "Erro ao comunicar com usuarios-service";
         }
-
-        return new ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Erro ao comunicar com usuarios-service"
-        );
     }
 }
