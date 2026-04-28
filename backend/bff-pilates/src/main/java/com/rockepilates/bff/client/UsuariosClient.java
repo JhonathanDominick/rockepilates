@@ -45,7 +45,7 @@ public interface UsuariosClient {
     );
 
     @PostMapping("/usuarios/login")
-    LoginResponse login(
+    SuccessResponse<LoginResponse> login(
             @RequestBody LoginRequest request
     );
 }
