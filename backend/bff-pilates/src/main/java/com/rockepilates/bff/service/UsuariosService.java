@@ -2,6 +2,8 @@ package com.rockepilates.bff.service;
 
 import com.rockepilates.bff.client.UsuariosClient;
 import com.rockepilates.bff.dto.*;
+import com.rockepilates.bff.exception.FeignErrorHandler;
+import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -26,19 +28,23 @@ public class UsuariosService {
 
         log.info("Iniciando chamada ao usuarios-service para listar usuários. page={}, size={}", page, size);
 
-        PagedResponse<UsuarioResponse> response = client.listarUsuarios(authorizationHeader, page, size);
+        try {
+            PagedResponse<UsuarioResponse> response = client.listarUsuarios(authorizationHeader, page, size);
 
-        long duracao = System.currentTimeMillis() - inicio;
+            long duracao = System.currentTimeMillis() - inicio;
 
-        log.info(
-                "Chamada ao usuarios-service finalizada com sucesso. page={}, size={}, totalElements={}, duracaoMs={}",
-                page,
-                size,
-                response.totalElements(),
-                duracao
-        );
+            log.info(
+                    "Chamada ao usuarios-service finalizada com sucesso. page={}, size={}, totalElements={}, duracaoMs={}",
+                    page,
+                    size,
+                    response.totalElements(),
+                    duracao
+            );
 
-        return response;
+            return response;
+        } catch (FeignException ex) {
+            throw FeignErrorHandler.handle(ex);
+        }
     }
 
     public UsuarioResponse buscarUsuarioPorId(String authorizationHeader, Long id) {
@@ -46,13 +52,17 @@ public class UsuariosService {
 
         log.info("Buscando usuário por id={}", id);
 
-        SuccessResponse<UsuarioResponse> response = client.buscarUsuarioPorId(authorizationHeader, id);
+        try {
+            SuccessResponse<UsuarioResponse> response = client.buscarUsuarioPorId(authorizationHeader, id);
 
-        long duracao = System.currentTimeMillis() - inicio;
+            long duracao = System.currentTimeMillis() - inicio;
 
-        log.info("Busca finalizada id={}, duracaoMs={}", id, duracao);
+            log.info("Busca finalizada id={}, duracaoMs={}", id, duracao);
 
-        return response.data();
+            return response.data();
+        } catch (FeignException ex) {
+            throw FeignErrorHandler.handle(ex);
+        }
     }
 
     public UsuarioResponse criarUsuario(
@@ -61,11 +71,15 @@ public class UsuariosService {
     ) {
         log.info("Iniciando criação de usuário. email={}", request.email());
 
-        var response = client.criarUsuario(authorizationHeader, request);
+        try {
+            var response = client.criarUsuario(authorizationHeader, request);
 
-        log.info("Usuário criado com sucesso. id={}", response.data().id());
+            log.info("Usuário criado com sucesso. id={}", response.data().id());
 
-        return response.data();
+            return response.data();
+        } catch (FeignException ex) {
+            throw FeignErrorHandler.handle(ex);
+        }
     }
 
     public void atualizarSenha(
@@ -75,18 +89,27 @@ public class UsuariosService {
     ) {
         log.info("Iniciando atualização de senha. id={}", id);
 
-        client.atualizarSenha(authorizationHeader, id, request);
+        try {
+            client.atualizarSenha(authorizationHeader, id, request);
 
-        log.info("Senha atualizada com sucesso. id={}", id);
+            log.info("Senha atualizada com sucesso. id={}", id);
+        } catch (FeignException ex) {
+            throw FeignErrorHandler.handle(ex);
+        }
     }
 
     public LoginResponse login(LoginRequest request) {
         log.info("Iniciando login de usuário. email={}", request.email());
 
-        LoginResponse response = client.login(request);
+        try {
+            SuccessResponse<LoginResponse> response = client.login(request);
 
-        log.info("Login realizado com sucesso. email={}", request.email());
+            log.info("Login realizado com sucesso. email={}", request.email());
 
-        return response;
+            return response.data();
+        } catch (FeignException ex) {
+            throw FeignErrorHandler.handle(ex);
+        }
+
     }
 }

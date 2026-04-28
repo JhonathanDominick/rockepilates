@@ -1,12 +1,6 @@
 package com.rockepilates.bff.client;
 
-import com.rockepilates.bff.dto.CreateUsuarioRequest;
-import com.rockepilates.bff.dto.LoginRequest;
-import com.rockepilates.bff.dto.LoginResponse;
-import com.rockepilates.bff.dto.PagedResponse;
-import com.rockepilates.bff.dto.SuccessResponse;
-import com.rockepilates.bff.dto.UsuarioResponse;
-import com.rockepilates.bff.dto.UpdateSenhaRequest;
+import com.rockepilates.bff.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -24,7 +18,7 @@ public class UsuariosClientFallback implements UsuariosClient {
             Long id
     ) {
         log.error("Fallback acionado para buscar usuario por id={}", id);
-        return null;
+        throw new IllegalStateException("usuarios-service indisponível");
     }
 
     @Override
@@ -33,7 +27,7 @@ public class UsuariosClientFallback implements UsuariosClient {
             int page,
             int size
     ) {
-        log.error("Fallback acionado para usuarios-service. page={}, size={}", page, size);
+        log.error("Fallback acionado para listar usuários");
 
         return new PagedResponse<>(
                 Collections.emptyList(),
@@ -49,9 +43,8 @@ public class UsuariosClientFallback implements UsuariosClient {
             String authorizationHeader,
             CreateUsuarioRequest request
     ) {
-        log.error("Fallback acionado para criação de usuário. email={}", request.email());
-
-        throw new RuntimeException("Erro ao criar usuário no usuarios-service");
+        log.error("Fallback acionado para criação de usuário");
+        throw new IllegalStateException("usuarios-service indisponível");
     }
 
     @Override
@@ -60,15 +53,15 @@ public class UsuariosClientFallback implements UsuariosClient {
             Long id,
             UpdateSenhaRequest request
     ) {
-        log.error("Fallback acionado para atualização de senha. id={}", id);
-
-        throw new RuntimeException("Erro ao atualizar senha no usuarios-service");
+        log.error("Fallback acionado para atualização de senha id={}", id);
+        throw new IllegalStateException("usuarios-service indisponível");
     }
 
     @Override
-    public LoginResponse login(LoginRequest request) {
-        log.error("Fallback acionado para login. email={}", request.email());
-
-        throw new RuntimeException("Erro ao realizar login no usuarios-service");
+    public SuccessResponse<LoginResponse> login(
+            LoginRequest request
+    ) {
+        log.error("Fallback acionado para login email={}", request.email());
+        throw new IllegalStateException("usuarios-service indisponível");
     }
 }
