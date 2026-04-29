@@ -64,4 +64,10 @@ public class UsuariosClientFallback implements UsuariosClient {
         log.error("Fallback acionado para login email={}", request.email());
         throw new IllegalStateException("usuarios-service indisponível");
     }
+
+    @Override
+    public Object health() {
+        log.error("Fallback acionado para health check do usuarios-service");
+        throw new IllegalStateException("usuarios-service indisponível");
+    }
 }
