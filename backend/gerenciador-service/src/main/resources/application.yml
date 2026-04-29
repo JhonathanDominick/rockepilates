@@ -1,0 +1,25 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: gerenciador-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/gerenciador_db
+    username: rocker
+    password: rocker123
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
