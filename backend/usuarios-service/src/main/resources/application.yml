@@ -40,6 +40,13 @@ springdoc:
     enabled: true
     path: /swagger-ui.html
 
+# 🔴 ADICIONADO (Actuator)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
 logging:
   level:
     com.rockepilates: DEBUG

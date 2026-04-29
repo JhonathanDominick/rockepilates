@@ -48,4 +48,7 @@ public interface UsuariosClient {
     SuccessResponse<LoginResponse> login(
             @RequestBody LoginRequest request
     );
+
+    @GetMapping("/actuator/health")
+    Object health();
 }

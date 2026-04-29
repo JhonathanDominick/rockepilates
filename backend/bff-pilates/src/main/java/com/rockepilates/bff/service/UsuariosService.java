@@ -112,4 +112,14 @@ public class UsuariosService {
         }
 
     }
+
+    public String verificarUsuariosService() {
+        try {
+            client.health();
+            return "UP";
+        } catch (Exception e) {
+            log.error("usuarios-service DOWN", e);
+            return "DOWN";
+        }
+    }
 }
