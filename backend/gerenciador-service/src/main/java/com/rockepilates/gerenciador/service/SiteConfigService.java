@@ -1,6 +1,8 @@
 package com.rockepilates.gerenciador.service;
 
+import com.rockepilates.gerenciador.dto.SiteConfigResponse;
 import com.rockepilates.gerenciador.entity.SiteConfig;
+import com.rockepilates.gerenciador.exception.ResourceNotFoundException;
 import com.rockepilates.gerenciador.repository.SiteConfigRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,11 +13,11 @@ public class SiteConfigService {
 
     private final SiteConfigRepository repository;
 
-    public SiteConfig salvar(String chave, String valor) {
-        return repository.findByChave(chave)
-                .map(config -> {
-                    config.setValor(valor);
-                    return repository.save(config);
+    public SiteConfigResponse salvar(String chave, String valor) {
+        SiteConfig config = repository.findByChave(chave)
+                .map(siteConfig -> {
+                    siteConfig.setValor(valor);
+                    return repository.save(siteConfig);
                 })
                 .orElseGet(() -> repository.save(
                         SiteConfig.builder()
@@ -23,10 +25,21 @@ public class SiteConfigService {
                                 .valor(valor)
                                 .build()
                 ));
+
+        return toResponse(config);
     }
 
-    public SiteConfig buscarPorChave(String chave) {
-        return repository.findByChave(chave)
-                .orElseThrow(() -> new RuntimeException("Config não encontrada"));
+    public SiteConfigResponse buscarPorChave(String chave) {
+        SiteConfig config = repository.findByChave(chave)
+                .orElseThrow(() -> new ResourceNotFoundException("Configuração não encontrada"));
+        return toResponse(config);
+    }
+
+    private SiteConfigResponse toResponse(SiteConfig config) {
+        return new SiteConfigResponse(
+                config.getId(),
+                config.getChave(),
+                config.getValor()
+        );
     }
 }
