@@ -6,6 +6,8 @@ import com.rockepilates.bff.dto.SiteConfigResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @FeignClient(
         name = "gerenciador-service",
         url = "http://localhost:8082"
@@ -21,4 +23,7 @@ public interface GerenciadorClient {
     SuccessResponse<SiteConfigResponse> buscar(
             @PathVariable String chave
     );
+
+    @GetMapping("/configs")
+    SuccessResponse<List<SiteConfigResponse>> listar();
 }

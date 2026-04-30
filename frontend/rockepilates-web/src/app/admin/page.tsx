@@ -2,21 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
-type FormState = {
-    chave: string;
-    valor: string;
-};
+import { getAllConfigs, SiteConfig } from "@/lib/api/config";
 
 export default function AdminPage() {
     const router = useRouter();
 
-    const [form, setForm] = useState<FormState>({
-        chave: "",
-        valor: "",
-    });
-
-    const [loading, setLoading] = useState(false);
+    const [configs, setConfigs] = useState<SiteConfig[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [savingKey, setSavingKey] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
 
     useEffect(() => {
@@ -24,21 +17,40 @@ export default function AdminPage() {
 
         if (!token) {
             router.push("/admin/login");
+            return;
         }
+
+        carregarConfigs();
     }, [router]);
 
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setMessage(null);
-
+    async function carregarConfigs() {
         try {
+            setLoading(true);
+            setMessage(null);
+
+            const data = await getAllConfigs();
+            setConfigs(data);
+        } catch (error) {
+            console.error("Erro ao carregar configurações:", error);
+            setMessage("Erro ao carregar configurações do site.");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    function alterarValor(chave: string, valor: string) {
+        setConfigs((configsAtuais) =>
+            configsAtuais.map((config) =>
+                config.chave === chave ? { ...config, valor } : config
+            )
+        );
+    }
+
+    async function salvarConfig(config: SiteConfig) {
+        try {
+            setSavingKey(config.chave);
+            setMessage(null);
+
             const token = localStorage.getItem("admin_token");
 
             if (!token) {
@@ -54,7 +66,10 @@ export default function AdminPage() {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify(form),
+                    body: JSON.stringify({
+                        chave: config.chave,
+                        valor: config.valor,
+                    }),
                 }
             );
 
@@ -66,21 +81,20 @@ export default function AdminPage() {
                 );
             }
 
-            setMessage("Configuração salva com sucesso!");
-            setForm({ chave: "", valor: "" });
+            setMessage(`Configuração "${config.chave}" salva com sucesso.`);
         } catch (error) {
             console.error("Erro ao salvar configuração:", error);
             setMessage(
-                error instanceof Error ? error.message : "Erro ao salvar configuração"
+                error instanceof Error ? error.message : "Erro ao salvar configuração."
             );
         } finally {
-            setLoading(false);
+            setSavingKey(null);
         }
-    };
+    }
 
     return (
-        <main className="min-h-screen px-6 py-10">
-            <div className="mx-auto max-w-3xl">
+        <main className="min-h-screen px-6 py-10 bg-gray-50">
+            <div className="mx-auto max-w-4xl">
                 <h1 className="text-3xl font-bold text-gray-950">
                     Administração do site
                 </h1>
@@ -89,35 +103,55 @@ export default function AdminPage() {
                     Edite os textos dinâmicos exibidos na página inicial.
                 </p>
 
-                <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
-                    <input
-                        name="chave"
-                        placeholder="Ex: home.title"
-                        value={form.chave}
-                        onChange={handleChange}
-                        className="border p-3 rounded"
-                        required
-                    />
+                {loading && (
+                    <p className="mt-8 text-gray-700">Carregando configurações...</p>
+                )}
 
-                    <textarea
-                        name="valor"
-                        placeholder="Digite o valor"
-                        value={form.valor}
-                        onChange={handleChange}
-                        className="border p-3 rounded min-h-[120px]"
-                        required
-                    />
+                {!loading && configs.length === 0 && (
+                    <p className="mt-8 text-gray-700">
+                        Nenhuma configuração cadastrada.
+                    </p>
+                )}
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="bg-black text-white py-3 rounded disabled:opacity-60"
-                    >
-                        {loading ? "Salvando..." : "Salvar"}
-                    </button>
-                </form>
+                {!loading && configs.length > 0 && (
+                    <div className="mt-8 flex flex-col gap-5">
+                        {configs.map((config) => (
+                            <div
+                                key={config.id}
+                                className="rounded-xl border bg-white p-5 shadow-sm"
+                            >
+                                <label className="block text-sm font-semibold text-gray-900">
+                                    {config.chave}
+                                </label>
 
-                {message && <p className="mt-4 text-sm text-gray-700">{message}</p>}
+                                <textarea
+                                    value={config.valor}
+                                    onChange={(e) =>
+                                        alterarValor(config.chave, e.target.value)
+                                    }
+                                    className="mt-3 min-h-[120px] w-full rounded border p-3 text-gray-900"
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={() => salvarConfig(config)}
+                                    disabled={savingKey === config.chave}
+                                    className="mt-3 rounded bg-black px-5 py-2 text-white disabled:opacity-60"
+                                >
+                                    {savingKey === config.chave
+                                        ? "Salvando..."
+                                        : "Salvar alteração"}
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {message && (
+                    <p className="mt-5 text-sm text-gray-700">
+                        {message}
+                    </p>
+                )}
             </div>
         </main>
     );

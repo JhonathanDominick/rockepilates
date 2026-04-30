@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/configs")
@@ -39,6 +40,18 @@ public class SiteConfigController {
                 LocalDateTime.now(),
                 HttpStatus.OK.value(),
                 "Configuração encontrada com sucesso",
+                response
+        );
+    }
+
+    @GetMapping
+    public SuccessResponse<List<SiteConfigResponse>> listar() {
+        List<SiteConfigResponse> response = service.listarTodos();
+
+        return new SuccessResponse<>(
+                LocalDateTime.now(),
+                HttpStatus.OK.value(),
+                "Lista de configurações carregada com sucesso",
                 response
         );
     }
