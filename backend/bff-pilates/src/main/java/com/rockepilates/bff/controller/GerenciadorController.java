@@ -5,6 +5,8 @@ import com.rockepilates.bff.dto.SiteConfigResponse;
 import com.rockepilates.bff.service.GerenciadorService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/bff/configs")
 public class GerenciadorController {
@@ -21,6 +23,11 @@ public class GerenciadorController {
             @RequestBody SiteConfigRequest request
     ) {
         return service.salvar(authorizationHeader, request);
+    }
+
+    @GetMapping
+    public List<SiteConfigResponse> listar() {
+        return service.listar();
     }
 
     @GetMapping("/{chave}")

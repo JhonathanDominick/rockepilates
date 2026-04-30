@@ -7,7 +7,7 @@ import com.rockepilates.bff.exception.FeignErrorHandler;
 import feign.FeignException;
 import org.springframework.stereotype.Service;
 
-
+import java.util.List;
 
 @Service
 public class GerenciadorService {
@@ -33,6 +33,14 @@ public class GerenciadorService {
     public SiteConfigResponse buscar(String chave) {
         try {
             return client.buscar(chave).data();
+        } catch (FeignException ex) {
+            throw FeignErrorHandler.handle(ex);
+        }
+    }
+
+    public List<SiteConfigResponse> listar() {
+        try {
+            return client.listar().data();
         } catch (FeignException ex) {
             throw FeignErrorHandler.handle(ex);
         }

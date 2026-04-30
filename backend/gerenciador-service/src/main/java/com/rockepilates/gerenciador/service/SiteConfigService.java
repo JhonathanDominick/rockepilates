@@ -7,6 +7,8 @@ import com.rockepilates.gerenciador.repository.SiteConfigRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class SiteConfigService {
@@ -32,7 +34,15 @@ public class SiteConfigService {
     public SiteConfigResponse buscarPorChave(String chave) {
         SiteConfig config = repository.findByChave(chave)
                 .orElseThrow(() -> new ResourceNotFoundException("Configuração não encontrada"));
+
         return toResponse(config);
+    }
+
+    public List<SiteConfigResponse> listarTodos() {
+        return repository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     private SiteConfigResponse toResponse(SiteConfig config) {
