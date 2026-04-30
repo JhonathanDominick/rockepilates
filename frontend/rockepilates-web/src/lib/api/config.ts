@@ -5,14 +5,36 @@ export type SiteConfig = {
 };
 
 export async function getConfig(chave: string): Promise<SiteConfig> {
-    const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BFF_URL}/bff/configs/${chave}`,
-        { cache: "no-store" }
-    );
+    const baseUrl = process.env.NEXT_PUBLIC_BFF_URL;
+
+    if (!baseUrl) {
+        throw new Error("NEXT_PUBLIC_BFF_URL não configurada");
+    }
+
+    const response = await fetch(`${baseUrl}/bff/configs/${chave}`, {
+        cache: "no-store",
+    });
 
     if (!response.ok) {
         throw new Error("Erro ao buscar configuração do site");
     }
 
     return response.json();
+}
+
+export async function getConfigs(
+    chaves: string[]
+): Promise<Record<string, SiteConfig | null>> {
+    const results = await Promise.all(
+        chaves.map(async (chave) => {
+            try {
+                const config = await getConfig(chave);
+                return [chave, config] as const;
+            } catch {
+                return [chave, null] as const;
+            }
+        })
+    );
+
+    return Object.fromEntries(results);
 }
