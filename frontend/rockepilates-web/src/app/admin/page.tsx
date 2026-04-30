@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type FormState = {
     chave: string;
@@ -8,6 +9,8 @@ type FormState = {
 };
 
 export default function AdminPage() {
+    const router = useRouter();
+
     const [form, setForm] = useState<FormState>({
         chave: "",
         valor: "",
@@ -15,6 +18,14 @@ export default function AdminPage() {
 
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
+
+    useEffect(() => {
+        const token = localStorage.getItem("admin_token");
+
+        if (!token) {
+            router.push("/admin/login");
+        }
+    }, [router]);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -28,12 +39,20 @@ export default function AdminPage() {
         setMessage(null);
 
         try {
+            const token = localStorage.getItem("admin_token");
+
+            if (!token) {
+                router.push("/admin/login");
+                return;
+            }
+
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_BFF_URL}/bff/configs`,
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
                     },
                     body: JSON.stringify(form),
                 }
@@ -51,7 +70,9 @@ export default function AdminPage() {
             setForm({ chave: "", valor: "" });
         } catch (error) {
             console.error("Erro ao salvar configuração:", error);
-            setMessage("Erro ao salvar configuração");
+            setMessage(
+                error instanceof Error ? error.message : "Erro ao salvar configuração"
+            );
         } finally {
             setLoading(false);
         }
