@@ -16,11 +16,8 @@ public class GerenciadorController {
     }
 
     @PostMapping
-    public SiteConfigResponse salvar(
-            @RequestHeader("Authorization") String authorizationHeader,
-            @RequestBody SiteConfigRequest request
-    ) {
-        return service.salvar(authorizationHeader, request);
+    public SiteConfigResponse salvar(@RequestBody SiteConfigRequest request) {
+        return service.salvarSemValidacaoAdmin(request);
     }
 
     @GetMapping("/{chave}")
