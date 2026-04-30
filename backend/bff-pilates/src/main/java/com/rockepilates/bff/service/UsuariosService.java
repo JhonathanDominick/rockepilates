@@ -122,4 +122,12 @@ public class UsuariosService {
             return "DOWN";
         }
     }
+
+    public void validarAdmin(String authorizationHeader) {
+        try {
+            client.listarUsuarios(authorizationHeader, 0, 1);
+        } catch (FeignException ex) {
+            throw FeignErrorHandler.handle(ex);
+        }
+    }
 }
