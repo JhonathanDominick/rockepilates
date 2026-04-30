@@ -1,20 +1,33 @@
+import { Hero } from "@/components/Hero";
 import { getConfigs } from "@/lib/api/config";
+import { CTA } from "@/components/CTA";
+import { About } from "@/components/About";
+
 
 export default async function Home() {
     const configs = await getConfigs([
         "home.title",
         "home.subtitle",
+        "home.cta.title",
+        "home.cta.button",
+        "home.about.text",
     ]);
 
     return (
-        <main className="min-h-screen flex flex-col items-center justify-center gap-6 px-4 text-center">
-            <h1 className="text-4xl font-bold">
-                {configs["home.title"]?.valor ?? "Título padrão"}
-            </h1>
+        <main>
+            <Hero
+                title={configs["home.title"]?.valor}
+                subtitle={configs["home.subtitle"]?.valor}
+            />
 
-            <p className="text-lg text-gray-600 max-w-xl">
-                {configs["home.subtitle"]?.valor ?? "Descrição padrão"}
-            </p>
+            <CTA
+                title={configs["home.cta.title"]?.valor}
+                button={configs["home.cta.button"]?.valor}
+            />
+
+            <About
+                text={configs["home.about.text"]?.valor}
+            />
         </main>
     );
 }
