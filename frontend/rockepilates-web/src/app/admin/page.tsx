@@ -14,15 +14,8 @@ export default function AdminPage() {
     const [successKey, setSuccessKey] = useState<string | null>(null);
 
     useEffect(() => {
-        const token = localStorage.getItem("admin_token");
-
-        if (!token) {
-            router.push("/admin/login");
-            return;
-        }
-
         carregarConfigs();
-    }, [router]);
+    }, []);
 
     async function carregarConfigs() {
         try {
@@ -57,21 +50,14 @@ export default function AdminPage() {
             setSuccessKey(null);
             setMessage(null);
 
-            const token = localStorage.getItem("admin_token");
-
-            if (!token) {
-                router.push("/admin/login");
-                return;
-            }
-
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_BFF_URL}/bff/configs`,
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
                     },
+                    credentials: "include",
                     body: JSON.stringify({
                         chave: config.chave,
                         valor: config.valor,
@@ -101,8 +87,12 @@ export default function AdminPage() {
         }
     }
 
-    function handleLogout() {
-        localStorage.removeItem("admin_token");
+    async function handleLogout() {
+        await fetch(`${process.env.NEXT_PUBLIC_BFF_URL}/bff/usuarios/logout`, {
+            method: "POST",
+            credentials: "include",
+        });
+
         router.push("/admin/login");
     }
 
@@ -182,9 +172,7 @@ export default function AdminPage() {
                 )}
 
                 {message && (
-                    <p className="mt-5 text-sm text-gray-700">
-                        {message}
-                    </p>
+                    <p className="mt-5 text-sm text-gray-700">{message}</p>
                 )}
             </div>
         </main>
