@@ -4,6 +4,42 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getAllConfigs, SiteConfig } from "@/lib/api/config";
 
+function agruparConfigs(configs: SiteConfig[]) {
+    const ordemSecoes = ["home", "about", "cta"];
+    const grupos: Record<string, SiteConfig[]> = {};
+
+    configs.forEach((config) => {
+        const partes = config.chave.split(".");
+        const secao = partes.length >= 3 ? partes[1] : partes[0];
+
+        if (!grupos[secao]) {
+            grupos[secao] = [];
+        }
+
+        grupos[secao].push(config);
+    });
+
+    Object.keys(grupos).forEach((secao) => {
+        grupos[secao].sort((a, b) => a.chave.localeCompare(b.chave));
+    });
+
+    return Object.fromEntries(
+        Object.entries(grupos).sort(([secaoA], [secaoB]) => {
+            const indexA = ordemSecoes.indexOf(secaoA);
+            const indexB = ordemSecoes.indexOf(secaoB);
+
+            if (indexA === -1 && indexB === -1) {
+                return secaoA.localeCompare(secaoB);
+            }
+
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+
+            return indexA - indexB;
+        })
+    );
+}
+
 export default function AdminPage() {
     const router = useRouter();
 
@@ -12,6 +48,8 @@ export default function AdminPage() {
     const [savingKey, setSavingKey] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
     const [successKey, setSuccessKey] = useState<string | null>(null);
+
+    const grupos = agruparConfigs(configs);
 
     useEffect(() => {
         carregarConfigs();
@@ -130,43 +168,53 @@ export default function AdminPage() {
                 )}
 
                 {!loading && configs.length > 0 && (
-                    <div className="mt-8 flex flex-col gap-5">
-                        {configs.map((config) => (
-                            <div
-                                key={config.id}
-                                className="rounded-xl border bg-white p-5 shadow-sm"
-                            >
-                                <div className="flex items-center justify-between gap-4">
-                                    <label className="block text-sm font-semibold text-gray-900">
-                                        {config.chave}
-                                    </label>
+                    <div className="mt-8 flex flex-col gap-8">
+                        {Object.entries(grupos).map(([secao, configsDaSecao]) => (
+                            <section key={secao}>
+                                <h2 className="mb-4 text-xl font-bold uppercase text-gray-900">
+                                    {secao}
+                                </h2>
 
-                                    {successKey === config.chave && (
-                                        <span className="text-sm font-medium text-green-700">
-                                            Salvo
-                                        </span>
-                                    )}
+                                <div className="flex flex-col gap-5">
+                                    {configsDaSecao.map((config) => (
+                                        <div
+                                            key={config.id}
+                                            className="rounded-xl border bg-white p-5 shadow-sm"
+                                        >
+                                            <div className="flex items-center justify-between gap-4">
+                                                <label className="block text-sm font-semibold text-gray-900">
+                                                    {config.chave}
+                                                </label>
+
+                                                {successKey === config.chave && (
+                                                    <span className="text-sm font-medium text-green-700">
+                                                        Salvo
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <textarea
+                                                value={config.valor}
+                                                onChange={(e) =>
+                                                    alterarValor(config.chave, e.target.value)
+                                                }
+                                                className="mt-3 min-h-[120px] w-full rounded border p-3 text-gray-900"
+                                            />
+
+                                            <button
+                                                type="button"
+                                                onClick={() => salvarConfig(config)}
+                                                disabled={savingKey === config.chave}
+                                                className="mt-3 rounded bg-black px-5 py-2 text-white disabled:opacity-60"
+                                            >
+                                                {savingKey === config.chave
+                                                    ? "Salvando..."
+                                                    : "Salvar alteração"}
+                                            </button>
+                                        </div>
+                                    ))}
                                 </div>
-
-                                <textarea
-                                    value={config.valor}
-                                    onChange={(e) =>
-                                        alterarValor(config.chave, e.target.value)
-                                    }
-                                    className="mt-3 min-h-[120px] w-full rounded border p-3 text-gray-900"
-                                />
-
-                                <button
-                                    type="button"
-                                    onClick={() => salvarConfig(config)}
-                                    disabled={savingKey === config.chave}
-                                    className="mt-3 rounded bg-black px-5 py-2 text-white disabled:opacity-60"
-                                >
-                                    {savingKey === config.chave
-                                        ? "Salvando..."
-                                        : "Salvar alteração"}
-                                </button>
-                            </div>
+                            </section>
                         ))}
                     </div>
                 )}
