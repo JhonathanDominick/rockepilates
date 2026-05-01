@@ -25,6 +25,7 @@ export default function AdminLoginPage() {
                     headers: {
                         "Content-Type": "application/json",
                     },
+                    credentials: "include",
                     body: JSON.stringify({ email, senha }),
                 }
             );
@@ -32,10 +33,6 @@ export default function AdminLoginPage() {
             if (!response.ok) {
                 throw new Error("Login inválido");
             }
-
-            const data = await response.json();
-
-            localStorage.setItem("admin_token", data.token);
 
             router.push("/admin");
         } catch {

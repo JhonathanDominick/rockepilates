@@ -4,6 +4,8 @@ import com.rockepilates.bff.dto.*;
 import com.rockepilates.bff.service.UsuariosService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -42,8 +44,41 @@ public class UsuariosController {
     }
 
     @PostMapping("/bff/usuarios/login")
-    public LoginResponse login(@RequestBody LoginRequest request) {
-        return service.login(request);
+    public ResponseEntity<Void> login(@RequestBody LoginRequest request) {
+
+        LoginResponse response = service.login(request);
+
+        String token = response.token();
+
+        ResponseCookie cookie = ResponseCookie.from("admin_token", token)
+                .httpOnly(true)
+                .secure(false) // depois vamos ajustar para true em produção
+                .path("/")
+                .maxAge(60 * 60) // 1 hora
+                .sameSite("Lax")
+                .build();
+
+        return ResponseEntity
+                .ok()
+                .header("Set-Cookie", cookie.toString())
+                .build();
+    }
+
+    @PostMapping("/bff/usuarios/logout")
+    public ResponseEntity<Void> logout() {
+
+        ResponseCookie cookie = ResponseCookie.from("admin_token", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0) // remove cookie
+                .sameSite("Lax")
+                .build();
+
+        return ResponseEntity
+                .ok()
+                .header("Set-Cookie", cookie.toString())
+                .build();
     }
 
     @PatchMapping("/bff/usuarios/{id}/senha")
