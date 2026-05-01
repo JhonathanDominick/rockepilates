@@ -40,6 +40,14 @@ function agruparConfigs(configs: SiteConfig[]) {
     );
 }
 
+const labelsConfigs: Record<string, string> = {
+    "home.title": "Título principal",
+    "home.subtitle": "Subtítulo da página inicial",
+    "home.about.text": "Texto da seção Sobre",
+    "home.cta.title": "Título da chamada para ação",
+    "home.cta.button": "Texto do botão da chamada para ação",
+};
+
 export default function AdminPage() {
     const router = useRouter();
 
@@ -183,7 +191,7 @@ export default function AdminPage() {
                                         >
                                             <div className="flex items-center justify-between gap-4">
                                                 <label className="block text-sm font-semibold text-gray-900">
-                                                    {config.chave}
+                                                    {labelsConfigs[config.chave] ?? config.chave}
                                                 </label>
 
                                                 {successKey === config.chave && (
