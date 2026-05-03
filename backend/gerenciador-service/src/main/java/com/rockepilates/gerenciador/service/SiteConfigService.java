@@ -1,5 +1,6 @@
 package com.rockepilates.gerenciador.service;
 
+import com.rockepilates.gerenciador.dto.SiteConfigRequest;
 import com.rockepilates.gerenciador.dto.SiteConfigResponse;
 import com.rockepilates.gerenciador.entity.SiteConfig;
 import com.rockepilates.gerenciador.exception.ResourceNotFoundException;
@@ -15,16 +16,19 @@ public class SiteConfigService {
 
     private final SiteConfigRepository repository;
 
-    public SiteConfigResponse salvar(String chave, String valor) {
-        SiteConfig config = repository.findByChave(chave)
-                .map(siteConfig -> {
-                    siteConfig.setValor(valor);
-                    return repository.save(siteConfig);
+    public SiteConfigResponse salvar(SiteConfigRequest request) {
+
+        SiteConfig config = repository.findByChave(request.chave())
+                .map(existing -> {
+                    existing.setValor(request.valor());
+                    existing.setTipo(request.tipo());
+                    return repository.save(existing);
                 })
                 .orElseGet(() -> repository.save(
                         SiteConfig.builder()
-                                .chave(chave)
-                                .valor(valor)
+                                .chave(request.chave())
+                                .valor(request.valor())
+                                .tipo(request.tipo())
                                 .build()
                 ));
 
@@ -49,7 +53,8 @@ public class SiteConfigService {
         return new SiteConfigResponse(
                 config.getId(),
                 config.getChave(),
-                config.getValor()
+                config.getValor(),
+                config.getTipo()
         );
     }
 }

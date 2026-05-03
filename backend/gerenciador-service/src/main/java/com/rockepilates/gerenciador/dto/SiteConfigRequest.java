@@ -1,12 +1,10 @@
 package com.rockepilates.gerenciador.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import com.rockepilates.gerenciador.entity.TipoConfig;
 
 public record SiteConfigRequest(
-        @NotBlank(message = "A chave é obrigatória")
         String chave,
-
-        @NotBlank(message = "O valor é obrigatório")
-        String valor
+        String valor,
+        TipoConfig tipo
 ) {
 }

@@ -108,7 +108,10 @@ public class UsuariosService {
 
             return response.data();
         } catch (FeignException ex) {
-            throw FeignErrorHandler.handle(ex);
+
+            log.error("Erro ao chamar usuarios-service", ex);
+
+            throw new RuntimeException("Erro ao fazer login");
         }
 
     }

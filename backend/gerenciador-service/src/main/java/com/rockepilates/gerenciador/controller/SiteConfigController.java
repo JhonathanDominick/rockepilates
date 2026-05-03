@@ -21,8 +21,11 @@ public class SiteConfigController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SuccessResponse<SiteConfigResponse> salvar(@RequestBody @Valid SiteConfigRequest request) {
-        SiteConfigResponse response = service.salvar(request.chave(), request.valor());
+    public SuccessResponse<SiteConfigResponse> salvar(
+            @RequestBody @Valid SiteConfigRequest request
+    ) {
+
+        SiteConfigResponse response = service.salvar(request);
 
         return new SuccessResponse<>(
                 LocalDateTime.now(),
