@@ -1,7 +1,10 @@
+export type ConfigTipo = "TEXT" | "IMAGE" | "VIDEO";
+
 export type SiteConfig = {
     id: number;
     chave: string;
     valor: string;
+    tipo: ConfigTipo;
 };
 
 function getBaseUrl(): string {
@@ -19,6 +22,7 @@ export async function getConfig(chave: string): Promise<SiteConfig> {
 
     const response = await fetch(`${baseUrl}/bff/configs/${chave}`, {
         cache: "no-store",
+        credentials: "include",
     });
 
     if (!response.ok) {
@@ -33,6 +37,7 @@ export async function getAllConfigs(): Promise<SiteConfig[]> {
 
     const response = await fetch(`${baseUrl}/bff/configs`, {
         cache: "no-store",
+        credentials: "include",
     });
 
     if (!response.ok) {

@@ -21,4 +21,8 @@ public class SiteConfig {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String valor;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TipoConfig tipo;
 }

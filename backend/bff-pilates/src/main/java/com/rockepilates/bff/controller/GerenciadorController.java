@@ -3,6 +3,7 @@ package com.rockepilates.bff.controller;
 import com.rockepilates.bff.dto.SiteConfigRequest;
 import com.rockepilates.bff.dto.SiteConfigResponse;
 import com.rockepilates.bff.service.GerenciadorService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,10 +20,10 @@ public class GerenciadorController {
 
     @PostMapping
     public SiteConfigResponse salvar(
-            @RequestHeader("Authorization") String authorizationHeader,
-            @RequestBody SiteConfigRequest request
+            HttpServletRequest request,
+            @RequestBody SiteConfigRequest body
     ) {
-        return service.salvar(authorizationHeader, request);
+        return service.salvar(request, body);
     }
 
     @GetMapping
