@@ -10,7 +10,18 @@ build/
 .DS_Store
 Thumbs.db
 
-# Logs
+
+
+# uploads locais
+uploads/
+
+# next build
+frontend/rockepilates-web/.next/
+
+# node
+frontend/rockepilates-web/node_modules/
+
+# logs
 *.log
 
 # Environment
