@@ -55,7 +55,8 @@ export async function getConfigs(
             try {
                 const config = await getConfig(chave);
                 return [chave, config] as const;
-            } catch {
+            } catch (error) {
+                console.error(`Erro ao buscar config ${chave}:`, error);
                 return [chave, null] as const;
             }
         })
