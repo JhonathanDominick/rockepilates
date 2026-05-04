@@ -3,6 +3,7 @@ import { PracticeStrip } from "@/components/PracticeStrip";
 import { Benefits } from "@/components/Benefits";
 import { ScrollRevealSection } from "@/components/ScrollRevealSection";
 import { Plans } from "@/components/Plans";
+import { EvelynSection } from "@/components/EvelynSection";
 import { CTA } from "@/components/CTA";
 import { About } from "@/components/About";
 import { getConfigs } from "@/lib/api/config";
@@ -32,6 +33,12 @@ export default async function Home() {
             "home.plans.3.title",
             "home.plans.3.price",
             "home.plans.3.description",
+
+            // 🔥 NOVO - Evelyn
+            "home.evelyn.title",
+            "home.evelyn.subtitle",
+            "home.evelyn.description",
+            "home.evelyn.image",
 
             "home.cta.title",
             "home.cta.button",
@@ -77,6 +84,14 @@ export default async function Home() {
             <ScrollRevealSection />
 
             <Plans plans={plans} />
+
+            {/* 🔥 NOVA SEÇÃO */}
+            <EvelynSection
+                title={configs["home.evelyn.title"]?.valor}
+                subtitle={configs["home.evelyn.subtitle"]?.valor}
+                description={configs["home.evelyn.description"]?.valor}
+                image={configs["home.evelyn.image"]?.valor}
+            />
 
             <CTA
                 title={configs["home.cta.title"]?.valor}
