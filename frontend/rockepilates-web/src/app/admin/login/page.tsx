@@ -35,7 +35,8 @@ export default function AdminLoginPage() {
             }
 
             router.push("/admin");
-        } catch {
+        } catch (error) {
+            console.error("Erro no login:", error);
             setMessage("E-mail ou senha inválidos");
         } finally {
             setLoading(false);

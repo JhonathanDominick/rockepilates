@@ -7,12 +7,13 @@ export async function uploadMedia(file: File): Promise<string> {
         {
             method: "POST",
             body: formData,
-            credentials: "include", // importante por causa do cookie
+            credentials: "include",
         }
     );
 
     if (!response.ok) {
-        throw new Error("Erro ao fazer upload");
+        const errorText = await response.text();
+        throw new Error(`Erro ao fazer upload: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
