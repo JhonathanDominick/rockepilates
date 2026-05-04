@@ -7,6 +7,7 @@ import { EvelynSection } from "@/components/EvelynSection";
 import { CTA } from "@/components/CTA";
 import { About } from "@/components/About";
 import { getConfigs } from "@/lib/api/config";
+import { Testimonials } from "@/components/Testimonials";
 
 export default async function Home() {
     let configs: Record<string, any> = {};
@@ -48,6 +49,12 @@ export default async function Home() {
 
             "home.evelyn.cta.text",
             "home.evelyn.cta.button",
+
+            "home.testimonials.title",
+            "home.testimonials.item.1",
+            "home.testimonials.item.2",
+            "home.testimonials.item.3",
+
         ]);
     } catch (error) {
         console.error("Erro ao carregar configs do CMS:", error);
@@ -59,6 +66,12 @@ export default async function Home() {
         configs["home.benefits.item.3"]?.valor,
         configs["home.benefits.item.4"]?.valor,
         configs["home.benefits.item.5"]?.valor,
+    ].filter((item): item is string => !!item?.trim());
+
+    const testimonials = [
+        configs["home.testimonials.item.1"]?.valor,
+        configs["home.testimonials.item.2"]?.valor,
+        configs["home.testimonials.item.3"]?.valor,
     ].filter((item): item is string => !!item?.trim());
 
     const plans = [1, 2, 3]
@@ -96,6 +109,11 @@ export default async function Home() {
                 image={configs["home.evelyn.image"]?.valor}
                 ctaText={configs["home.evelyn.cta.text"]?.valor}
                 ctaButton={configs["home.evelyn.cta.button"]?.valor}
+            />
+
+            <Testimonials
+                title={configs["home.testimonials.title"]?.valor}
+                items={testimonials}
             />
 
             <CTA
