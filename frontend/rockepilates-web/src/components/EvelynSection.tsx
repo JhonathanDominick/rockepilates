@@ -5,6 +5,8 @@ type EvelynSectionProps = {
     subtitle?: string;
     description?: string;
     image?: string;
+    ctaText?: string;
+    ctaButton?: string;
 };
 
 export function EvelynSection({
@@ -12,6 +14,8 @@ export function EvelynSection({
                                   subtitle,
                                   description,
                                   image,
+                                  ctaText,
+                                  ctaButton,
                               }: EvelynSectionProps) {
     const imageUrl = image?.trim()
         ? `${process.env.NEXT_PUBLIC_BFF_URL}${image}`
@@ -54,6 +58,25 @@ export function EvelynSection({
                             {description?.trim() ||
                                 "Minha missão é ajudar você a construir um corpo forte, consciente e livre de dores através do pilates."}
                         </p>
+
+                        {(ctaText?.trim() || ctaButton?.trim()) && (
+                            <div className="mt-8">
+                                {ctaText?.trim() && (
+                                    <p className="text-lg font-medium text-white/90">
+                                        {ctaText}
+                                    </p>
+                                )}
+
+                                {ctaButton?.trim() && (
+                                    <a
+                                        href="#contato"
+                                        className="mt-4 inline-flex rounded-full bg-white px-7 py-3 text-base font-semibold !text-brand-red transition hover:bg-white/90"
+                                    >
+                                        {ctaButton}
+                                    </a>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </Container>

@@ -45,6 +45,9 @@ export default async function Home() {
             "home.cta.image",
 
             "home.about.text",
+
+            "home.evelyn.cta.text",
+            "home.evelyn.cta.button",
         ]);
     } catch (error) {
         console.error("Erro ao carregar configs do CMS:", error);
@@ -91,6 +94,8 @@ export default async function Home() {
                 subtitle={configs["home.evelyn.subtitle"]?.valor}
                 description={configs["home.evelyn.description"]?.valor}
                 image={configs["home.evelyn.image"]?.valor}
+                ctaText={configs["home.evelyn.cta.text"]?.valor}
+                ctaButton={configs["home.evelyn.cta.button"]?.valor}
             />
 
             <CTA
