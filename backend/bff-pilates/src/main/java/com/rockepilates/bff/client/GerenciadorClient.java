@@ -15,7 +15,7 @@ import java.util.List;
 
 @FeignClient(
         name = "gerenciador-service",
-        url = "http://localhost:8082",
+        url = "${gerenciador.url}",
         configuration = FeignMultipartConfig.class
 )
 public interface GerenciadorClient {

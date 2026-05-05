@@ -7,10 +7,18 @@ spring:
 
   servlet:
     multipart:
-      max-file-size: 100MB
-      max-request-size: 100MB
+      max-file-size: 200MB
+      max-request-size: 200MB
 
   cloud:
     openfeign:
       circuitbreaker:
-        enabled: true
+        enabled: false
+      client:
+        config:
+          default:
+            connectTimeout: 10000
+            readTimeout: 300000
+
+gerenciador:
+  url: http://localhost:8082
