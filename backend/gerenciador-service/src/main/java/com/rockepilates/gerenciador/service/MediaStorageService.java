@@ -14,14 +14,18 @@ import java.util.UUID;
 public class MediaStorageService {
 
     private static final String UPLOAD_DIR = "uploads";
-    private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+    private static final long MAX_FILE_SIZE = 200L * 1024 * 1024; // 200MB
 
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
             "image/jpeg",
+            "image/jpg",
             "image/png",
             "image/webp",
+            "image/avif",
+            "image/gif",
             "video/mp4",
-            "video/webm"
+            "video/webm",
+            "video/quicktime"
     );
 
     public MediaUploadResponse upload(MultipartFile file) {
@@ -54,7 +58,7 @@ public class MediaStorageService {
         }
 
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("Arquivo excede o limite de 50MB");
+            throw new IllegalArgumentException("Arquivo excede o limite de 200MB");
         }
 
         String contentType = file.getContentType();

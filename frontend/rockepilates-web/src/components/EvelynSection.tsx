@@ -5,6 +5,7 @@ type EvelynSectionProps = {
     subtitle?: string;
     description?: string;
     image?: string;
+    mediaType?: string;
     ctaText?: string;
     ctaButton?: string;
 };
@@ -14,12 +15,15 @@ export function EvelynSection({
                                   subtitle,
                                   description,
                                   image,
+                                  mediaType,
                                   ctaText,
                                   ctaButton,
                               }: EvelynSectionProps) {
-    const imageUrl = image?.trim()
+    const mediaUrl = image?.trim()
         ? `${process.env.NEXT_PUBLIC_BFF_URL}${image}`
         : null;
+
+    const isVideo = mediaType?.toUpperCase() === "VIDEO";
 
     return (
         <section id="evelyn-pinheiro" className="bg-brand-red px-6 py-20 text-white lg:px-8">
@@ -27,15 +31,27 @@ export function EvelynSection({
                 <div className="grid items-center gap-10 lg:grid-cols-[0.85fr_1fr]">
                     <div className="overflow-hidden rounded-[30px] border border-white/20 bg-white/10 p-3 shadow-soft">
                         <div className="overflow-hidden rounded-[24px] border border-white/10">
-                            {imageUrl ? (
-                                <img
-                                    src={imageUrl}
-                                    alt={title?.trim() || "Evelyn Pinheiro"}
-                                    className="aspect-[4/5] w-full object-cover"
-                                />
+                            {mediaUrl ? (
+                                isVideo ? (
+                                    <video
+                                        src={mediaUrl}
+                                        autoPlay
+                                        muted
+                                        loop
+                                        playsInline
+                                        controls
+                                        className="aspect-[4/5] w-full object-cover"
+                                    />
+                                ) : (
+                                    <img
+                                        src={mediaUrl}
+                                        alt={title?.trim() || "Evelyn Pinheiro"}
+                                        className="aspect-[4/5] w-full object-cover"
+                                    />
+                                )
                             ) : (
                                 <div className="flex aspect-[4/5] items-center justify-center bg-white/10 text-white/70">
-                                    Imagem da Evelyn
+                                    Mídia da Evelyn
                                 </div>
                             )}
                         </div>
