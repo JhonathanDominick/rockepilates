@@ -19,7 +19,6 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    // 🔴 ERRO DO CIRCUIT BREAKER + FEIGN
     @ExceptionHandler(NoFallbackAvailableException.class)
     public ResponseEntity<ErrorResponse> handleNoFallbackAvailableException(
             NoFallbackAvailableException ex,
@@ -29,7 +28,6 @@ public class GlobalExceptionHandler {
 
         if (cause instanceof FeignException feignException) {
             HttpStatus status = HttpStatus.valueOf(feignException.status());
-
             String mensagem = extrairMensagemFeign(feignException);
 
             ErrorResponse error = new ErrorResponse(
@@ -52,7 +50,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
     }
 
-    // 🔴 ERROS MAPEADOS (FeignErrorHandler)
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponse> handleResponseStatusException(
             ResponseStatusException ex,
@@ -72,7 +69,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(error);
     }
 
-    // 🔴 SERVIÇO FORA DO AR
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
+            IllegalArgumentException ex,
+            HttpServletRequest request
+    ) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponse> handleIllegalStateException(
             IllegalStateException ex,
@@ -87,12 +98,9 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(error);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
     }
 
-    // 🔴 EXCEPTION DE INTEGRAÇÃO
     @ExceptionHandler(UsuariosServiceIntegrationException.class)
     public ResponseEntity<ErrorResponse> handleUsuariosServiceIntegrationException(
             UsuariosServiceIntegrationException ex,
@@ -107,12 +115,15 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(error);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
     }
 
-    // 🔴 FALLBACK FINAL
+    @ExceptionHandler(org.apache.catalina.connector.ClientAbortException.class)
+    public void handleClientAbortException(org.apache.catalina.connector.ClientAbortException ex) {
+        // Cliente cancelou a conexão durante streaming/download.
+        // Não retornar ErrorResponse porque a resposta pode já estar com Content-Type video/mp4.
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex,
@@ -127,12 +138,9 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(error);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 
-    // 🔧 EXTRAI A MENSAGEM LIMPA DO FEIGN
     private String extrairMensagemFeign(FeignException ex) {
         String body = ex.contentUTF8();
 
@@ -158,11 +166,5 @@ public class GlobalExceptionHandler {
         } catch (Exception e) {
             return body;
         }
-    }
-
-    @ExceptionHandler(org.apache.catalina.connector.ClientAbortException.class)
-    public void handleClientAbortException(org.apache.catalina.connector.ClientAbortException ex) {
-        // Cliente cancelou a conexão durante streaming/download.
-        // Não retornar ErrorResponse porque a resposta pode já estar com Content-Type video/mp4.
     }
 }

@@ -41,7 +41,6 @@ export async function criarDepoimento(data: {
         try {
             const errorData = await response.json();
 
-            // tenta pegar mensagem padrão do backend
             message =
                 errorData?.message ||
                 errorData?.error ||
@@ -51,5 +50,7 @@ export async function criarDepoimento(data: {
         throw new Error(message);
     }
 
-    return response.json();
+    const responseData = await response.json();
+
+    return responseData?.data ?? responseData;
 }

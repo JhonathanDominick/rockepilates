@@ -3,7 +3,8 @@ package com.rockepilates.bff.controller;
 import com.rockepilates.bff.service.DepoimentoService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
-
+import com.rockepilates.bff.dto.SuccessResponse;
+import org.springframework.http.ResponseEntity;
 import java.util.List;
 import java.util.Map;
 
@@ -18,8 +19,18 @@ public class DepoimentoController {
     }
 
     @PostMapping
-    public Map<String, Object> criar(@RequestBody Map<String, String> body) {
-        return service.criar(body);
+    public ResponseEntity<SuccessResponse<Map<String, Object>>> criar(@RequestBody Map<String, String> body) {
+
+        Map<String, Object> data = service.criar(body);
+
+        SuccessResponse<Map<String, Object>> response = new SuccessResponse<>(
+                java.time.LocalDateTime.now(),
+                201,
+                "Depoimento enviado com sucesso",
+                data
+        );
+
+        return ResponseEntity.status(201).body(response);
     }
 
     @GetMapping
