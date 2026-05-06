@@ -1,6 +1,9 @@
 package com.rockepilates.gerenciador.service;
 
+import com.rockepilates.gerenciador.config.StorageProperties;
 import com.rockepilates.gerenciador.dto.MediaUploadResponse;
+import com.rockepilates.gerenciador.service.storage.StorageService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,10 +14,10 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
-public class MediaStorageService {
+@ConditionalOnProperty(name = "storage.provider", havingValue = "local", matchIfMissing = true)
+public class MediaStorageService implements StorageService {
 
-    private static final String UPLOAD_DIR = "uploads";
-    private static final long MAX_FILE_SIZE = 200L * 1024 * 1024; // 200MB
+    private static final long MAX_FILE_SIZE = 200L * 1024 * 1024;
 
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
             "image/jpeg",
@@ -28,11 +31,21 @@ public class MediaStorageService {
             "video/quicktime"
     );
 
+    private final StorageProperties storageProperties;
+
+    public MediaStorageService(StorageProperties storageProperties) {
+        this.storageProperties = storageProperties;
+    }
+
+    @Override
     public MediaUploadResponse upload(MultipartFile file) {
         validarArquivo(file);
 
         try {
-            Files.createDirectories(Path.of(UPLOAD_DIR));
+            String uploadDir = storageProperties.getLocal().getUploadDir();
+            String publicUrlPrefix = storageProperties.getLocal().getPublicUrlPrefix();
+
+            Files.createDirectories(Path.of(uploadDir));
 
             String originalFilename = file.getOriginalFilename();
             String extension = "";
@@ -42,11 +55,11 @@ public class MediaStorageService {
             }
 
             String filename = UUID.randomUUID() + extension;
-            Path destination = Path.of(UPLOAD_DIR, filename);
+            Path destination = Path.of(uploadDir, filename);
 
             file.transferTo(destination);
 
-            return new MediaUploadResponse("/uploads/" + filename);
+            return new MediaUploadResponse(publicUrlPrefix + "/" + filename);
         } catch (IOException exception) {
             throw new RuntimeException("Erro ao fazer upload do arquivo", exception);
         }
