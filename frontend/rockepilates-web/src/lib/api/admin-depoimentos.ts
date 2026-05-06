@@ -1,3 +1,17 @@
+async function extrairErro(res: Response, fallback: string) {
+    try {
+        const data = await res.json();
+        return data?.message || data?.error || fallback;
+    } catch {
+        return fallback;
+    }
+}
+
+async function extrairData(res: Response) {
+    const data = await res.json();
+    return data?.data ?? data;
+}
+
 export async function listarDepoimentosAdmin() {
     const res = await fetch(
         `${process.env.NEXT_PUBLIC_BFF_URL}/bff/depoimentos/admin`,
@@ -7,9 +21,11 @@ export async function listarDepoimentosAdmin() {
         }
     );
 
-    if (!res.ok) throw new Error("Erro ao listar depoimentos");
+    if (!res.ok) {
+        throw new Error(await extrairErro(res, "Erro ao listar depoimentos"));
+    }
 
-    return res.json();
+    return extrairData(res);
 }
 
 export async function aprovarDepoimento(id: number) {
@@ -21,9 +37,11 @@ export async function aprovarDepoimento(id: number) {
         }
     );
 
-    if (!res.ok) throw new Error("Erro ao aprovar");
+    if (!res.ok) {
+        throw new Error(await extrairErro(res, "Erro ao aprovar"));
+    }
 
-    return res.json();
+    return extrairData(res);
 }
 
 export async function desaprovarDepoimento(id: number) {
@@ -35,7 +53,9 @@ export async function desaprovarDepoimento(id: number) {
         }
     );
 
-    if (!res.ok) throw new Error("Erro ao desaprovar");
+    if (!res.ok) {
+        throw new Error(await extrairErro(res, "Erro ao desaprovar"));
+    }
 
-    return res.json();
+    return extrairData(res);
 }

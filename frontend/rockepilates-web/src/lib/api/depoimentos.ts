@@ -17,7 +17,8 @@ export async function listarDepoimentos() {
         throw new Error(message);
     }
 
-    return response.json();
+    const responseData = await response.json();
+    return responseData?.data ?? responseData;
 }
 
 export async function criarDepoimento(data: {
