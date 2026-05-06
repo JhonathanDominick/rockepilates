@@ -7,7 +7,14 @@ export async function listarDepoimentos() {
     );
 
     if (!response.ok) {
-        throw new Error("Erro ao buscar depoimentos");
+        let message = "Erro ao buscar depoimentos";
+
+        try {
+            const data = await response.json();
+            message = data?.message || message;
+        } catch {}
+
+        throw new Error(message);
     }
 
     return response.json();
@@ -29,7 +36,19 @@ export async function criarDepoimento(data: {
     );
 
     if (!response.ok) {
-        throw new Error("Erro ao enviar depoimento");
+        let message = "Erro ao enviar depoimento";
+
+        try {
+            const errorData = await response.json();
+
+            // tenta pegar mensagem padrão do backend
+            message =
+                errorData?.message ||
+                errorData?.error ||
+                message;
+        } catch {}
+
+        throw new Error(message);
     }
 
     return response.json();

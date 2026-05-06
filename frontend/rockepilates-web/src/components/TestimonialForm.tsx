@@ -62,8 +62,12 @@ export function TestimonialForm() {
             setSuccess(true);
             setNome("");
             setMensagem("");
-        } catch {
-            setError("Não foi possível enviar sua avaliação agora. Tente novamente.");
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("Erro inesperado");
+            }
         } finally {
             setLoading(false);
         }
