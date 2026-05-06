@@ -159,4 +159,10 @@ public class GlobalExceptionHandler {
             return body;
         }
     }
+
+    @ExceptionHandler(org.apache.catalina.connector.ClientAbortException.class)
+    public void handleClientAbortException(org.apache.catalina.connector.ClientAbortException ex) {
+        // Cliente cancelou a conexão durante streaming/download.
+        // Não retornar ErrorResponse porque a resposta pode já estar com Content-Type video/mp4.
+    }
 }

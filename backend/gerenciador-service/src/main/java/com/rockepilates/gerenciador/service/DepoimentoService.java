@@ -4,6 +4,7 @@ import com.rockepilates.gerenciador.entity.Depoimento;
 import com.rockepilates.gerenciador.repository.DepoimentoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.rockepilates.gerenciador.dto.DepoimentoRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,7 +15,23 @@ public class DepoimentoService {
 
     private final DepoimentoRepository repository;
 
-    public Depoimento criar(String nome, String mensagem) {
+    public Depoimento criar(DepoimentoRequest request) {
+
+        String nome = request.nome().trim();
+        String mensagem = request.mensagem().trim();
+
+        // proteção básica contra spam
+        long caracteresDistintos = mensagem
+                .toLowerCase()
+                .chars()
+                .filter(Character::isLetterOrDigit)
+                .distinct()
+                .count();
+
+        if (caracteresDistintos < 5) {
+            throw new IllegalArgumentException("Mensagem inválida");
+        }
+
         Depoimento depoimento = Depoimento.builder()
                 .nome(nome)
                 .mensagem(mensagem)

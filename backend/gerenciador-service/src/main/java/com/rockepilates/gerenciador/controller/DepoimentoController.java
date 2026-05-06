@@ -1,12 +1,13 @@
 package com.rockepilates.gerenciador.controller;
 
+import com.rockepilates.gerenciador.dto.DepoimentoRequest;
 import com.rockepilates.gerenciador.entity.Depoimento;
 import com.rockepilates.gerenciador.service.DepoimentoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/depoimentos")
@@ -16,11 +17,8 @@ public class DepoimentoController {
     private final DepoimentoService service;
 
     @PostMapping
-    public Depoimento criar(@RequestBody Map<String, String> body) {
-        return service.criar(
-                body.get("nome"),
-                body.get("mensagem")
-        );
+    public Depoimento criar(@Valid @RequestBody DepoimentoRequest request) {
+        return service.criar(request);
     }
 
     @GetMapping
