@@ -106,4 +106,5 @@ public class GerenciadorService {
             throw FeignErrorHandler.handle(ex);
         }
     }
+
 }

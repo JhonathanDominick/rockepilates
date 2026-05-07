@@ -85,7 +85,7 @@ export function EvelynSection({
 
                                 {ctaButton?.trim() && (
                                     <a
-                                        href="#contato"
+                                        href="/cadastro-aluno"
                                         className="mt-4 inline-flex rounded-full bg-white px-7 py-3 text-base font-semibold !text-brand-red transition hover:bg-white/90"
                                     >
                                         {ctaButton}

@@ -50,9 +50,12 @@ export function CTA({ title, button, backgroundImage, mediaType }: CTAProps) {
                     {safeTitle}
                 </h2>
 
-                <button className="mt-8 inline-flex items-center justify-center rounded-lg bg-black px-6 py-3 text-sm font-medium text-white transition hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
+                <a
+                    href="/cadastro-aluno"
+                    className="mt-8 inline-flex items-center justify-center rounded-lg bg-black px-6 py-3 text-sm font-medium text-white transition hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+                >
                     {safeButton}
-                </button>
+                </a>
             </div>
         </section>
     );

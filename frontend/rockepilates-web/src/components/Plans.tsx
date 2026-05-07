@@ -1,4 +1,6 @@
+"use client";
 import { Container } from "@/components/layout/Container";
+import { useRouter } from "next/navigation";
 
 type Plan = {
     title: string;
@@ -25,6 +27,8 @@ const fallbackPlans: Plan[] = [
 ];
 
 export function Plans({ plans = fallbackPlans }: { plans?: Plan[] }) {
+    const router = useRouter();
+
     return (
         <section id="aulas" className="bg-white py-24">
             <Container>
@@ -56,12 +60,12 @@ export function Plans({ plans = fallbackPlans }: { plans?: Plan[] }) {
                                 {plan.description}
                             </p>
 
-                            <a
-                                href="#cta"
+                            <button
+                                onClick={() => router.push("/cadastro-aluno")}
                                 className="mt-8 inline-flex items-center justify-center rounded-full bg-brand-red px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-redDark"
                             >
                                 Começar agora
-                            </a>
+                            </button>
                         </div>
                     ))}
                 </div>
