@@ -45,7 +45,7 @@ export function Hero({
 
                         <div className="mt-8 flex gap-4">
                             <a
-                                href="#cta"
+                                href="/cadastro-aluno"
                                 className="rounded-full bg-brand-red px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-redDark"
                             >
                                 Começar agora

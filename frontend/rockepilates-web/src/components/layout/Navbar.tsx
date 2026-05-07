@@ -35,7 +35,7 @@ export function Navbar() {
 
                 {/* CTA */}
                 <a
-                    href="#cta"
+                    href="/cadastro-aluno"
                     className="inline-flex items-center justify-center rounded-full bg-brand-red px-5 py-2.5 text-sm font-semibold !text-white transition-all duration-200 hover:bg-brand-redDark hover:scale-[1.03]"
                 >
                     Agendar Aula
