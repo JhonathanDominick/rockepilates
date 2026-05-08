@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getAllConfigs } from "@/lib/api/config";
+import { getAllConfigs, salvarConfigSite } from "@/lib/api/config";
 import { uploadMedia } from "@/lib/api/media";
 import {
     listarDepoimentosAdmin,
@@ -276,28 +276,11 @@ export default function AdminPage() {
             setSuccessKey(null);
             setMessage(null);
 
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BFF_URL}/bff/configs`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({
-                        chave: config.chave,
-                        valor: config.valor,
-                        tipo: normalizarTipo(config.tipo),
-                    }),
-                }
-            );
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(
-                    `Erro ao salvar configuração. Status: ${response.status}. Body: ${errorText}`
-                );
-            }
+            await salvarConfigSite({
+                chave: config.chave,
+                valor: config.valor,
+                tipo: normalizarTipo(config.tipo),
+            });
 
             await carregarConfigs();
 
