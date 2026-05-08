@@ -21,4 +21,7 @@ spring:
             readTimeout: 300000
 
 gerenciador:
-  url: http://localhost:8082
+  url: ${GERENCIADOR_URL:http://localhost:8082}
+
+usuarios:
+  url: ${USUARIOS_URL:http://localhost:8081}

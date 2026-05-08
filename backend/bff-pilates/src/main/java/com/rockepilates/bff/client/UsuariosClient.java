@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @FeignClient(
         name = "usuarios-service",
-        url = "http://localhost:8081",
+        url = "${usuarios.url}",
         configuration = FeignConfig.class
 )
 public interface UsuariosClient {
