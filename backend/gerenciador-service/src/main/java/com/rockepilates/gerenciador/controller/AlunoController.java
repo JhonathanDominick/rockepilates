@@ -27,4 +27,10 @@ public class AlunoController {
     public List<AlunoAdminResponse> listarAdmin() {
         return service.listarAdmin();
     }
+
+    @PatchMapping("/assinaturas/{id}/pagar")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void pagar(@PathVariable Long id) {
+        service.marcarComoPago(id);
+    }
 }

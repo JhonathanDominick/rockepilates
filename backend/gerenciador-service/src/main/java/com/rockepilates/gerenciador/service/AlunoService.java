@@ -6,6 +6,7 @@ import com.rockepilates.gerenciador.entity.Aluno;
 import com.rockepilates.gerenciador.entity.Assinatura;
 import com.rockepilates.gerenciador.entity.Plano;
 import com.rockepilates.gerenciador.enums.StatusAssinatura;
+import com.rockepilates.gerenciador.exception.ResourceNotFoundException;
 import com.rockepilates.gerenciador.repository.AlunoRepository;
 import com.rockepilates.gerenciador.repository.AssinaturaRepository;
 import com.rockepilates.gerenciador.repository.PlanoRepository;
@@ -66,6 +67,7 @@ public class AlunoService {
                 .stream()
                 .sorted(Comparator.comparing(Assinatura::getCriadoEm).reversed())
                 .map(assinatura -> new AlunoAdminResponse(
+                        assinatura.getId(),
                         assinatura.getAluno().getId(),
                         assinatura.getAluno().getNome(),
                         assinatura.getAluno().getEmail(),
@@ -75,5 +77,15 @@ public class AlunoService {
                         assinatura.getDataVencimento()
                 ))
                 .toList();
+    }
+
+    @Transactional
+    public void marcarComoPago(Long id) {
+
+        Assinatura assinatura = assinaturaRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Assinatura não encontrada"));
+
+        assinatura.setStatus(StatusAssinatura.PAGA);
     }
 }

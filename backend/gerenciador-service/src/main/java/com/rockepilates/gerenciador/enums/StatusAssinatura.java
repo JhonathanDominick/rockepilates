@@ -4,5 +4,6 @@ public enum StatusAssinatura {
     ATIVA,
     PENDENTE_PAGAMENTO,
     VENCIDA,
+    PAGA,
     CANCELADA
 }

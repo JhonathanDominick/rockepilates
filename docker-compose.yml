@@ -28,5 +28,35 @@ services:
     ports:
       - "8081:8081"
 
+  gerenciador-service:
+    build:
+      context: .
+      dockerfile: backend/gerenciador-service/Dockerfile
+    container_name: gerenciador-service
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/gerenciador_db
+      DB_USERNAME: rocker
+      DB_PASSWORD: rocker123
+    ports:
+      - "8082:8082"
+
+  bff-pilates:
+    build:
+      context: .
+      dockerfile: backend/bff-pilates/Dockerfile
+    container_name: bff-pilates
+    restart: always
+    depends_on:
+      - usuarios-service
+      - gerenciador-service
+    environment:
+      USUARIOS_URL: http://usuarios-service:8081
+      GERENCIADOR_URL: http://gerenciador-service:8082
+    ports:
+      - "8080:8080"
+
 volumes:
   postgres_data:
