@@ -58,5 +58,20 @@ services:
     ports:
       - "8080:8080"
 
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/rockepilates-web/Dockerfile
+      args:
+        NEXT_PUBLIC_BFF_URL: http://localhost:8080
+    container_name: rockepilates-web
+    restart: always
+    depends_on:
+      - bff-pilates
+    environment:
+      BFF_INTERNAL_URL: http://bff-pilates:8080
+    ports:
+      - "3000:3000"
+
 volumes:
   postgres_data:
