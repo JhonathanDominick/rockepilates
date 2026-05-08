@@ -1,6 +1,14 @@
+function getBaseUrl(): string {
+    return (
+        process.env.BFF_INTERNAL_URL ||
+        process.env.NEXT_PUBLIC_BFF_URL ||
+        "http://localhost:8080"
+    );
+}
+
 export async function listarDepoimentos() {
     const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BFF_URL}/bff/depoimentos`,
+        `${getBaseUrl()}/bff/depoimentos`,
         {
             cache: "no-store",
         }
@@ -18,6 +26,7 @@ export async function listarDepoimentos() {
     }
 
     const responseData = await response.json();
+
     return responseData?.data ?? responseData;
 }
 
@@ -26,7 +35,7 @@ export async function criarDepoimento(data: {
     mensagem: string;
 }) {
     const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BFF_URL}/bff/depoimentos`,
+        `${getBaseUrl()}/bff/depoimentos`,
         {
             method: "POST",
             headers: {

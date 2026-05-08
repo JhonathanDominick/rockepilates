@@ -16,6 +16,11 @@ Thumbs.db
 desktop.ini
 
 # Node / Next.js
+node_modules/
+.next/
+out/
+.turbo/
+
 frontend/rockepilates-web/node_modules/
 frontend/rockepilates-web/.next/
 frontend/rockepilates-web/out/
@@ -24,6 +29,7 @@ frontend/rockepilates-web/.turbo/
 # Uploads / mídias locais
 uploads/
 **/uploads/
+
 frontend/rockepilates-web/public/uploads/
 frontend/rockepilates-web/public/video/
 frontend/rockepilates-web/public/videos/
