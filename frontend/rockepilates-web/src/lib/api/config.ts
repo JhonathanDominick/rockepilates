@@ -62,3 +62,32 @@ export async function getConfigs(
 
     return Object.fromEntries(results);
 }
+
+export async function salvarConfigSite(config: {
+    chave: string;
+    valor: string;
+    tipo: ConfigTipo;
+}) {
+    const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BFF_URL}/bff/configs`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(config),
+        }
+    );
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+            `Erro ao salvar configuração. Status: ${response.status}. Body: ${errorText}`
+        );
+    }
+
+    const responseData = await response.json();
+
+    return responseData?.data ?? responseData;
+}
