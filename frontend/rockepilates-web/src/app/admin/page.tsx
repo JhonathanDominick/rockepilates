@@ -8,6 +8,7 @@ import { AdminHeader } from "@/components/admin/AdminHeader";
 import { AdminMessage } from "@/components/admin/AdminMessage";
 import { ConfigField } from "@/components/admin/ConfigField";
 import { DepoimentoCard } from "@/components/admin/DepoimentoCard";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminSection } from "@/components/admin/AdminSection";
 import {
     MAX_IMAGE_SIZE_MB,
@@ -307,9 +308,11 @@ export default function AdminPage() {
 
 
     return (
-        <main className="min-h-screen bg-gray-50 px-6 py-10">
-            <div className="mx-auto max-w-5xl">
-                <AdminHeader onLogout={handleLogout} />
+        <AdminLayout
+            title="CMS do site"
+            description="Edite textos, imagens, vídeos e depoimentos exibidos no site."
+        >
+            <AdminHeader onLogout={handleLogout} />
 
                 {message && <AdminMessage message={message} type={messageType} />}
 
@@ -418,7 +421,7 @@ export default function AdminPage() {
                         </div>
                     )}
                 </section>
-            </div>
-        </main>
+
+       </AdminLayout>
     );
 }
