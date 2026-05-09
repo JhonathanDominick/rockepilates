@@ -25,6 +25,13 @@ export function AdminLayout({ title, description, children }: AdminLayoutProps) 
                             CMS do site
                         </Link>
 
+                        <Link
+                            href="/admin/depoimentos"
+                            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-100"
+                        >
+                            Depoimentos
+                        </Link>
+
                         <Link href="/admin/alunos" className="rounded-lg px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-100">
                             Alunos
                         </Link>
