@@ -63,38 +63,38 @@ export function ConfigField({
         : null;
 
     return (
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="group rounded-[26px] border border-[#dce8e5] bg-gradient-to-br from-white to-[#f7fbfa] p-5 shadow-sm transition-all duration-300 hover:-translate-y-[1px] hover:border-[#9dd8d2] hover:shadow-xl">
             <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
                 <div>
-                    <label className="block text-base font-semibold text-gray-950">
+                    <label className="block text-base font-bold text-[#10263d]">
                         {campo.label}
                     </label>
 
                     {campo.ajuda && (
-                        <p className="mt-1 text-sm text-gray-600">
+                        <p className="mt-1 text-sm leading-6 text-[#50666a]">
                             {campo.ajuda}
                         </p>
                     )}
 
-                    <p className="mt-2 text-xs text-gray-400">
+                    <p className="mt-2 text-xs font-medium text-[#7b8d91]">
                         Campo técnico: {config.chave} · {formatarTipo(tipo)}
                     </p>
                 </div>
 
                 {successKey === config.chave && (
-                    <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                    <span className="rounded-full bg-[#dff4f2] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0d6666]">
                         Salvo
                     </span>
                 )}
             </div>
 
             {podeSerMidia && (
-                <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
-                    <p className="text-sm font-semibold text-gray-900">
+                <div className="mt-4 rounded-2xl border border-[#dce8e5] bg-[#f3faf8] p-4">
+                    <p className="text-sm font-bold text-[#10263d]">
                         Tipo de conteúdo
                     </p>
 
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs leading-5 text-[#607579]">
                         Escolha se este campo será usado como imagem ou vídeo.
                     </p>
 
@@ -103,7 +103,7 @@ export function ConfigField({
                         onChange={(event) =>
                             onChangeType(config.chave, event.target.value as ConfigTipo)
                         }
-                        className="mt-3 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-black"
+                        className="mt-3 rounded-xl border border-[#b8cfcc] bg-white px-4 py-2 text-sm font-medium text-[#10263d] outline-none transition focus:border-[#0d6666] focus:ring-4 focus:ring-[#0d6666]/10"
                     >
                         <option value="IMAGE">Imagem</option>
                         <option value="VIDEO">Vídeo</option>
@@ -118,14 +118,14 @@ export function ConfigField({
                         onChange={(event) =>
                             onChangeValue(config.chave, event.target.value)
                         }
-                        className="mt-4 min-h-[120px] w-full rounded-xl border border-gray-300 p-3 text-gray-900 outline-none focus:border-black"
+                        className="mt-4 min-h-[130px] w-full rounded-2xl border border-[#cbd9d7] bg-[#fffdf8] p-4 text-[#10263d] outline-none transition placeholder:text-[#8fa0a2] focus:border-[#0d6666] focus:ring-4 focus:ring-[#0d6666]/10"
                     />
 
                     <button
                         type="button"
                         onClick={() => onSave(config)}
                         disabled={salvando}
-                        className="mt-3 rounded-lg bg-black px-5 py-2 text-sm font-medium text-white disabled:opacity-60"
+                        className="mt-3 rounded-2xl bg-[#ef4b3f] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#ef4b3f]/20 transition hover:-translate-y-[1px] hover:bg-[#dc3f34] hover:shadow-[#ef4b3f]/30 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {salvando ? "Salvando..." : "Salvar este campo"}
                     </button>
@@ -134,12 +134,12 @@ export function ConfigField({
 
             {podeSerMidia && tipo === "IMAGE" && (
                 <div className="mt-4">
-                    <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4">
-                        <p className="text-sm font-medium text-gray-800">
+                    <div className="rounded-2xl border border-dashed border-[#8bcac4] bg-[#f3faf8] p-4">
+                        <p className="text-sm font-bold text-[#10263d]">
                             Enviar nova imagem
                         </p>
 
-                        <p className="mt-1 text-xs text-gray-500">
+                        <p className="mt-1 text-xs leading-5 text-[#607579]">
                             Aceita imagens em alta resolução. Tamanho máximo:{" "}
                             {MAX_IMAGE_SIZE_MB}MB.
                         </p>
@@ -149,11 +149,11 @@ export function ConfigField({
                             accept="image/*"
                             onChange={(event) => onUpload(event, config)}
                             disabled={enviando}
-                            className="mt-3 block text-sm text-gray-700"
+                            className="mt-3 block w-full cursor-pointer rounded-xl border border-[#cbd9d7] bg-white text-sm text-[#10263d] file:mr-4 file:border-0 file:bg-[#0d6666] file:px-4 file:py-3 file:text-sm file:font-bold file:text-white hover:file:bg-[#0a5555] disabled:cursor-not-allowed disabled:opacity-60"
                         />
 
                         {enviando && (
-                            <p className="mt-2 text-sm text-gray-500">
+                            <p className="mt-2 text-sm font-medium text-[#0d6666]">
                                 Enviando imagem...
                             </p>
                         )}
@@ -161,18 +161,18 @@ export function ConfigField({
 
                     {previewUrl ? (
                         <div className="mt-4">
-                            <p className="mb-2 text-sm font-medium text-gray-800">
+                            <p className="mb-2 text-sm font-bold text-[#10263d]">
                                 Prévia atual
                             </p>
 
                             <img
                                 src={previewUrl}
                                 alt={campo.label}
-                                className="max-h-72 w-full max-w-xl rounded-xl border border-gray-200 object-cover"
+                                className="max-h-72 w-full max-w-xl rounded-2xl border border-[#dce8e5] object-cover shadow-sm"
                             />
                         </div>
                     ) : (
-                        <p className="mt-3 text-sm text-gray-500">
+                        <p className="mt-3 text-sm text-[#607579]">
                             Nenhuma imagem enviada ainda.
                         </p>
                     )}
@@ -181,7 +181,7 @@ export function ConfigField({
                         type="button"
                         onClick={() => onSave(config)}
                         disabled={salvando}
-                        className="mt-3 rounded-lg bg-black px-5 py-2 text-sm font-medium text-white disabled:opacity-60"
+                        className="mt-3 rounded-2xl bg-[#ef4b3f] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#ef4b3f]/20 transition hover:-translate-y-[1px] hover:bg-[#dc3f34] hover:shadow-[#ef4b3f]/30 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {salvando ? "Salvando..." : "Salvar tipo selecionado"}
                     </button>
@@ -190,12 +190,12 @@ export function ConfigField({
 
             {podeSerMidia && tipo === "VIDEO" && (
                 <div className="mt-4">
-                    <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4">
-                        <p className="text-sm font-medium text-gray-800">
+                    <div className="rounded-2xl border border-dashed border-[#8bcac4] bg-[#f3faf8] p-4">
+                        <p className="text-sm font-bold text-[#10263d]">
                             Enviar novo vídeo
                         </p>
 
-                        <p className="mt-1 text-xs text-gray-500">
+                        <p className="mt-1 text-xs leading-5 text-[#607579]">
                             Aceita arquivos de vídeo. Tamanho máximo:{" "}
                             {MAX_VIDEO_SIZE_MB}MB.
                         </p>
@@ -205,11 +205,11 @@ export function ConfigField({
                             accept="video/*"
                             onChange={(event) => onUpload(event, config)}
                             disabled={enviando}
-                            className="mt-3 block text-sm text-gray-700"
+                            className="mt-3 block w-full cursor-pointer rounded-xl border border-[#cbd9d7] bg-white text-sm text-[#10263d] file:mr-4 file:border-0 file:bg-[#0d6666] file:px-4 file:py-3 file:text-sm file:font-bold file:text-white hover:file:bg-[#0a5555] disabled:cursor-not-allowed disabled:opacity-60"
                         />
 
                         {enviando && (
-                            <p className="mt-2 text-sm text-gray-500">
+                            <p className="mt-2 text-sm font-medium text-[#0d6666]">
                                 Enviando vídeo...
                             </p>
                         )}
@@ -217,18 +217,18 @@ export function ConfigField({
 
                     {previewUrl ? (
                         <div className="mt-4">
-                            <p className="mb-2 text-sm font-medium text-gray-800">
+                            <p className="mb-2 text-sm font-bold text-[#10263d]">
                                 Prévia atual
                             </p>
 
                             <video
                                 src={previewUrl}
                                 controls
-                                className="max-h-72 w-full max-w-xl rounded-xl border border-gray-200"
+                                className="max-h-72 w-full max-w-xl rounded-2xl border border-[#dce8e5] shadow-sm"
                             />
                         </div>
                     ) : (
-                        <p className="mt-3 text-sm text-gray-500">
+                        <p className="mt-3 text-sm text-[#607579]">
                             Nenhum vídeo enviado ainda.
                         </p>
                     )}
@@ -237,7 +237,7 @@ export function ConfigField({
                         type="button"
                         onClick={() => onSave(config)}
                         disabled={salvando}
-                        className="mt-3 rounded-lg bg-black px-5 py-2 text-sm font-medium text-white disabled:opacity-60"
+                        className="mt-3 rounded-2xl bg-[#ef4b3f] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#ef4b3f]/20 transition hover:-translate-y-[1px] hover:bg-[#dc3f34] hover:shadow-[#ef4b3f]/30 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {salvando ? "Salvando..." : "Salvar tipo selecionado"}
                     </button>
