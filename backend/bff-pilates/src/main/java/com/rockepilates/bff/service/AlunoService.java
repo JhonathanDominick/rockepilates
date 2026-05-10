@@ -35,6 +35,15 @@ public class AlunoService {
         return client.listarAdmin();
     }
 
+    public void marcarComoPago(Long id, HttpServletRequest request) {
+
+        String authorization = extrairAuthorization(request);
+
+        usuariosService.validarAdmin(authorization);
+
+        client.marcarComoPago(id);
+    }
+
     private String extrairAuthorization(HttpServletRequest request) {
         if (request.getCookies() == null) {
             throw new RuntimeException("Token não encontrado");
@@ -72,4 +81,5 @@ public class AlunoService {
             return body;
         }
     }
+
 }

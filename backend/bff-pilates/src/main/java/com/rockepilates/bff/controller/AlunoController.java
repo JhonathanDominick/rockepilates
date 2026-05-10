@@ -51,4 +51,23 @@ public class AlunoController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PatchMapping("/assinaturas/{id}/pagar")
+    public ResponseEntity<SuccessResponse<Void>> pagar(
+            @PathVariable Long id,
+            HttpServletRequest request
+    ) {
+
+        service.marcarComoPago(id, request);
+
+        SuccessResponse<Void> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Assinatura marcada como paga",
+                        null
+                );
+
+        return ResponseEntity.ok(response);
+    }
 }

@@ -14,4 +14,9 @@ public interface AlunoClient {
 
     @GetMapping("/alunos/admin")
     List<Map<String, Object>> listarAdmin();
+
+    @PatchMapping("/alunos/assinaturas/{id}/pagar")
+    void marcarComoPago(@PathVariable Long id);
+
+
 }
