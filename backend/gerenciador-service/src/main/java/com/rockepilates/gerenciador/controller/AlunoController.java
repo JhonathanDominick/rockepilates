@@ -6,6 +6,7 @@ import com.rockepilates.gerenciador.service.AlunoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import com.rockepilates.gerenciador.dto.PagamentoResponse;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,5 +33,10 @@ public class AlunoController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void pagar(@PathVariable Long id) {
         service.marcarComoPago(id);
+    }
+
+    @GetMapping("/assinaturas/{id}/pagamentos")
+    public List<PagamentoResponse> listarPagamentosPorAssinatura(@PathVariable Long id) {
+        return service.listarPagamentosPorAssinatura(id);
     }
 }

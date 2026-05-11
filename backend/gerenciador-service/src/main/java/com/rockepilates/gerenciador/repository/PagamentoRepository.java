@@ -5,6 +5,7 @@ import com.rockepilates.gerenciador.entity.Pagamento;
 import com.rockepilates.gerenciador.enums.StatusPagamento;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
@@ -13,4 +14,6 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
             Assinatura assinatura,
             StatusPagamento status
     );
+
+    List<Pagamento> findByAssinaturaIdOrderByDataVencimentoDesc(Long assinaturaId);
 }

@@ -1,5 +1,5 @@
 function getPublicBffUrl() {
-    return process.env.NEXT_PUBLIC_BFF_URL;
+    return process.env.NEXT_PUBLIC_BFF_URL || "http://localhost:8080";
 }
 
 async function extrairErro(res: Response, fallback: string) {
@@ -10,6 +10,14 @@ async function extrairErro(res: Response, fallback: string) {
         return fallback;
     }
 }
+
+export type PagamentoHistorico = {
+    id: number;
+    valor: number;
+    dataVencimento: string;
+    dataPagamento: string | null;
+    status: string;
+};
 
 export async function marcarAssinaturaComoPaga(
     assinaturaId: number
@@ -30,4 +38,29 @@ export async function marcarAssinaturaComoPaga(
             )
         );
     }
+}
+
+export async function listarPagamentosPorAssinatura(
+    assinaturaId: number
+): Promise<PagamentoHistorico[]> {
+    const res = await fetch(
+        `${getPublicBffUrl()}/bff/alunos/assinaturas/${assinaturaId}/pagamentos`,
+        {
+            method: "GET",
+            credentials: "include",
+        }
+    );
+
+    if (!res.ok) {
+        throw new Error(
+            await extrairErro(
+                res,
+                "Erro ao carregar histórico de pagamentos"
+            )
+        );
+    }
+
+    const response = await res.json();
+
+    return response?.data ?? [];
 }

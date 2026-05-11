@@ -18,5 +18,8 @@ public interface AlunoClient {
     @PatchMapping("/alunos/assinaturas/{id}/pagar")
     void marcarComoPago(@PathVariable Long id);
 
+    @GetMapping("/alunos/assinaturas/{id}/pagamentos")
+    List<Map<String, Object>> listarPagamentosPorAssinatura(@PathVariable Long id);
+
 
 }

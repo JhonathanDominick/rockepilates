@@ -70,4 +70,23 @@ public class AlunoController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/assinaturas/{id}/pagamentos")
+    public ResponseEntity<SuccessResponse<List<Map<String, Object>>>> listarPagamentosPorAssinatura(
+            @PathVariable Long id,
+            HttpServletRequest request
+    ) {
+        List<Map<String, Object>> data =
+                service.listarPagamentosPorAssinatura(id, request);
+
+        SuccessResponse<List<Map<String, Object>>> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Histórico de pagamentos da assinatura",
+                        data
+                );
+
+        return ResponseEntity.ok(response);
+    }
 }
