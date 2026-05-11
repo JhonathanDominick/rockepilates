@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import com.rockepilates.gerenciador.dto.PagamentoResponse;
+import com.rockepilates.gerenciador.dto.CadastroAdminAlunoRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,12 @@ public class AlunoController {
     @ResponseStatus(HttpStatus.CREATED)
     public void cadastrar(@Valid @RequestBody CadastroAlunoRequest request) {
         service.cadastrar(request);
+    }
+
+    @PostMapping("/admin")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void cadastrarAdmin(@Valid @RequestBody CadastroAdminAlunoRequest request) {
+        service.cadastrarAdmin(request);
     }
 
     @GetMapping("/admin")

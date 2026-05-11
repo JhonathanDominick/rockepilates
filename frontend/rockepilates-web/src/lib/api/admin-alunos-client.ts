@@ -64,3 +64,35 @@ export async function listarPagamentosPorAssinatura(
 
     return response?.data ?? [];
 }
+
+export type CadastroAlunoAdminRequest = {
+    nome: string;
+    email: string;
+    telefone: string;
+    dataNascimento: string;
+    objetivo: string;
+    observacoesSaude: string;
+    tipoPlano: "MENSAL" | "SEMESTRAL" | "ANUAL";
+    dataVencimento: string;
+    pago: boolean;
+};
+
+export async function cadastrarAlunoAdmin(data: CadastroAlunoAdminRequest) {
+    const res = await fetch(`${getPublicBffUrl()}/bff/alunos/admin`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+        throw new Error(
+            await extrairErro(
+                res,
+                "Erro ao cadastrar aluno pelo admin"
+            )
+        );
+    }
+}

@@ -35,6 +35,24 @@ public class AlunoController {
         return ResponseEntity.status(201).body(response);
     }
 
+    @PostMapping("/admin")
+    public ResponseEntity<SuccessResponse<Void>> cadastrarAdmin(
+            @RequestBody Map<String, Object> body,
+            HttpServletRequest request
+    ) {
+
+        service.cadastrarAdmin(body, request);
+
+        SuccessResponse<Void> response = new SuccessResponse<>(
+                LocalDateTime.now(),
+                201,
+                "Aluno cadastrado com sucesso pelo admin",
+                null
+        );
+
+        return ResponseEntity.status(201).body(response);
+    }
+
     @GetMapping("/admin")
     public ResponseEntity<SuccessResponse<List<Map<String, Object>>>> listarAdmin(
             HttpServletRequest request
@@ -89,4 +107,5 @@ public class AlunoController {
 
         return ResponseEntity.ok(response);
     }
+
 }
