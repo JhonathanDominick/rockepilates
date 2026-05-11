@@ -69,6 +69,7 @@ services:
     depends_on:
       - bff-pilates
     environment:
+      NEXT_PUBLIC_BFF_URL: http://localhost:8080
       BFF_INTERNAL_URL: http://bff-pilates:8080
     ports:
       - "3000:3000"

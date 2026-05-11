@@ -4,11 +4,14 @@ import com.rockepilates.gerenciador.dto.AlunoAdminResponse;
 import com.rockepilates.gerenciador.dto.CadastroAlunoRequest;
 import com.rockepilates.gerenciador.entity.Aluno;
 import com.rockepilates.gerenciador.entity.Assinatura;
+import com.rockepilates.gerenciador.entity.Pagamento;
 import com.rockepilates.gerenciador.entity.Plano;
 import com.rockepilates.gerenciador.enums.StatusAssinatura;
+import com.rockepilates.gerenciador.enums.StatusPagamento;
 import com.rockepilates.gerenciador.exception.ResourceNotFoundException;
 import com.rockepilates.gerenciador.repository.AlunoRepository;
 import com.rockepilates.gerenciador.repository.AssinaturaRepository;
+import com.rockepilates.gerenciador.repository.PagamentoRepository;
 import com.rockepilates.gerenciador.repository.PlanoRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,7 @@ public class AlunoService {
     private final AlunoRepository alunoRepository;
     private final PlanoRepository planoRepository;
     private final AssinaturaRepository assinaturaRepository;
+    private final PagamentoRepository pagamentoRepository;
 
     @Transactional
     public void cadastrar(CadastroAlunoRequest request) {
@@ -59,7 +63,16 @@ public class AlunoService {
                 .status(StatusAssinatura.PENDENTE_PAGAMENTO)
                 .build();
 
-        assinaturaRepository.save(assinatura);
+        assinatura = assinaturaRepository.save(assinatura);
+
+        Pagamento pagamento = Pagamento.builder()
+                .assinatura(assinatura)
+                .valor(plano.getValor())
+                .dataVencimento(dataVencimento)
+                .status(StatusPagamento.PENDENTE)
+                .build();
+
+        pagamentoRepository.save(pagamento);
     }
 
     public List<AlunoAdminResponse> listarAdmin() {
@@ -85,6 +98,17 @@ public class AlunoService {
         Assinatura assinatura = assinaturaRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Assinatura não encontrada"));
+
+        Pagamento pagamento = pagamentoRepository
+                .findFirstByAssinaturaAndStatusOrderByDataVencimentoDesc(
+                        assinatura,
+                        StatusPagamento.PENDENTE
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Pagamento pendente não encontrado"));
+
+        pagamento.setStatus(StatusPagamento.PAGO);
+        pagamento.setDataPagamento(LocalDate.now());
 
         assinatura.setStatus(StatusAssinatura.PAGA);
     }
