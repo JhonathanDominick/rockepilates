@@ -15,5 +15,9 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
             StatusPagamento status
     );
 
+    Optional<Pagamento> findFirstByAssinaturaOrderByDataVencimentoDesc(
+            Assinatura assinatura
+    );
+
     List<Pagamento> findByAssinaturaIdOrderByDataVencimentoDesc(Long assinaturaId);
 }
