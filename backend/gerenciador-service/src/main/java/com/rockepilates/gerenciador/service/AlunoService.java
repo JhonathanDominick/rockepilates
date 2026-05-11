@@ -171,7 +171,22 @@ public class AlunoService {
         pagamento.setStatus(StatusPagamento.PAGO);
         pagamento.setDataPagamento(LocalDate.now());
 
-        assinatura.setStatus(StatusAssinatura.PAGA);
+        LocalDate proximoVencimento =
+                pagamento.getDataVencimento().plusMonths(
+                        assinatura.getPlano().getDuracaoMeses()
+                );
+
+        assinatura.setDataVencimento(proximoVencimento);
+        assinatura.setStatus(StatusAssinatura.PENDENTE_PAGAMENTO);
+
+        Pagamento proximoPagamento = Pagamento.builder()
+                .assinatura(assinatura)
+                .valor(assinatura.getPlano().getValor())
+                .dataVencimento(proximoVencimento)
+                .status(StatusPagamento.PENDENTE)
+                .build();
+
+        pagamentoRepository.save(proximoPagamento);
     }
 
     public List<PagamentoResponse> listarPagamentosPorAssinatura(Long assinaturaId) {
