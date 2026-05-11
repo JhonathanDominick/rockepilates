@@ -108,4 +108,22 @@ public class AlunoController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/pagamentos/atualizar-atrasados")
+    public ResponseEntity<SuccessResponse<Void>> atualizarPagamentosAtrasados(
+            HttpServletRequest request
+    ) {
+
+        service.atualizarPagamentosAtrasados(request);
+
+        SuccessResponse<Void> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Pagamentos atrasados atualizados com sucesso",
+                        null
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
 }

@@ -1,13 +1,13 @@
 package com.rockepilates.gerenciador.controller;
 
 import com.rockepilates.gerenciador.dto.AlunoAdminResponse;
+import com.rockepilates.gerenciador.dto.CadastroAdminAlunoRequest;
 import com.rockepilates.gerenciador.dto.CadastroAlunoRequest;
+import com.rockepilates.gerenciador.dto.PagamentoResponse;
 import com.rockepilates.gerenciador.service.AlunoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import com.rockepilates.gerenciador.dto.PagamentoResponse;
-import com.rockepilates.gerenciador.dto.CadastroAdminAlunoRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,6 +40,12 @@ public class AlunoController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void pagar(@PathVariable Long id) {
         service.marcarComoPago(id);
+    }
+
+    @PatchMapping("/pagamentos/atualizar-atrasados")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void atualizarPagamentosAtrasados() {
+        service.atualizarPagamentosAtrasados();
     }
 
     @GetMapping("/assinaturas/{id}/pagamentos")

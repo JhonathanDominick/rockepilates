@@ -49,7 +49,13 @@ function getStatusClass(status: string) {
 }
 
 function podeMarcarComoPago(statusPagamento: string) {
-    return statusPagamento?.toUpperCase() === "PENDENTE";
+    const statusNormalizado =
+        statusPagamento?.toUpperCase();
+
+    return (
+        statusNormalizado === "PENDENTE" ||
+        statusNormalizado === "ATRASADO"
+    );
 }
 
 function formatarMoeda(valor: number) {

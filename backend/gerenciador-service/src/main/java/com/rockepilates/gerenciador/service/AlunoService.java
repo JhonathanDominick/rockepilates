@@ -209,4 +209,20 @@ public class AlunoService {
                 ))
                 .toList();
     }
+
+    @Transactional
+    public void atualizarPagamentosAtrasados() {
+
+        List<Pagamento> pagamentosVencidos =
+                pagamentoRepository.findByStatusAndDataVencimentoBefore(
+                        StatusPagamento.PENDENTE,
+                        LocalDate.now()
+                );
+
+        pagamentosVencidos.forEach(pagamento ->
+                pagamento.setStatus(StatusPagamento.ATRASADO)
+        );
+
+        pagamentoRepository.saveAll(pagamentosVencidos);
+    }
 }
