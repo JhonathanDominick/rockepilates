@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+function getBffUrl() {
+    return process.env.NEXT_PUBLIC_BFF_URL || "http://localhost:8080";
+}
+
 export default function AdminLoginPage() {
     const router = useRouter();
 
@@ -19,7 +23,7 @@ export default function AdminLoginPage() {
 
         try {
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BFF_URL}/bff/usuarios/login`,
+                `${getBffUrl()}/bff/usuarios/login`,
                 {
                     method: "POST",
                     headers: {
