@@ -28,6 +28,18 @@ public class AlunoService {
         }
     }
 
+    public void cadastrarAdmin(Map<String, Object> body, HttpServletRequest request) {
+        String authorization = extrairAuthorization(request);
+
+        usuariosService.validarAdmin(authorization);
+
+        try {
+            client.cadastrarAdmin(body);
+        } catch (FeignException.BadRequest ex) {
+            throw new IllegalArgumentException(extractMessage(ex));
+        }
+    }
+
     public List<Map<String, Object>> listarAdmin(HttpServletRequest request) {
         String authorization = extrairAuthorization(request);
         usuariosService.validarAdmin(authorization);

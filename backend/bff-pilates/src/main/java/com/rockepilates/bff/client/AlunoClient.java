@@ -12,6 +12,9 @@ public interface AlunoClient {
     @PostMapping("/alunos")
     void cadastrar(@RequestBody Map<String, Object> body);
 
+    @PostMapping("/alunos/admin")
+    void cadastrarAdmin(@RequestBody Map<String, Object> body);
+
     @GetMapping("/alunos/admin")
     List<Map<String, Object>> listarAdmin();
 

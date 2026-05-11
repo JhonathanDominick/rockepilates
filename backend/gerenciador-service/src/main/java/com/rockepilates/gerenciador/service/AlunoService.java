@@ -14,6 +14,7 @@ import com.rockepilates.gerenciador.repository.AssinaturaRepository;
 import com.rockepilates.gerenciador.repository.PagamentoRepository;
 import com.rockepilates.gerenciador.repository.PlanoRepository;
 import com.rockepilates.gerenciador.dto.PagamentoResponse;
+import com.rockepilates.gerenciador.dto.CadastroAdminAlunoRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -71,6 +72,65 @@ public class AlunoService {
                 .valor(plano.getValor())
                 .dataVencimento(dataVencimento)
                 .status(StatusPagamento.PENDENTE)
+                .build();
+
+        pagamentoRepository.save(pagamento);
+    }
+
+    @Transactional
+    public void cadastrarAdmin(CadastroAdminAlunoRequest request) {
+
+        if (alunoRepository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("Email já cadastrado");
+        }
+
+        Plano plano = planoRepository.findByTipoAndAtivoTrue(request.tipoPlano())
+                .orElseThrow(() -> new IllegalArgumentException("Plano não encontrado"));
+
+        Aluno aluno = Aluno.builder()
+                .nome(request.nome().trim())
+                .email(request.email().trim().toLowerCase())
+                .telefone(request.telefone().trim())
+                .dataNascimento(request.dataNascimento())
+                .objetivo(request.objetivo())
+                .observacoesSaude(request.observacoesSaude())
+                .ativo(true)
+                .build();
+
+        aluno = alunoRepository.save(aluno);
+
+        LocalDate dataInicio = LocalDate.now();
+
+        StatusAssinatura statusAssinatura =
+                request.pago()
+                        ? StatusAssinatura.PAGA
+                        : StatusAssinatura.PENDENTE_PAGAMENTO;
+
+        Assinatura assinatura = Assinatura.builder()
+                .aluno(aluno)
+                .plano(plano)
+                .dataInicio(dataInicio)
+                .dataVencimento(request.dataVencimento())
+                .status(statusAssinatura)
+                .build();
+
+        assinatura = assinaturaRepository.save(assinatura);
+
+        StatusPagamento statusPagamento =
+                request.pago()
+                        ? StatusPagamento.PAGO
+                        : StatusPagamento.PENDENTE;
+
+        Pagamento pagamento = Pagamento.builder()
+                .assinatura(assinatura)
+                .valor(plano.getValor())
+                .dataVencimento(request.dataVencimento())
+                .dataPagamento(
+                        request.pago()
+                                ? LocalDate.now()
+                                : null
+                )
+                .status(statusPagamento)
                 .build();
 
         pagamentoRepository.save(pagamento);
