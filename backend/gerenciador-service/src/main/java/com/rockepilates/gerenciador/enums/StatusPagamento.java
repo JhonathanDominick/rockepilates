@@ -1,4 +1,8 @@
 package com.rockepilates.gerenciador.enums;
 
-public class StatusPagamento {
+public enum StatusPagamento {
+    PENDENTE,
+    PAGO,
+    ATRASADO,
+    CANCELADO
 }
