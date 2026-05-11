@@ -13,6 +13,7 @@ import com.rockepilates.gerenciador.repository.AlunoRepository;
 import com.rockepilates.gerenciador.repository.AssinaturaRepository;
 import com.rockepilates.gerenciador.repository.PagamentoRepository;
 import com.rockepilates.gerenciador.repository.PlanoRepository;
+import com.rockepilates.gerenciador.dto.PagamentoResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -111,5 +112,23 @@ public class AlunoService {
         pagamento.setDataPagamento(LocalDate.now());
 
         assinatura.setStatus(StatusAssinatura.PAGA);
+    }
+
+    public List<PagamentoResponse> listarPagamentosPorAssinatura(Long assinaturaId) {
+
+        if (!assinaturaRepository.existsById(assinaturaId)) {
+            throw new ResourceNotFoundException("Assinatura não encontrada");
+        }
+
+        return pagamentoRepository.findByAssinaturaIdOrderByDataVencimentoDesc(assinaturaId)
+                .stream()
+                .map(pagamento -> new PagamentoResponse(
+                        pagamento.getId(),
+                        pagamento.getValor(),
+                        pagamento.getDataVencimento(),
+                        pagamento.getDataPagamento(),
+                        pagamento.getStatus().name()
+                ))
+                .toList();
     }
 }

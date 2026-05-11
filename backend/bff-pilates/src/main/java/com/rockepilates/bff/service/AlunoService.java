@@ -44,6 +44,17 @@ public class AlunoService {
         client.marcarComoPago(id);
     }
 
+    public List<Map<String, Object>> listarPagamentosPorAssinatura(
+            Long id,
+            HttpServletRequest request
+    ) {
+        String authorization = extrairAuthorization(request);
+
+        usuariosService.validarAdmin(authorization);
+
+        return client.listarPagamentosPorAssinatura(id);
+    }
+
     private String extrairAuthorization(HttpServletRequest request) {
         if (request.getCookies() == null) {
             throw new RuntimeException("Token não encontrado");
