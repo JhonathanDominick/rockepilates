@@ -15,6 +15,7 @@ export type AlunoAdmin = {
     telefone: string;
     plano: string;
     status: string;
+    statusPagamento: string;
     dataVencimento: string;
 };
 
@@ -47,8 +48,14 @@ function getStatusClass(status: string) {
     return "bg-[#eef7f6] text-[#255252] border-[#cfe7e4]";
 }
 
-function podeMarcarComoPago(status: string) {
-    return status?.toUpperCase().includes("PENDENTE");
+function podeMarcarComoPago(statusPagamento: string) {
+    const statusNormalizado =
+        statusPagamento?.toUpperCase();
+
+    return (
+        statusNormalizado === "PENDENTE" ||
+        statusNormalizado === "ATRASADO"
+    );
 }
 
 function formatarMoeda(valor: number) {
@@ -136,7 +143,8 @@ export function AlunosAdminTable({
 
                     return {
                         ...aluno,
-                        status: "PENDENTE_PAGAMENTO",
+                        status: "ATIVA",
+                        statusPagamento: "PENDENTE",
                         dataVencimento:
                         novaDataVencimento,
                     };
@@ -225,7 +233,7 @@ export function AlunosAdminTable({
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[1100px] text-left text-sm">
+                    <table className="w-full min-w-[1200px] text-left text-sm">
                         <thead className="bg-[#eaf7f5] text-xs uppercase tracking-wide text-[#255252]">
                         <tr>
                             <th className="px-5 py-4">
@@ -245,7 +253,11 @@ export function AlunosAdminTable({
                             </th>
 
                             <th className="px-5 py-4">
-                                Status
+                                Assinatura
+                            </th>
+
+                            <th className="px-5 py-4">
+                                Financeiro
                             </th>
 
                             <th className="px-5 py-4">
@@ -318,6 +330,18 @@ export function AlunosAdminTable({
                                             </span>
                                     </td>
 
+                                    <td className="px-5 py-5">
+                                            <span
+                                                className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${getStatusClass(
+                                                    aluno.statusPagamento
+                                                )}`}
+                                            >
+                                                {
+                                                    aluno.statusPagamento
+                                                }
+                                            </span>
+                                    </td>
+
                                     <td className="px-5 py-5 font-medium text-[#50666a]">
                                         {formatarData(
                                             aluno.dataVencimento
@@ -339,7 +363,7 @@ export function AlunosAdminTable({
                                             </button>
 
                                             {podeMarcarComoPago(
-                                                aluno.status
+                                                aluno.statusPagamento
                                             ) ? (
                                                 <button
                                                     type="button"
@@ -371,7 +395,7 @@ export function AlunosAdminTable({
                         {alunos.length === 0 && (
                             <tr>
                                 <td
-                                    colSpan={7}
+                                    colSpan={8}
                                     className="px-5 py-10 text-center text-[#607579]"
                                 >
                                     Nenhum aluno encontrado.
@@ -390,8 +414,7 @@ export function AlunosAdminTable({
                             <div className="flex items-start justify-between gap-4 border-b border-[#dce8e5] px-6 py-5">
                                 <div>
                                     <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#0d6666]">
-                                        Histórico
-                                        financeiro
+                                        Histórico financeiro
                                     </p>
 
                                     <h3 className="mt-2 text-2xl font-bold text-[#10263d]">
@@ -422,8 +445,7 @@ export function AlunosAdminTable({
                             <div className="px-6 py-5">
                                 {carregandoHistorico && (
                                     <p className="text-sm font-medium text-[#607579]">
-                                        Carregando
-                                        histórico...
+                                        Carregando histórico...
                                     </p>
                                 )}
 
@@ -454,8 +476,7 @@ export function AlunosAdminTable({
                                                     </th>
 
                                                     <th className="px-4 py-3">
-                                                        Pago
-                                                        em
+                                                        Pago em
                                                     </th>
 
                                                     <th className="px-4 py-3">
@@ -523,9 +544,7 @@ export function AlunosAdminTable({
                                                                 }
                                                                 className="px-4 py-8 text-center text-[#607579]"
                                                             >
-                                                                Nenhum
-                                                                pagamento
-                                                                encontrado.
+                                                                Nenhum pagamento encontrado.
                                                             </td>
                                                         </tr>
                                                     )}

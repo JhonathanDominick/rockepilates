@@ -1,7 +1,9 @@
 package com.rockepilates.gerenciador.service;
 
 import com.rockepilates.gerenciador.dto.AlunoAdminResponse;
+import com.rockepilates.gerenciador.dto.CadastroAdminAlunoRequest;
 import com.rockepilates.gerenciador.dto.CadastroAlunoRequest;
+import com.rockepilates.gerenciador.dto.PagamentoResponse;
 import com.rockepilates.gerenciador.entity.Aluno;
 import com.rockepilates.gerenciador.entity.Assinatura;
 import com.rockepilates.gerenciador.entity.Pagamento;
@@ -13,8 +15,6 @@ import com.rockepilates.gerenciador.repository.AlunoRepository;
 import com.rockepilates.gerenciador.repository.AssinaturaRepository;
 import com.rockepilates.gerenciador.repository.PagamentoRepository;
 import com.rockepilates.gerenciador.repository.PlanoRepository;
-import com.rockepilates.gerenciador.dto.PagamentoResponse;
-import com.rockepilates.gerenciador.dto.CadastroAdminAlunoRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -62,7 +62,7 @@ public class AlunoService {
                 .plano(plano)
                 .dataInicio(dataInicio)
                 .dataVencimento(dataVencimento)
-                .status(StatusAssinatura.PENDENTE_PAGAMENTO)
+                .status(StatusAssinatura.ATIVA)
                 .build();
 
         assinatura = assinaturaRepository.save(assinatura);
@@ -101,17 +101,12 @@ public class AlunoService {
 
         LocalDate dataInicio = LocalDate.now();
 
-        StatusAssinatura statusAssinatura =
-                request.pago()
-                        ? StatusAssinatura.PAGA
-                        : StatusAssinatura.PENDENTE_PAGAMENTO;
-
         Assinatura assinatura = Assinatura.builder()
                 .aluno(aluno)
                 .plano(plano)
                 .dataInicio(dataInicio)
                 .dataVencimento(request.dataVencimento())
-                .status(statusAssinatura)
+                .status(StatusAssinatura.ATIVA)
                 .build();
 
         assinatura = assinaturaRepository.save(assinatura);
@@ -140,16 +135,24 @@ public class AlunoService {
         return assinaturaRepository.findAll()
                 .stream()
                 .sorted(Comparator.comparing(Assinatura::getCriadoEm).reversed())
-                .map(assinatura -> new AlunoAdminResponse(
-                        assinatura.getId(),
-                        assinatura.getAluno().getId(),
-                        assinatura.getAluno().getNome(),
-                        assinatura.getAluno().getEmail(),
-                        assinatura.getAluno().getTelefone(),
-                        assinatura.getPlano().getTipo().name(),
-                        assinatura.getStatus().name(),
-                        assinatura.getDataVencimento()
-                ))
+                .map(assinatura -> {
+                    String statusPagamento = pagamentoRepository
+                            .findFirstByAssinaturaOrderByDataVencimentoDesc(assinatura)
+                            .map(pagamento -> pagamento.getStatus().name())
+                            .orElse("SEM_PAGAMENTO");
+
+                    return new AlunoAdminResponse(
+                            assinatura.getId(),
+                            assinatura.getAluno().getId(),
+                            assinatura.getAluno().getNome(),
+                            assinatura.getAluno().getEmail(),
+                            assinatura.getAluno().getTelefone(),
+                            assinatura.getPlano().getTipo().name(),
+                            assinatura.getStatus().name(),
+                            statusPagamento,
+                            assinatura.getDataVencimento()
+                    );
+                })
                 .toList();
     }
 
@@ -177,7 +180,7 @@ public class AlunoService {
                 );
 
         assinatura.setDataVencimento(proximoVencimento);
-        assinatura.setStatus(StatusAssinatura.PENDENTE_PAGAMENTO);
+        assinatura.setStatus(StatusAssinatura.ATIVA);
 
         Pagamento proximoPagamento = Pagamento.builder()
                 .assinatura(assinatura)
@@ -205,5 +208,21 @@ public class AlunoService {
                         pagamento.getStatus().name()
                 ))
                 .toList();
+    }
+
+    @Transactional
+    public void atualizarPagamentosAtrasados() {
+
+        List<Pagamento> pagamentosVencidos =
+                pagamentoRepository.findByStatusAndDataVencimentoBefore(
+                        StatusPagamento.PENDENTE,
+                        LocalDate.now()
+                );
+
+        pagamentosVencidos.forEach(pagamento ->
+                pagamento.setStatus(StatusPagamento.ATRASADO)
+        );
+
+        pagamentoRepository.saveAll(pagamentosVencidos);
     }
 }

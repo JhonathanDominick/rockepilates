@@ -67,6 +67,14 @@ public class AlunoService {
         return client.listarPagamentosPorAssinatura(id);
     }
 
+    public void atualizarPagamentosAtrasados(HttpServletRequest request) {
+        String authorization = extrairAuthorization(request);
+
+        usuariosService.validarAdmin(authorization);
+
+        client.atualizarPagamentosAtrasados();
+    }
+
     private String extrairAuthorization(HttpServletRequest request) {
         if (request.getCookies() == null) {
             throw new RuntimeException("Token não encontrado");

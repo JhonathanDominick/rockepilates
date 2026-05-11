@@ -10,6 +10,7 @@ public record AlunoAdminResponse(
         String telefone,
         String plano,
         String status,
+        String statusPagamento,
         LocalDate dataVencimento
 ) {
 }

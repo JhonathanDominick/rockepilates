@@ -47,7 +47,7 @@ public class Assinatura {
     @PrePersist
     public void prePersist() {
         if (status == null) {
-            status = StatusAssinatura.PENDENTE_PAGAMENTO;
+            status = StatusAssinatura.ATIVA;
         }
         criadoEm = LocalDateTime.now();
         atualizadoEm = LocalDateTime.now();
