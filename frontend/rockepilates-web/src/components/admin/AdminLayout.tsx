@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
 import {
     FileText,
     Menu,
@@ -19,6 +20,7 @@ type AdminLayoutProps = {
 };
 
 const menuItems = [
+    { href: "/admin/dashboard", label: "Dashboard", icon: FileText },
     { href: "/admin", label: "CMS do site", icon: FileText },
     { href: "/admin/depoimentos", label: "Depoimentos", icon: MessageSquareText },
     { href: "/admin/alunos", label: "Alunos", icon: UsersRound },
