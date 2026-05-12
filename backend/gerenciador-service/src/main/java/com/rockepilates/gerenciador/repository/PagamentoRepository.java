@@ -26,4 +26,17 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
             StatusPagamento status,
             LocalDate data
     );
+
+    long countByStatus(StatusPagamento status);
+
+    List<Pagamento> findByStatusAndDataPagamentoBetween(
+            StatusPagamento status,
+            LocalDate inicio,
+            LocalDate fim
+    );
+
+    List<Pagamento> findByStatusIn(List<StatusPagamento> status);
+
+    List<Pagamento> findTop5ByOrderByCriadoEmDesc();
 }
+

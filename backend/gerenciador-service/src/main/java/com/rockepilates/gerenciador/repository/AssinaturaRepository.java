@@ -14,4 +14,6 @@ public interface AssinaturaRepository extends JpaRepository<Assinatura, Long> {
     List<Assinatura> findByDataVencimentoBetween(LocalDate inicio, LocalDate fim);
 
     List<Assinatura> findByAlunoIdOrderByCriadoEmDesc(Long alunoId);
+
+    long countByStatus(StatusAssinatura status);
 }
