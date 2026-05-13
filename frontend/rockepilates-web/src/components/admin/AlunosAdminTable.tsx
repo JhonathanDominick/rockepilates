@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
     listarPagamentosPorAssinatura,
     marcarAssinaturaComoPaga,
@@ -285,12 +286,12 @@ export function AlunosAdminTable({
                                 >
                                     <td className="px-5 py-5">
                                         <div>
-                                            <p className="font-bold text-[#10263d]">
-                                                {
-                                                    aluno.nome
-                                                }
-                                            </p>
-
+                                            <Link
+                                                href={`/admin/alunos/${aluno.alunoId}`}
+                                                className="font-bold text-[#10263d] transition hover:text-[#ef4b3f]"
+                                            >
+                                                {aluno.nome}
+                                            </Link>
                                             <p className="mt-1 text-xs text-[#7b8d91]">
                                                 ID aluno:{" "}
                                                 {
@@ -350,6 +351,7 @@ export function AlunosAdminTable({
 
                                     <td className="px-5 py-5 text-right">
                                         <div className="flex justify-end gap-2">
+
                                             <button
                                                 type="button"
                                                 onClick={() =>

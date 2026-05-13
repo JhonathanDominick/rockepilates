@@ -35,3 +35,32 @@ export async function listarAlunosAdmin() {
 
     return extrairData(res);
 }
+
+export async function buscarAlunoAdminPorId(alunoId: number) {
+    const alunos = await listarAlunosAdmin();
+
+    return alunos.find((aluno: any) => aluno.alunoId === alunoId) ?? null;
+}
+
+export async function listarPagamentosPorAssinaturaAdmin(assinaturaId: number) {
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore.toString();
+
+    const res = await fetch(
+        `${getBffUrl()}/bff/alunos/assinaturas/${assinaturaId}/pagamentos`,
+        {
+            headers: {
+                Cookie: cookieHeader,
+            },
+            cache: "no-store",
+        }
+    );
+
+    if (!res.ok) {
+        throw new Error(
+            await extrairErro(res, "Erro ao listar pagamentos da assinatura")
+        );
+    }
+
+    return extrairData(res);
+}
