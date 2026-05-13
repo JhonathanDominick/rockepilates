@@ -10,6 +10,7 @@ import {
     Menu,
     MessageSquareText,
     UsersRound,
+    WalletCards,
     X,
 } from "lucide-react";
 
@@ -24,6 +25,7 @@ const menuItems = [
     { href: "/admin", label: "CMS do site", icon: FileText },
     { href: "/admin/depoimentos", label: "Depoimentos", icon: MessageSquareText },
     { href: "/admin/alunos", label: "Alunos", icon: UsersRound },
+    { href: "/admin/financeiro", label: "Financeiro", icon: WalletCards },
 ];
 
 function AdminSidebar() {
@@ -36,9 +38,7 @@ function AdminSidebar() {
                     Admin
                 </p>
 
-                <h2 className="mt-3 text-2xl font-bold">
-                    RockerPilates
-                </h2>
+                <h2 className="mt-3 text-2xl font-bold">RockerPilates</h2>
 
                 <p className="mt-2 text-sm text-white/75">
                     Painel administrativo
@@ -80,9 +80,7 @@ export function AdminLayout({
     return (
         <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#10263d] via-[#0f4650] to-[#075b5c] text-white">
             <div className="pointer-events-none absolute left-[-120px] top-[-120px] h-80 w-80 rounded-full bg-[#7fd8d4]/20 blur-3xl" />
-
             <div className="pointer-events-none absolute right-[-140px] top-40 h-96 w-96 rounded-full bg-[#ef4b3f]/20 blur-3xl" />
-
             <div className="pointer-events-none absolute bottom-[-160px] left-1/3 h-96 w-96 rounded-full bg-[#7fd8d4]/10 blur-3xl" />
 
             <div className="relative z-10 mx-auto flex w-full max-w-[1760px] items-start gap-6 px-4 py-5 md:px-8 md:py-8 2xl:px-10">
@@ -104,21 +102,11 @@ export function AdminLayout({
 
                         <button
                             type="button"
-                            onClick={() =>
-                                setMobileMenuOpen((current) => !current)
-                            }
+                            onClick={() => setMobileMenuOpen((current) => !current)}
                             className="rounded-2xl bg-[#ef4b3f] p-3 text-white shadow-lg shadow-[#ef4b3f]/25"
-                            aria-label={
-                                mobileMenuOpen
-                                    ? "Fechar menu"
-                                    : "Abrir menu"
-                            }
+                            aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
                         >
-                            {mobileMenuOpen ? (
-                                <X size={18} />
-                            ) : (
-                                <Menu size={18} />
-                            )}
+                            {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
                         </button>
                     </div>
 
@@ -138,9 +126,7 @@ export function AdminLayout({
 
                                     <button
                                         type="button"
-                                        onClick={() =>
-                                            setMobileMenuOpen(false)
-                                        }
+                                        onClick={() => setMobileMenuOpen(false)}
                                         className="rounded-2xl bg-[#ef4b3f] p-3 text-white shadow-lg shadow-[#ef4b3f]/25"
                                         aria-label="Fechar menu"
                                     >
