@@ -38,5 +38,7 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
     List<Pagamento> findByStatusIn(List<StatusPagamento> status);
 
     List<Pagamento> findTop5ByOrderByCriadoEmDesc();
+
+    List<Pagamento> findAllByOrderByDataVencimentoDesc();
 }
 
