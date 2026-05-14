@@ -150,7 +150,8 @@ public class AlunoService {
                             assinatura.getPlano().getTipo().name(),
                             assinatura.getStatus().name(),
                             statusPagamento,
-                            assinatura.getDataVencimento()
+                            assinatura.getDataVencimento(),
+                            assinatura.getAluno().getObservacoesInternas()
                     );
                 })
                 .toList();
@@ -224,5 +225,14 @@ public class AlunoService {
         );
 
         pagamentoRepository.saveAll(pagamentosVencidos);
+    }
+
+    @Transactional
+    public void atualizarObservacoesInternas(Long alunoId, String observacoesInternas) {
+        Aluno aluno = alunoRepository.findById(alunoId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Aluno não encontrado"));
+
+        aluno.setObservacoesInternas(observacoesInternas);
     }
 }

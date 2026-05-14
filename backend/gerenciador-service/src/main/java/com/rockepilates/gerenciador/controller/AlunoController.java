@@ -8,6 +8,7 @@ import com.rockepilates.gerenciador.service.AlunoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import com.rockepilates.gerenciador.dto.ObservacoesInternasRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,5 +52,17 @@ public class AlunoController {
     @GetMapping("/assinaturas/{id}/pagamentos")
     public List<PagamentoResponse> listarPagamentosPorAssinatura(@PathVariable Long id) {
         return service.listarPagamentosPorAssinatura(id);
+    }
+
+    @PatchMapping("/admin/{id}/observacoes-internas")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void atualizarObservacoesInternas(
+            @PathVariable Long id,
+            @RequestBody ObservacoesInternasRequest request
+    ) {
+        service.atualizarObservacoesInternas(
+                id,
+                request.observacoesInternas()
+        );
     }
 }
