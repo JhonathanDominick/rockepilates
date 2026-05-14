@@ -37,6 +37,9 @@ public class Aluno {
     @Column(name = "observacoes_saude", columnDefinition = "TEXT")
     private String observacoesSaude;
 
+    @Column(name = "observacoes_internas", columnDefinition = "TEXT")
+    private String observacoesInternas;
+
     @Column(nullable = false)
     private Boolean ativo;
 

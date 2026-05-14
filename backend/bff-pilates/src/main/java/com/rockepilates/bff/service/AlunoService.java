@@ -42,13 +42,13 @@ public class AlunoService {
 
     public List<Map<String, Object>> listarAdmin(HttpServletRequest request) {
         String authorization = extrairAuthorization(request);
+
         usuariosService.validarAdmin(authorization);
 
         return client.listarAdmin();
     }
 
     public void marcarComoPago(Long id, HttpServletRequest request) {
-
         String authorization = extrairAuthorization(request);
 
         usuariosService.validarAdmin(authorization);
@@ -75,6 +75,18 @@ public class AlunoService {
         client.atualizarPagamentosAtrasados();
     }
 
+    public void atualizarObservacoesInternas(
+            Long alunoId,
+            Map<String, Object> body,
+            HttpServletRequest request
+    ) {
+        String authorization = extrairAuthorization(request);
+
+        usuariosService.validarAdmin(authorization);
+
+        client.atualizarObservacoesInternas(alunoId, body);
+    }
+
     private String extrairAuthorization(HttpServletRequest request) {
         if (request.getCookies() == null) {
             throw new RuntimeException("Token não encontrado");
@@ -96,6 +108,7 @@ public class AlunoService {
 
         try {
             int index = body.indexOf("\"message\":\"");
+
             if (index == -1) {
                 return body;
             }
@@ -112,5 +125,4 @@ public class AlunoService {
             return body;
         }
     }
-
 }

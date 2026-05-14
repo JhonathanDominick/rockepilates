@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { ObservacoesInternasAlunoForm } from "@/components/admin/ObservacoesInternasAlunoForm";
 import {
     buscarAlunoAdminPorId,
     listarPagamentosPorAssinaturaAdmin,
@@ -174,6 +175,11 @@ export default async function AdminAlunoDetalhePage({ params }: PageProps) {
                 </section>
             </div>
 
+            <ObservacoesInternasAlunoForm
+                alunoId={aluno.alunoId}
+                valorInicial={aluno.observacoesInternas ?? ""}
+            />
+
             <section className="mt-6 rounded-[28px] border border-[#dce8e5] bg-white p-6 shadow-sm">
                 <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#0d6666]">
                     Histórico financeiro
@@ -239,22 +245,6 @@ export default async function AdminAlunoDetalhePage({ params }: PageProps) {
                         </tbody>
                     </table>
                 </div>
-            </section>
-
-            <section className="mt-6 rounded-[28px] border border-dashed border-[#b8e5df] bg-[#f3faf8] p-6">
-                <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#0d6666]">
-                    Próxima evolução
-                </p>
-
-                <h3 className="mt-3 text-xl font-black text-[#10263d]">
-                    Observações internas da professora
-                </h3>
-
-                <p className="mt-2 text-sm leading-6 text-[#607579]">
-                    Este espaço será evoluído para permitir que a admin registre
-                    observações internas sobre o aluno, saúde, objetivo,
-                    evolução e mensagens futuras para a área do aluno.
-                </p>
             </section>
         </AdminLayout>
     );

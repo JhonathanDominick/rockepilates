@@ -26,4 +26,10 @@ public interface AlunoClient {
 
     @GetMapping("/alunos/assinaturas/{id}/pagamentos")
     List<Map<String, Object>> listarPagamentosPorAssinatura(@PathVariable Long id);
+
+    @PatchMapping("/alunos/admin/{id}/observacoes-internas")
+    void atualizarObservacoesInternas(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body
+    );
 }

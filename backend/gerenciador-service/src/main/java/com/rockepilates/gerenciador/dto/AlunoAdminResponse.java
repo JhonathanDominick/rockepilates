@@ -11,6 +11,7 @@ public record AlunoAdminResponse(
         String plano,
         String status,
         String statusPagamento,
-        LocalDate dataVencimento
+        LocalDate dataVencimento,
+        String observacoesInternas
 ) {
 }

@@ -126,4 +126,24 @@ public class AlunoController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/admin/{id}/observacoes-internas")
+    public ResponseEntity<SuccessResponse<Void>> atualizarObservacoesInternas(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body,
+            HttpServletRequest request
+    ) {
+
+        service.atualizarObservacoesInternas(id, body, request);
+
+        SuccessResponse<Void> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Observações internas atualizadas com sucesso",
+                        null
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
 }

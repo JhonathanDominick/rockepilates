@@ -64,3 +64,32 @@ export async function listarPagamentosPorAssinaturaAdmin(assinaturaId: number) {
 
     return extrairData(res);
 }
+
+export async function atualizarObservacoesInternasAdmin(
+    alunoId: number,
+    observacoesInternas: string
+) {
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore.toString();
+
+    const res = await fetch(
+        `${getBffUrl()}/bff/alunos/admin/${alunoId}/observacoes-internas`,
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Cookie: cookieHeader,
+            },
+            body: JSON.stringify({
+                observacoesInternas,
+            }),
+            cache: "no-store",
+        }
+    );
+
+    if (!res.ok) {
+        throw new Error(
+            await extrairErro(res, "Erro ao atualizar observações internas")
+        );
+    }
+}
