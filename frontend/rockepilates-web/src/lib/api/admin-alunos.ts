@@ -93,3 +93,38 @@ export async function atualizarObservacoesInternasAdmin(
         );
     }
 }
+
+export type AtualizarAlunoAdminPayload = {
+    nome: string;
+    telefone: string;
+    dataNascimento: string;
+    objetivo: string;
+    observacoesSaude: string;
+};
+
+export async function atualizarAlunoAdmin(
+    alunoId: number,
+    payload: AtualizarAlunoAdminPayload
+) {
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore.toString();
+
+    const res = await fetch(
+        `${getBffUrl()}/bff/alunos/admin/${alunoId}`,
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Cookie: cookieHeader,
+            },
+            body: JSON.stringify(payload),
+            cache: "no-store",
+        }
+    );
+
+    if (!res.ok) {
+        throw new Error(
+            await extrairErro(res, "Erro ao atualizar aluno")
+        );
+    }
+}

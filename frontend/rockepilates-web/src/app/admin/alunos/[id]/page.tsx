@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { ObservacoesInternasAlunoForm } from "@/components/admin/ObservacoesInternasAlunoForm";
+import { EditarAlunoAdminForm } from "@/components/admin/EditarAlunoAdminForm";
 import {
     buscarAlunoAdminPorId,
     listarPagamentosPorAssinaturaAdmin,
@@ -174,6 +175,15 @@ export default async function AdminAlunoDetalhePage({ params }: PageProps) {
                     </div>
                 </section>
             </div>
+
+            <EditarAlunoAdminForm
+                alunoId={aluno.alunoId}
+                nome={aluno.nome}
+                telefone={aluno.telefone}
+                dataNascimento={aluno.dataNascimento}
+                objetivo={aluno.objetivo ?? ""}
+                observacoesSaude={aluno.observacoesSaude ?? ""}
+            />
 
             <ObservacoesInternasAlunoForm
                 alunoId={aluno.alunoId}

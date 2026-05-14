@@ -15,6 +15,7 @@ import com.rockepilates.gerenciador.repository.AlunoRepository;
 import com.rockepilates.gerenciador.repository.AssinaturaRepository;
 import com.rockepilates.gerenciador.repository.PagamentoRepository;
 import com.rockepilates.gerenciador.repository.PlanoRepository;
+import com.rockepilates.gerenciador.dto.AtualizarAlunoAdminRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -147,6 +148,9 @@ public class AlunoService {
                             assinatura.getAluno().getNome(),
                             assinatura.getAluno().getEmail(),
                             assinatura.getAluno().getTelefone(),
+                            assinatura.getAluno().getDataNascimento(),
+                            assinatura.getAluno().getObjetivo(),
+                            assinatura.getAluno().getObservacoesSaude(),
                             assinatura.getPlano().getTipo().name(),
                             assinatura.getStatus().name(),
                             statusPagamento,
@@ -234,5 +238,18 @@ public class AlunoService {
                         new ResourceNotFoundException("Aluno não encontrado"));
 
         aluno.setObservacoesInternas(observacoesInternas);
+    }
+
+    @Transactional
+    public void atualizarAdmin(Long alunoId, AtualizarAlunoAdminRequest request) {
+        Aluno aluno = alunoRepository.findById(alunoId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Aluno não encontrado"));
+
+        aluno.setNome(request.nome().trim());
+        aluno.setTelefone(request.telefone().trim());
+        aluno.setDataNascimento(request.dataNascimento());
+        aluno.setObjetivo(request.objetivo());
+        aluno.setObservacoesSaude(request.observacoesSaude());
     }
 }

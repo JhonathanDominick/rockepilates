@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import com.rockepilates.gerenciador.dto.ObservacoesInternasRequest;
+import com.rockepilates.gerenciador.dto.AtualizarAlunoAdminRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -64,5 +65,14 @@ public class AlunoController {
                 id,
                 request.observacoesInternas()
         );
+    }
+
+    @PatchMapping("/admin/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void atualizarAdmin(
+            @PathVariable Long id,
+            @RequestBody AtualizarAlunoAdminRequest request
+    ) {
+        service.atualizarAdmin(id, request);
     }
 }
