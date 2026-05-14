@@ -32,4 +32,10 @@ public interface AlunoClient {
             @PathVariable Long id,
             @RequestBody Map<String, Object> body
     );
+
+    @PatchMapping("/alunos/admin/{id}")
+    void atualizarAdmin(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body
+    );
 }

@@ -20,12 +20,25 @@ public class AlunoService {
         this.usuariosService = usuariosService;
     }
 
+
     public void cadastrar(Map<String, Object> body) {
         try {
             client.cadastrar(body);
         } catch (FeignException.BadRequest ex) {
             throw new IllegalArgumentException(extractMessage(ex));
         }
+    }
+
+    public void atualizarAdmin(
+            Long alunoId,
+            Map<String, Object> body,
+            HttpServletRequest request
+    ) {
+        String authorization = extrairAuthorization(request);
+
+        usuariosService.validarAdmin(authorization);
+
+        client.atualizarAdmin(alunoId, body);
     }
 
     public void cadastrarAdmin(Map<String, Object> body, HttpServletRequest request) {

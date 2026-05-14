@@ -146,4 +146,23 @@ public class AlunoController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/admin/{id}")
+    public ResponseEntity<SuccessResponse<Void>> atualizarAdmin(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body,
+            HttpServletRequest request
+    ) {
+        service.atualizarAdmin(id, body, request);
+
+        SuccessResponse<Void> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Aluno atualizado com sucesso",
+                        null
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
 }
