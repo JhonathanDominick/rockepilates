@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+
 import {
     atualizarAlunoAdmin,
+    cancelarAssinaturaAdmin,
     atualizarObservacoesInternasAdmin,
     type AtualizarAlunoAdminPayload,
 } from "@/lib/api/admin-alunos";
@@ -28,4 +30,16 @@ export async function salvarDadosAlunoAdminAction(
 
     revalidatePath(`/admin/alunos/${alunoId}`);
     revalidatePath("/admin/alunos");
+}
+
+export async function cancelarAssinaturaAction(
+    alunoId: number,
+    assinaturaId: number
+) {
+    await cancelarAssinaturaAdmin(assinaturaId);
+
+    revalidatePath(`/admin/alunos/${alunoId}`);
+    revalidatePath("/admin/alunos");
+    revalidatePath("/admin/financeiro");
+    revalidatePath("/admin/dashboard");
 }

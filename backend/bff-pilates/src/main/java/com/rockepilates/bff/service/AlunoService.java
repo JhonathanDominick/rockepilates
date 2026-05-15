@@ -41,6 +41,17 @@ public class AlunoService {
         client.atualizarAdmin(alunoId, body);
     }
 
+    public void cancelarAssinatura(
+            Long id,
+            HttpServletRequest request
+    ) {
+        String authorization = extrairAuthorization(request);
+
+        usuariosService.validarAdmin(authorization);
+
+        client.cancelarAssinatura(id);
+    }
+
     public void cadastrarAdmin(Map<String, Object> body, HttpServletRequest request) {
         String authorization = extrairAuthorization(request);
 

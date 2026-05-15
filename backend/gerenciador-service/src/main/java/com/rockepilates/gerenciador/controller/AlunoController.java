@@ -75,4 +75,10 @@ public class AlunoController {
     ) {
         service.atualizarAdmin(id, request);
     }
+
+    @PatchMapping("/assinaturas/{id}/cancelar")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void cancelarAssinatura(@PathVariable Long id) {
+        service.cancelarAssinatura(id);
+    }
 }

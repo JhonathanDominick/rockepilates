@@ -128,3 +128,27 @@ export async function atualizarAlunoAdmin(
         );
     }
 }
+
+export async function cancelarAssinaturaAdmin(
+    assinaturaId: number
+) {
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore.toString();
+
+    const res = await fetch(
+        `${getBffUrl()}/bff/alunos/assinaturas/${assinaturaId}/cancelar`,
+        {
+            method: "PATCH",
+            headers: {
+                Cookie: cookieHeader,
+            },
+            cache: "no-store",
+        }
+    );
+
+    if (!res.ok) {
+        throw new Error(
+            await extrairErro(res, "Erro ao cancelar assinatura")
+        );
+    }
+}

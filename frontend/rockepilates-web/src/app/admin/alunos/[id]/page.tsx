@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { ObservacoesInternasAlunoForm } from "@/components/admin/ObservacoesInternasAlunoForm";
 import { EditarAlunoAdminForm } from "@/components/admin/EditarAlunoAdminForm";
+import { CancelarAssinaturaButton } from "@/components/admin/CancelarAssinaturaButton";
 import {
     buscarAlunoAdminPorId,
     listarPagamentosPorAssinaturaAdmin,
@@ -175,6 +176,12 @@ export default async function AdminAlunoDetalhePage({ params }: PageProps) {
                     </div>
                 </section>
             </div>
+
+            <CancelarAssinaturaButton
+                alunoId={aluno.alunoId}
+                assinaturaId={aluno.assinaturaId}
+                status={aluno.status}
+            />
 
             <EditarAlunoAdminForm
                 alunoId={aluno.alunoId}
