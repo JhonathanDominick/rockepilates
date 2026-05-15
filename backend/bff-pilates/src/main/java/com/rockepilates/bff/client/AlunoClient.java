@@ -38,4 +38,7 @@ public interface AlunoClient {
             @PathVariable Long id,
             @RequestBody Map<String, Object> body
     );
+
+    @PatchMapping("/alunos/assinaturas/{id}/cancelar")
+    void cancelarAssinatura(@PathVariable Long id);
 }

@@ -252,4 +252,37 @@ public class AlunoService {
         aluno.setObjetivo(request.objetivo());
         aluno.setObservacoesSaude(request.observacoesSaude());
     }
+
+
+
+    @Transactional
+    public void cancelarAssinatura(Long assinaturaId) {
+
+        Assinatura assinatura = assinaturaRepository.findById(assinaturaId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Assinatura não encontrada")
+                );
+
+        assinatura.setStatus(StatusAssinatura.CANCELADA);
+
+        List<Pagamento> pagamentos =
+                pagamentoRepository
+                        .findByAssinaturaIdOrderByDataVencimentoDesc(assinaturaId);
+
+        for (Pagamento pagamento : pagamentos) {
+
+            if (
+                    pagamento.getStatus() == StatusPagamento.PENDENTE
+                            || pagamento.getStatus() == StatusPagamento.ATRASADO
+            ) {
+                pagamento.setStatus(StatusPagamento.CANCELADO);
+            }
+        }
+
+        assinaturaRepository.save(assinatura);
+
+        pagamentoRepository.saveAll(pagamentos);
+    }
+
+
 }

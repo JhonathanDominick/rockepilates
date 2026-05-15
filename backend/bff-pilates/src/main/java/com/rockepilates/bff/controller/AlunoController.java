@@ -165,4 +165,23 @@ public class AlunoController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/assinaturas/{id}/cancelar")
+    public ResponseEntity<SuccessResponse<Void>> cancelarAssinatura(
+            @PathVariable Long id,
+            HttpServletRequest request
+    ) {
+
+        service.cancelarAssinatura(id, request);
+
+        SuccessResponse<Void> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Assinatura cancelada com sucesso",
+                        null
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
 }
