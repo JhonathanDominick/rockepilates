@@ -173,15 +173,27 @@ export default async function AdminAlunoDetalhePage({ params }: PageProps) {
                                 {aluno.statusPagamento}
                             </span>
                         </div>
+
+                        {aluno.status === "CANCELADA" && (
+                            <div className="rounded-2xl bg-[#f3faf8] p-4">
+                                <p className="text-xs font-bold uppercase text-[#607579]">
+                                    Cancelada em
+                                </p>
+
+                                <p className="mt-2 text-lg font-black text-[#10263d]">
+                                    {formatarData(aluno.dataCancelamento)}
+                                </p>
+                            </div>
+                        )}
                     </div>
+
+                    <CancelarAssinaturaButton
+                        alunoId={aluno.alunoId}
+                        assinaturaId={aluno.assinaturaId}
+                        status={aluno.status}
+                    />
                 </section>
             </div>
-
-            <CancelarAssinaturaButton
-                alunoId={aluno.alunoId}
-                assinaturaId={aluno.assinaturaId}
-                status={aluno.status}
-            />
 
             <EditarAlunoAdminForm
                 alunoId={aluno.alunoId}

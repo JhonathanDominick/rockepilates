@@ -155,6 +155,7 @@ public class AlunoService {
                             assinatura.getStatus().name(),
                             statusPagamento,
                             assinatura.getDataVencimento(),
+                            assinatura.getDataCancelamento(),
                             assinatura.getAluno().getObservacoesInternas()
                     );
                 })
@@ -167,6 +168,12 @@ public class AlunoService {
         Assinatura assinatura = assinaturaRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Assinatura não encontrada"));
+
+        if (assinatura.getStatus() == StatusAssinatura.CANCELADA) {
+            throw new IllegalStateException(
+                    "Não é possível marcar como paga uma assinatura cancelada"
+            );
+        }
 
         Pagamento pagamento = pagamentoRepository
                 .findFirstByAssinaturaAndStatusOrderByDataVencimentoDesc(
@@ -194,6 +201,8 @@ public class AlunoService {
                 .status(StatusPagamento.PENDENTE)
                 .build();
 
+        pagamentoRepository.save(pagamento);
+        assinaturaRepository.save(assinatura);
         pagamentoRepository.save(proximoPagamento);
     }
 
@@ -264,6 +273,7 @@ public class AlunoService {
                 );
 
         assinatura.setStatus(StatusAssinatura.CANCELADA);
+        assinatura.setDataCancelamento(LocalDate.now());
 
         List<Pagamento> pagamentos =
                 pagamentoRepository

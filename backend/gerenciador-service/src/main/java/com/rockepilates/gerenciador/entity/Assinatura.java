@@ -38,6 +38,9 @@ public class Assinatura {
     @Column(nullable = false, length = 30)
     private StatusAssinatura status;
 
+    @Column(name = "data_cancelamento")
+    private LocalDate dataCancelamento;
+
     @Column(name = "criado_em", nullable = false)
     private LocalDateTime criadoEm;
 

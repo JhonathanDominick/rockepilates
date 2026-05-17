@@ -18,6 +18,7 @@ export type AlunoAdmin = {
     status: string;
     statusPagamento: string;
     dataVencimento: string;
+    dataCancelamento: string | null;
 };
 
 type AlunosAdminTableProps = {
@@ -49,13 +50,23 @@ function getStatusClass(status: string) {
     return "bg-[#eef7f6] text-[#255252] border-[#cfe7e4]";
 }
 
-function podeMarcarComoPago(statusPagamento: string) {
-    const statusNormalizado =
+function podeMarcarComoPago(
+    statusPagamento: string,
+    statusAssinatura: string
+) {
+    const statusPagamentoNormalizado =
         statusPagamento?.toUpperCase();
 
+    const statusAssinaturaNormalizado =
+        statusAssinatura?.toUpperCase();
+
+    if (statusAssinaturaNormalizado === "CANCELADA") {
+        return false;
+    }
+
     return (
-        statusNormalizado === "PENDENTE" ||
-        statusNormalizado === "ATRASADO"
+        statusPagamentoNormalizado === "PENDENTE" ||
+        statusPagamentoNormalizado === "ATRASADO"
     );
 }
 
@@ -148,6 +159,7 @@ export function AlunosAdminTable({
                         statusPagamento: "PENDENTE",
                         dataVencimento:
                         novaDataVencimento,
+                        dataCancelamento: null,
                     };
                 })
             );
@@ -234,7 +246,7 @@ export function AlunosAdminTable({
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[1200px] text-left text-sm">
+                    <table className="w-full min-w-[1300px] text-left text-sm">
                         <thead className="bg-[#eaf7f5] text-xs uppercase tracking-wide text-[#255252]">
                         <tr>
                             <th className="px-5 py-4">
@@ -265,6 +277,10 @@ export function AlunosAdminTable({
                                 Vencimento
                             </th>
 
+                            <th className="px-5 py-4">
+                                Cancelamento
+                            </th>
+
                             <th className="px-5 py-4 text-right">
                                 Ações
                             </th>
@@ -292,6 +308,7 @@ export function AlunosAdminTable({
                                             >
                                                 {aluno.nome}
                                             </Link>
+
                                             <p className="mt-1 text-xs text-[#7b8d91]">
                                                 ID aluno:{" "}
                                                 {
@@ -349,6 +366,14 @@ export function AlunosAdminTable({
                                         )}
                                     </td>
 
+                                    <td className="px-5 py-5 font-medium text-[#50666a]">
+                                        {aluno.status === "CANCELADA"
+                                            ? formatarData(
+                                                aluno.dataCancelamento
+                                            )
+                                            : "-"}
+                                    </td>
+
                                     <td className="px-5 py-5 text-right">
                                         <div className="flex justify-end gap-2">
 
@@ -365,7 +390,8 @@ export function AlunosAdminTable({
                                             </button>
 
                                             {podeMarcarComoPago(
-                                                aluno.statusPagamento
+                                                aluno.statusPagamento,
+                                                aluno.status
                                             ) ? (
                                                 <button
                                                     type="button"
@@ -397,7 +423,7 @@ export function AlunosAdminTable({
                         {alunos.length === 0 && (
                             <tr>
                                 <td
-                                    colSpan={8}
+                                    colSpan={9}
                                     className="px-5 py-10 text-center text-[#607579]"
                                 >
                                     Nenhum aluno encontrado.
