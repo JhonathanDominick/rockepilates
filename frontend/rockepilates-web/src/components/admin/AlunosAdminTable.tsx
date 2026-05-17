@@ -51,7 +51,10 @@ function getStatusClass(status: string) {
         return "bg-[#fff1d6] text-[#9a5b00] border-[#ffd98c]";
     }
 
-    if (statusNormalizado.includes("CANCELADA") || statusNormalizado.includes("CANCELADO")) {
+    if (
+        statusNormalizado.includes("CANCELADA") ||
+        statusNormalizado.includes("CANCELADO")
+    ) {
         return "bg-[#eef1f1] text-[#5f6f72] border-[#d8dddd]";
     }
 
@@ -243,18 +246,17 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[1300px] text-left text-sm">
+                    <table className="w-full min-w-[980px] text-left text-sm">
                         <thead className="bg-[#eaf7f5] text-xs uppercase tracking-wide text-[#255252]">
                         <tr>
                             <th className="px-5 py-4">Aluno</th>
-                            <th className="px-5 py-4">Email</th>
-                            <th className="px-5 py-4">Telefone</th>
+                            <th className="px-4 py-4">Contato</th>
                             <th className="px-5 py-4">Plano</th>
                             <th className="px-5 py-4">Assinatura</th>
                             <th className="px-5 py-4">Financeiro</th>
                             <th className="px-5 py-4">Vencimento</th>
                             <th className="px-5 py-4">Cancelamento</th>
-                            <th className="px-5 py-4 text-right">Ações</th>
+                            <th className="px-4 py-4 text-right">Ações</th>
                         </tr>
                         </thead>
 
@@ -283,12 +285,16 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                         </div>
                                     </td>
 
-                                    <td className="px-5 py-5 text-[#50666a]">
-                                        {aluno.email}
-                                    </td>
+                                    <td className="px-4 py-5">
+                                        <div className="max-w-[220px] space-y-1">
+                                            <p className="truncate text-[#50666a]">
+                                                {aluno.email}
+                                            </p>
 
-                                    <td className="px-5 py-5 text-[#50666a]">
-                                        {aluno.telefone}
+                                            <p className="text-xs text-[#7b8d91]">
+                                                {aluno.telefone}
+                                            </p>
+                                        </div>
                                     </td>
 
                                     <td className="px-5 py-5">
@@ -322,19 +328,22 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                     </td>
 
                                     <td className="px-5 py-5 font-medium text-[#50666a]">
-                                        {normalizarStatus(aluno.status) === "CANCELADA"
-                                            ? formatarData(aluno.dataCancelamento)
+                                        {normalizarStatus(aluno.status) ===
+                                        "CANCELADA"
+                                            ? formatarData(
+                                                aluno.dataCancelamento
+                                            )
                                             : "-"}
                                     </td>
 
-                                    <td className="px-5 py-5 text-right">
-                                        <div className="flex justify-end gap-2">
+                                    <td className="px-4 py-5 text-right">
+                                        <div className="flex flex-col items-end gap-2 xl:flex-row xl:justify-end">
                                             <button
                                                 type="button"
                                                 onClick={() =>
                                                     handleAbrirHistorico(aluno)
                                                 }
-                                                className="rounded-2xl border border-[#b8e5df] bg-white px-4 py-2 text-xs font-bold text-[#0d6666] transition hover:-translate-y-[1px] hover:bg-[#eaf7f5]"
+                                                className="min-w-[110px] rounded-2xl border border-[#b8e5df] bg-white px-4 py-2 text-xs font-bold text-[#0d6666] transition hover:-translate-y-[1px] hover:bg-[#eaf7f5]"
                                             >
                                                 Histórico
                                             </button>
@@ -351,14 +360,14 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                                         )
                                                     }
                                                     disabled={processando}
-                                                    className="rounded-2xl bg-[#ef4b3f] px-4 py-2 text-xs font-bold text-white shadow-lg shadow-[#ef4b3f]/20 transition hover:-translate-y-[1px] hover:bg-[#dc3f34] disabled:cursor-not-allowed disabled:opacity-60"
+                                                    className="min-w-[120px] rounded-2xl bg-[#ef4b3f] px-3 py-2 text-xs font-bold text-white shadow-lg shadow-[#ef4b3f]/20 transition hover:-translate-y-[1px] hover:bg-[#dc3f34] disabled:cursor-not-allowed disabled:opacity-60"
                                                 >
                                                     {processando
                                                         ? "Salvando..."
                                                         : "Marcar como paga"}
                                                 </button>
                                             ) : (
-                                                <span className="rounded-2xl px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#7b8d91]">
+                                                <span className="min-w-[110px] rounded-2xl px-3 py-2 text-center text-xs font-bold uppercase tracking-wide text-[#7b8d91]">
                                                     Sem ação
                                                 </span>
                                             )}
@@ -371,7 +380,7 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                         {alunos.length === 0 && (
                             <tr>
                                 <td
-                                    colSpan={9}
+                                    colSpan={8}
                                     className="px-5 py-10 text-center text-[#607579]"
                                 >
                                     Nenhum aluno encontrado.
@@ -414,14 +423,18 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                             alunoSelecionado.statusPagamento
                                         )}`}
                                     >
-                                        Financeiro {alunoSelecionado.statusPagamento}
+                                        Financeiro{" "}
+                                        {alunoSelecionado.statusPagamento}
                                     </span>
                                 </div>
 
                                 <p className="mt-2 text-sm text-[#607579]">
-                                    Assinatura #{alunoSelecionado.assinaturaId} ·
-                                    Vencimento atual{" "}
-                                    {formatarData(alunoSelecionado.dataVencimento)}
+                                    Assinatura #
+                                    {alunoSelecionado.assinaturaId} · Vencimento
+                                    atual{" "}
+                                    {formatarData(
+                                        alunoSelecionado.dataVencimento
+                                    )}
                                 </p>
                             </div>
 
@@ -513,91 +526,102 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                             </thead>
 
                                             <tbody className="divide-y divide-[#e1ece9]">
-                                            {pagamentosOrdenados.map((pagamento) => {
-                                                const pagamentoAtual =
-                                                    isPagamentoAtual(
-                                                        pagamento,
-                                                        alunoSelecionado
+                                            {pagamentosOrdenados.map(
+                                                (pagamento) => {
+                                                    const pagamentoAtual =
+                                                        isPagamentoAtual(
+                                                            pagamento,
+                                                            alunoSelecionado
+                                                        );
+
+                                                    return (
+                                                        <tr
+                                                            key={pagamento.id}
+                                                            className={
+                                                                pagamentoAtual
+                                                                    ? "bg-[#f0faf8]"
+                                                                    : "bg-white"
+                                                            }
+                                                        >
+                                                            <td className="px-4 py-4">
+                                                                <div className="font-bold text-[#10263d]">
+                                                                    #
+                                                                    {
+                                                                        pagamento.id
+                                                                    }
+                                                                </div>
+
+                                                                {pagamentoAtual && (
+                                                                    <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#ef4b3f]">
+                                                                        Pagamento
+                                                                        atual
+                                                                    </p>
+                                                                )}
+                                                            </td>
+
+                                                            <td className="px-4 py-4">
+                                                                <span className="rounded-full border border-[#b8e5df] bg-[#dff4f2] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0d6666]">
+                                                                    {
+                                                                        alunoSelecionado.plano
+                                                                    }
+                                                                </span>
+                                                            </td>
+
+                                                            <td className="px-4 py-4 font-medium text-[#50666a]">
+                                                                {formatarMoeda(
+                                                                    pagamento.valor
+                                                                )}
+                                                            </td>
+
+                                                            <td className="px-4 py-4 text-[#50666a]">
+                                                                {formatarData(
+                                                                    pagamento.dataVencimento
+                                                                )}
+                                                            </td>
+
+                                                            <td className="px-4 py-4 text-[#50666a]">
+                                                                {formatarData(
+                                                                    pagamento.dataPagamento
+                                                                )}
+                                                            </td>
+
+                                                            <td className="px-4 py-4">
+                                                                <span
+                                                                    className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${getStatusClass(
+                                                                        pagamento.status
+                                                                    )}`}
+                                                                >
+                                                                    {
+                                                                        pagamento.status
+                                                                    }
+                                                                </span>
+                                                            </td>
+                                                        </tr>
                                                     );
+                                                }
+                                            )}
 
-                                                return (
-                                                    <tr
-                                                        key={pagamento.id}
-                                                        className={
-                                                            pagamentoAtual
-                                                                ? "bg-[#f0faf8]"
-                                                                : "bg-white"
-                                                        }
-                                                    >
-                                                        <td className="px-4 py-4">
-                                                            <div className="font-bold text-[#10263d]">
-                                                                #{pagamento.id}
-                                                            </div>
-
-                                                            {pagamentoAtual && (
-                                                                <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#ef4b3f]">
-                                                                    Pagamento atual
-                                                                </p>
-                                                            )}
-                                                        </td>
-
-                                                        <td className="px-4 py-4">
-                                                            <span className="rounded-full border border-[#b8e5df] bg-[#dff4f2] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0d6666]">
-                                                                {
-                                                                    alunoSelecionado.plano
-                                                                }
-                                                            </span>
-                                                        </td>
-
-                                                        <td className="px-4 py-4 font-medium text-[#50666a]">
-                                                            {formatarMoeda(
-                                                                pagamento.valor
-                                                            )}
-                                                        </td>
-
-                                                        <td className="px-4 py-4 text-[#50666a]">
-                                                            {formatarData(
-                                                                pagamento.dataVencimento
-                                                            )}
-                                                        </td>
-
-                                                        <td className="px-4 py-4 text-[#50666a]">
-                                                            {formatarData(
-                                                                pagamento.dataPagamento
-                                                            )}
-                                                        </td>
-
-                                                        <td className="px-4 py-4">
-                                                            <span
-                                                                className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${getStatusClass(
-                                                                    pagamento.status
-                                                                )}`}
-                                                            >
-                                                                {pagamento.status}
-                                                            </span>
+                                            {pagamentosOrdenados.length ===
+                                                0 && (
+                                                    <tr>
+                                                        <td
+                                                            colSpan={6}
+                                                            className="px-4 py-10 text-center"
+                                                        >
+                                                            <p className="font-bold text-[#10263d]">
+                                                                Nenhum pagamento
+                                                                encontrado.
+                                                            </p>
+                                                            <p className="mt-1 text-sm text-[#607579]">
+                                                                Quando houver
+                                                                cobranças geradas
+                                                                para esta
+                                                                assinatura, elas
+                                                                aparecerão aqui.
+                                                            </p>
                                                         </td>
                                                     </tr>
-                                                );
-                                            })}
-
-                                            {pagamentosOrdenados.length === 0 && (
-                                                <tr>
-                                                    <td
-                                                        colSpan={6}
-                                                        className="px-4 py-10 text-center"
-                                                    >
-                                                        <p className="font-bold text-[#10263d]">
-                                                            Nenhum pagamento encontrado.
-                                                        </p>
-                                                        <p className="mt-1 text-sm text-[#607579]">
-                                                            Quando houver cobranças
-                                                            geradas para esta
-                                                            assinatura, elas aparecerão
-                                                            aqui.
-                                                        </p>
-                                                    </td>
-                                                </tr>
-                                            )}
+                                                )}
                                             </tbody>
                                         </table>
                                     </div>
