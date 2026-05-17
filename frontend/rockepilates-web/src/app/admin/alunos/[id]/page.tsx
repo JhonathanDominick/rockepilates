@@ -23,7 +23,9 @@ function formatarMoeda(valor: number) {
 }
 
 function formatarData(data: string | null) {
-    if (!data) return "-";
+    if (!data) {
+        return "-";
+    }
 
     return data.split("-").reverse().join("/");
 }
@@ -46,11 +48,20 @@ function getStatusClass(status: string) {
         return "bg-[#fff1d6] text-[#9a5b00] border-[#ffd98c]";
     }
 
-    if (statusNormalizado.includes("CANCELADA")) {
+    if (
+        statusNormalizado.includes("CANCELADA") ||
+        statusNormalizado.includes("CANCELADO")
+    ) {
         return "bg-[#eef1f1] text-[#5f6f72] border-[#d8dddd]";
     }
 
     return "bg-[#eef7f6] text-[#255252] border-[#cfe7e4]";
+}
+
+function somarPorStatus(pagamentos: any[], status: string) {
+    return pagamentos
+        .filter((pagamento) => pagamento.status === status)
+        .reduce((total, pagamento) => total + pagamento.valor, 0);
 }
 
 export default async function AdminAlunoDetalhePage({ params }: PageProps) {
@@ -71,6 +82,15 @@ export default async function AdminAlunoDetalhePage({ params }: PageProps) {
     const pagamentos = await listarPagamentosPorAssinaturaAdmin(
         aluno.assinaturaId
     );
+
+    const pagamentosOrdenados = [...pagamentos].sort((a: any, b: any) =>
+        b.dataVencimento.localeCompare(a.dataVencimento)
+    );
+
+    const totalPago = somarPorStatus(pagamentos, "PAGO");
+    const totalPendente = somarPorStatus(pagamentos, "PENDENTE");
+    const totalAtrasado = somarPorStatus(pagamentos, "ATRASADO");
+    const totalCancelado = somarPorStatus(pagamentos, "CANCELADO");
 
     return (
         <AdminLayout
@@ -210,46 +230,150 @@ export default async function AdminAlunoDetalhePage({ params }: PageProps) {
             />
 
             <section className="mt-6 rounded-[28px] border border-[#dce8e5] bg-white p-6 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#0d6666]">
-                    Histórico financeiro
-                </p>
+                <div className="flex flex-col gap-3 border-b border-[#e1ece9] pb-5 md:flex-row md:items-start md:justify-between">
+                    <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#0d6666]">
+                            Histórico financeiro
+                        </p>
 
-                <div className="mt-5 overflow-x-auto">
-                    <table className="w-full min-w-[760px] text-left text-sm">
+                        <h3 className="mt-2 text-2xl font-black text-[#10263d]">
+                            {aluno.nome}
+                        </h3>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                            <span className="rounded-full border border-[#b8e5df] bg-[#dff4f2] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0d6666]">
+                                Plano {aluno.plano}
+                            </span>
+
+                            <span
+                                className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${getStatusClass(
+                                    aluno.status
+                                )}`}
+                            >
+                                Assinatura {aluno.status}
+                            </span>
+
+                            <span
+                                className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${getStatusClass(
+                                    aluno.statusPagamento
+                                )}`}
+                            >
+                                Financeiro {aluno.statusPagamento}
+                            </span>
+                        </div>
+
+                        <p className="mt-3 text-sm text-[#607579]">
+                            Assinatura #{aluno.assinaturaId} · Vencimento atual{" "}
+                            {formatarData(aluno.dataVencimento)}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="rounded-3xl border border-[#b8e5df] bg-[#dff4f2] p-5">
+                        <p className="text-xs font-bold uppercase tracking-wide text-[#0d6666]">
+                            Pago
+                        </p>
+
+                        <p className="mt-3 text-2xl font-black text-[#10263d]">
+                            {formatarMoeda(totalPago)}
+                        </p>
+                    </div>
+
+                    <div className="rounded-3xl border border-[#ffd98c] bg-[#fff1d6] p-5">
+                        <p className="text-xs font-bold uppercase tracking-wide text-[#9a5b00]">
+                            Pendente
+                        </p>
+
+                        <p className="mt-3 text-2xl font-black text-[#10263d]">
+                            {formatarMoeda(totalPendente)}
+                        </p>
+                    </div>
+
+                    <div className="rounded-3xl border border-[#ffc8bd] bg-[#ffe3dc] p-5">
+                        <p className="text-xs font-bold uppercase tracking-wide text-[#b33127]">
+                            Atrasado
+                        </p>
+
+                        <p className="mt-3 text-2xl font-black text-[#10263d]">
+                            {formatarMoeda(totalAtrasado)}
+                        </p>
+                    </div>
+
+                    <div className="rounded-3xl border border-[#d8dddd] bg-[#eef1f1] p-5">
+                        <p className="text-xs font-bold uppercase tracking-wide text-[#5f6f72]">
+                            Cancelado
+                        </p>
+
+                        <p className="mt-3 text-2xl font-black text-[#10263d]">
+                            {formatarMoeda(totalCancelado)}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="mt-6 overflow-x-auto rounded-[28px] border border-[#dce8e5]">
+                    <table className="w-full min-w-[900px] text-left text-sm">
                         <thead className="bg-[#eaf7f5] text-xs uppercase tracking-wide text-[#255252]">
                         <tr>
-                            <th className="px-4 py-3">Pagamento</th>
-                            <th className="px-4 py-3">Valor</th>
-                            <th className="px-4 py-3">Vencimento</th>
-                            <th className="px-4 py-3">Pago em</th>
-                            <th className="px-4 py-3">Status</th>
+                            <th className="px-4 py-4">Pagamento</th>
+                            <th className="px-4 py-4">Plano</th>
+                            <th className="px-4 py-4">Valor</th>
+                            <th className="px-4 py-4">Vencimento</th>
+                            <th className="px-4 py-4">Pago em</th>
+                            <th className="px-4 py-4">Status</th>
                         </tr>
                         </thead>
 
                         <tbody className="divide-y divide-[#e1ece9]">
-                        {pagamentos.map((pagamento: any) => (
-                            <tr key={pagamento.id}>
-                                <td className="px-4 py-4 font-bold text-[#10263d]">
-                                    #{pagamento.id}
-                                </td>
+                        {pagamentosOrdenados.map((pagamento: any) => {
+                            const pagamentoAtual =
+                                pagamento.dataVencimento ===
+                                aluno.dataVencimento &&
+                                pagamento.status !== "CANCELADO" &&
+                                aluno.status !== "CANCELADA";
 
-                                <td className="px-4 py-4 font-medium text-[#50666a]">
-                                    {formatarMoeda(pagamento.valor)}
-                                </td>
+                            return (
+                                <tr
+                                    key={pagamento.id}
+                                    className={
+                                        pagamentoAtual
+                                            ? "bg-[#f0faf8]"
+                                            : "bg-white"
+                                    }
+                                >
+                                    <td className="px-4 py-4">
+                                        <div className="font-bold text-[#10263d]">
+                                            #{pagamento.id}
+                                        </div>
 
-                                <td className="px-4 py-4 text-[#50666a]">
-                                    {formatarData(
-                                        pagamento.dataVencimento
-                                    )}
-                                </td>
+                                        {pagamentoAtual && (
+                                            <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#ef4b3f]">
+                                                Pagamento atual
+                                            </p>
+                                        )}
+                                    </td>
 
-                                <td className="px-4 py-4 text-[#50666a]">
-                                    {formatarData(
-                                        pagamento.dataPagamento
-                                    )}
-                                </td>
+                                    <td className="px-4 py-4">
+                                        <span className="rounded-full border border-[#b8e5df] bg-[#dff4f2] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0d6666]">
+                                            {aluno.plano}
+                                        </span>
+                                    </td>
 
-                                <td className="px-4 py-4">
+                                    <td className="px-4 py-4 font-medium text-[#50666a]">
+                                        {formatarMoeda(pagamento.valor)}
+                                    </td>
+
+                                    <td className="px-4 py-4 text-[#50666a]">
+                                        {formatarData(
+                                            pagamento.dataVencimento
+                                        )}
+                                    </td>
+
+                                    <td className="px-4 py-4 text-[#50666a]">
+                                        {formatarData(pagamento.dataPagamento)}
+                                    </td>
+
+                                    <td className="px-4 py-4">
                                         <span
                                             className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${getStatusClass(
                                                 pagamento.status
@@ -257,17 +381,25 @@ export default async function AdminAlunoDetalhePage({ params }: PageProps) {
                                         >
                                             {pagamento.status}
                                         </span>
-                                </td>
-                            </tr>
-                        ))}
+                                    </td>
+                                </tr>
+                            );
+                        })}
 
-                        {pagamentos.length === 0 && (
+                        {pagamentosOrdenados.length === 0 && (
                             <tr>
                                 <td
-                                    colSpan={5}
-                                    className="px-4 py-8 text-center text-[#607579]"
+                                    colSpan={6}
+                                    className="px-6 py-12 text-center"
                                 >
-                                    Nenhum pagamento encontrado.
+                                    <p className="font-bold text-[#10263d]">
+                                        Nenhum pagamento encontrado.
+                                    </p>
+
+                                    <p className="mt-2 text-sm text-[#607579]">
+                                        Quando houver cobranças geradas para
+                                        esta assinatura, elas aparecerão aqui.
+                                    </p>
                                 </td>
                             </tr>
                         )}
