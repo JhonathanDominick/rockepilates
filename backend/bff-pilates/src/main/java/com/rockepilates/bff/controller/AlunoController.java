@@ -2,13 +2,14 @@ package com.rockepilates.bff.controller;
 
 import com.rockepilates.bff.dto.SuccessResponse;
 import com.rockepilates.bff.service.AlunoService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.http.HttpServletRequest;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.time.LocalDateTime;
-
 
 @RestController
 @RequestMapping("/bff/alunos")
@@ -33,6 +34,80 @@ public class AlunoController {
         );
 
         return ResponseEntity.status(201).body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<SuccessResponse<Void>> login(
+            @RequestBody Map<String, Object> body
+    ) {
+        Map<String, Object> aluno = service.login(body);
+
+        Object alunoId = aluno.get("alunoId");
+
+        if (alunoId == null) {
+            throw new IllegalStateException("Resposta de login inválida");
+        }
+
+        ResponseCookie cookie = ResponseCookie.from("aluno_id", String.valueOf(alunoId))
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(60 * 60 * 24)
+                .sameSite("Lax")
+                .build();
+
+        SuccessResponse<Void> response = new SuccessResponse<>(
+                LocalDateTime.now(),
+                200,
+                "Login do aluno realizado com sucesso",
+                null
+        );
+
+        return ResponseEntity
+                .ok()
+                .header("Set-Cookie", cookie.toString())
+                .body(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<SuccessResponse<Void>> logout() {
+
+        ResponseCookie cookie = ResponseCookie.from("aluno_id", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+
+        SuccessResponse<Void> response = new SuccessResponse<>(
+                LocalDateTime.now(),
+                200,
+                "Logout do aluno realizado com sucesso",
+                null
+        );
+
+        return ResponseEntity
+                .ok()
+                .header("Set-Cookie", cookie.toString())
+                .body(response);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<SuccessResponse<Map<String, Object>>> me(
+            HttpServletRequest request
+    ) {
+        Map<String, Object> data = service.buscarPerfilAluno(request);
+
+        SuccessResponse<Map<String, Object>> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Perfil do aluno",
+                        data
+                );
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/admin")
@@ -183,5 +258,4 @@ public class AlunoController {
 
         return ResponseEntity.ok(response);
     }
-
 }

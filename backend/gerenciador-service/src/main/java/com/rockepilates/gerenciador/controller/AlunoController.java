@@ -1,15 +1,10 @@
 package com.rockepilates.gerenciador.controller;
 
-import com.rockepilates.gerenciador.dto.AlunoAdminResponse;
-import com.rockepilates.gerenciador.dto.CadastroAdminAlunoRequest;
-import com.rockepilates.gerenciador.dto.CadastroAlunoRequest;
-import com.rockepilates.gerenciador.dto.PagamentoResponse;
+import com.rockepilates.gerenciador.dto.*;
 import com.rockepilates.gerenciador.service.AlunoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import com.rockepilates.gerenciador.dto.ObservacoesInternasRequest;
-import com.rockepilates.gerenciador.dto.AtualizarAlunoAdminRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +20,16 @@ public class AlunoController {
     @ResponseStatus(HttpStatus.CREATED)
     public void cadastrar(@Valid @RequestBody CadastroAlunoRequest request) {
         service.cadastrar(request);
+    }
+
+    @PostMapping("/login")
+    public LoginAlunoResponse login(@Valid @RequestBody LoginAlunoRequest request) {
+        return service.loginAluno(request);
+    }
+
+    @GetMapping("/{id}/perfil")
+    public AlunoPerfilResponse buscarPerfil(@PathVariable Long id) {
+        return service.buscarPerfilAluno(id);
     }
 
     @PostMapping("/admin")

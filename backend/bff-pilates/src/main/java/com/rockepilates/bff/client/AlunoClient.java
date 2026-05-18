@@ -12,6 +12,12 @@ public interface AlunoClient {
     @PostMapping("/alunos")
     void cadastrar(@RequestBody Map<String, Object> body);
 
+    @PostMapping("/alunos/login")
+    Map<String, Object> login(@RequestBody Map<String, Object> body);
+
+    @GetMapping("/alunos/{id}/perfil")
+    Map<String, Object> buscarPerfil(@PathVariable Long id);
+
     @PostMapping("/alunos/admin")
     void cadastrarAdmin(@RequestBody Map<String, Object> body);
 

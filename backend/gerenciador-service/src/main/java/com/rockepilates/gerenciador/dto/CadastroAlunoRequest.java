@@ -33,6 +33,10 @@ public record CadastroAlunoRequest(
         @NotNull(message = "Plano é obrigatório")
         TipoPlano tipoPlano,
 
+        @NotBlank(message = "Senha é obrigatória")
+        @Size(min = 6, max = 100, message = "Senha deve ter entre 6 e 100 caracteres")
+        String senha,
+
         @AssertTrue(message = "É necessário aceitar os termos")
         Boolean aceiteTermos
 ) {

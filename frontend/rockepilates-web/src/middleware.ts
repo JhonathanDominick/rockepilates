@@ -1,23 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
-    const token = request.cookies.get("admin_token")?.value;
+    const adminToken = request.cookies.get("admin_token")?.value;
+    const alunoId = request.cookies.get("aluno_id")?.value;
+
     const pathname = request.nextUrl.pathname;
 
     const isAdminRoute = pathname.startsWith("/admin");
-    const isLoginRoute = pathname === "/admin/login";
+    const isAdminLoginRoute = pathname === "/admin/login";
 
-    if (isLoginRoute && token) {
+    const isAlunoRoute = pathname.startsWith("/aluno");
+    const isAlunoLoginRoute = pathname === "/login";
+
+    if (isAdminLoginRoute && adminToken) {
         return NextResponse.redirect(new URL("/admin", request.url));
     }
 
-    if (isAdminRoute && !isLoginRoute && !token) {
+    if (isAdminRoute && !isAdminLoginRoute && !adminToken) {
         return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
+
+    if (isAlunoLoginRoute && alunoId) {
+        return NextResponse.redirect(new URL("/aluno/perfil", request.url));
+    }
+
+    if (isAlunoRoute && !alunoId) {
+        return NextResponse.redirect(new URL("/login", request.url));
     }
 
     return NextResponse.next();
 }
 
 export const config = {
-    matcher: ["/admin/:path*"],
+    matcher: ["/admin/:path*", "/aluno/:path*", "/login"],
 };
