@@ -40,6 +40,9 @@ public class Aluno {
     @Column(name = "observacoes_internas", columnDefinition = "TEXT")
     private String observacoesInternas;
 
+    @Column(name = "senha_hash", length = 255)
+    private String senhaHash;
+
     @Column(nullable = false)
     private Boolean ativo;
 
@@ -51,7 +54,10 @@ public class Aluno {
 
     @PrePersist
     public void prePersist() {
-        ativo = true;
+        if (ativo == null) {
+            ativo = true;
+        }
+
         criadoEm = LocalDateTime.now();
         atualizadoEm = LocalDateTime.now();
     }

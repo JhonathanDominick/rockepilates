@@ -1,9 +1,6 @@
 package com.rockepilates.gerenciador.service;
 
-import com.rockepilates.gerenciador.dto.AlunoAdminResponse;
-import com.rockepilates.gerenciador.dto.CadastroAdminAlunoRequest;
-import com.rockepilates.gerenciador.dto.CadastroAlunoRequest;
-import com.rockepilates.gerenciador.dto.PagamentoResponse;
+import com.rockepilates.gerenciador.dto.*;
 import com.rockepilates.gerenciador.entity.Aluno;
 import com.rockepilates.gerenciador.entity.Assinatura;
 import com.rockepilates.gerenciador.entity.Pagamento;
@@ -15,9 +12,9 @@ import com.rockepilates.gerenciador.repository.AlunoRepository;
 import com.rockepilates.gerenciador.repository.AssinaturaRepository;
 import com.rockepilates.gerenciador.repository.PagamentoRepository;
 import com.rockepilates.gerenciador.repository.PlanoRepository;
-import com.rockepilates.gerenciador.dto.AtualizarAlunoAdminRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -32,6 +29,7 @@ public class AlunoService {
     private final PlanoRepository planoRepository;
     private final AssinaturaRepository assinaturaRepository;
     private final PagamentoRepository pagamentoRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public void cadastrar(CadastroAlunoRequest request) {
@@ -50,6 +48,7 @@ public class AlunoService {
                 .dataNascimento(request.dataNascimento())
                 .objetivo(request.objetivo())
                 .observacoesSaude(request.observacoesSaude())
+                .senhaHash(passwordEncoder.encode(request.senha()))
                 .ativo(true)
                 .build();
 
@@ -130,6 +129,76 @@ public class AlunoService {
                 .build();
 
         pagamentoRepository.save(pagamento);
+    }
+
+    public LoginAlunoResponse loginAluno(LoginAlunoRequest request) {
+
+        Aluno aluno = alunoRepository.findByEmail(
+                        request.email().trim().toLowerCase()
+                )
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Email ou senha inválidos")
+                );
+
+        if (aluno.getSenhaHash() == null) {
+            throw new IllegalArgumentException(
+                    "Este aluno ainda não possui acesso ao portal"
+            );
+        }
+
+        boolean senhaValida = passwordEncoder.matches(
+                request.senha(),
+                aluno.getSenhaHash()
+        );
+
+        if (!senhaValida) {
+            throw new IllegalArgumentException("Email ou senha inválidos");
+        }
+
+        return new LoginAlunoResponse(
+                aluno.getId(),
+                aluno.getNome(),
+                aluno.getEmail()
+        );
+    }
+
+    public AlunoPerfilResponse buscarPerfilAluno(Long alunoId) {
+
+        Aluno aluno = alunoRepository.findById(alunoId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Aluno não encontrado")
+                );
+
+        Assinatura assinatura = assinaturaRepository
+                .findByAlunoIdOrderByCriadoEmDesc(alunoId)
+                .stream()
+                .findFirst()
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Assinatura não encontrada"
+                        )
+                );
+
+        String statusPagamento = pagamentoRepository
+                .findFirstByAssinaturaOrderByDataVencimentoDesc(assinatura)
+                .map(pagamento -> pagamento.getStatus().name())
+                .orElse("SEM_PAGAMENTO");
+
+        return new AlunoPerfilResponse(
+                aluno.getId(),
+                assinatura.getId(),
+                aluno.getNome(),
+                aluno.getEmail(),
+                aluno.getTelefone(),
+                aluno.getDataNascimento(),
+                aluno.getObjetivo(),
+                aluno.getObservacoesSaude(),
+                assinatura.getPlano().getTipo().name(),
+                assinatura.getStatus().name(),
+                statusPagamento,
+                assinatura.getDataVencimento(),
+                assinatura.getDataCancelamento()
+        );
     }
 
     public List<AlunoAdminResponse> listarAdmin() {
@@ -262,8 +331,6 @@ public class AlunoService {
         aluno.setObservacoesSaude(request.observacoesSaude());
     }
 
-
-
     @Transactional
     public void cancelarAssinatura(Long assinaturaId) {
 
@@ -293,6 +360,4 @@ public class AlunoService {
 
         pagamentoRepository.saveAll(pagamentos);
     }
-
-
 }

@@ -2,6 +2,7 @@ package com.rockepilates.bff.service;
 
 import com.rockepilates.bff.client.AlunoClient;
 import feign.FeignException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
@@ -20,13 +21,26 @@ public class AlunoService {
         this.usuariosService = usuariosService;
     }
 
-
     public void cadastrar(Map<String, Object> body) {
         try {
             client.cadastrar(body);
         } catch (FeignException.BadRequest ex) {
             throw new IllegalArgumentException(extractMessage(ex));
         }
+    }
+
+    public Map<String, Object> login(Map<String, Object> body) {
+        try {
+            return client.login(body);
+        } catch (FeignException.BadRequest ex) {
+            throw new IllegalArgumentException(extractMessage(ex));
+        }
+    }
+
+    public Map<String, Object> buscarPerfilAluno(HttpServletRequest request) {
+        Long alunoId = extrairAlunoId(request);
+
+        return client.buscarPerfil(alunoId);
     }
 
     public void atualizarAdmin(
@@ -111,6 +125,24 @@ public class AlunoService {
         client.atualizarObservacoesInternas(alunoId, body);
     }
 
+    private Long extrairAlunoId(HttpServletRequest request) {
+        if (request.getCookies() == null) {
+            throw new RuntimeException("Aluno não autenticado");
+        }
+
+        String alunoId = Arrays.stream(request.getCookies())
+                .filter(cookie -> "aluno_id".equals(cookie.getName()))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElseThrow(() -> new RuntimeException("Aluno não autenticado"));
+
+        try {
+            return Long.valueOf(alunoId);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Sessão do aluno inválida");
+        }
+    }
+
     private String extrairAuthorization(HttpServletRequest request) {
         if (request.getCookies() == null) {
             throw new RuntimeException("Token não encontrado");
@@ -127,7 +159,7 @@ public class AlunoService {
         String body = ex.contentUTF8();
 
         if (body == null || body.isBlank()) {
-            return "Erro ao cadastrar aluno";
+            return "Erro ao processar solicitação";
         }
 
         try {
