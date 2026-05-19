@@ -205,7 +205,8 @@ public class AlunoService {
                 assinatura.getStatus().name(),
                 statusPagamento,
                 assinatura.getDataVencimento(),
-                assinatura.getDataCancelamento()
+                assinatura.getDataCancelamento(),
+                aluno.getMensagemProfessora()
         );
     }
 
@@ -233,7 +234,8 @@ public class AlunoService {
                             statusPagamento,
                             assinatura.getDataVencimento(),
                             assinatura.getDataCancelamento(),
-                            assinatura.getAluno().getObservacoesInternas()
+                            assinatura.getAluno().getObservacoesInternas(),
+                            assinatura.getAluno().getMensagemProfessora()
                     );
                 })
                 .toList();
@@ -345,6 +347,15 @@ public class AlunoService {
                         new ResourceNotFoundException("Aluno não encontrado"));
 
         aluno.setObservacoesInternas(observacoesInternas);
+    }
+
+    @Transactional
+    public void atualizarMensagemProfessora(Long alunoId, String mensagemProfessora) {
+        Aluno aluno = alunoRepository.findById(alunoId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Aluno não encontrado"));
+
+        aluno.setMensagemProfessora(mensagemProfessora);
     }
 
     @Transactional

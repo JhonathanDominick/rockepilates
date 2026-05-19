@@ -42,6 +42,12 @@ public interface AlunoClient {
             @RequestBody Map<String, Object> body
     );
 
+    @PatchMapping("/alunos/admin/{id}/mensagem-professora")
+    void atualizarMensagemProfessora(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body
+    );
+
     @PatchMapping("/alunos/admin/{id}")
     void atualizarAdmin(
             @PathVariable Long id,

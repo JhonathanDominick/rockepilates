@@ -143,6 +143,18 @@ public class AlunoService {
         client.atualizarObservacoesInternas(alunoId, body);
     }
 
+    public void atualizarMensagemProfessora(
+            Long alunoId,
+            Map<String, Object> body,
+            HttpServletRequest request
+    ) {
+        String authorization = extrairAuthorization(request);
+
+        usuariosService.validarAdmin(authorization);
+
+        client.atualizarMensagemProfessora(alunoId, body);
+    }
+
     private Long extrairAlunoId(HttpServletRequest request) {
 
         if (request.getCookies() == null) {

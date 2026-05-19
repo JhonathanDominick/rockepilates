@@ -2,10 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 
+
 import {
     atualizarAlunoAdmin,
     cancelarAssinaturaAdmin,
     atualizarObservacoesInternasAdmin,
+    atualizarMensagemProfessoraAdmin,
     type AtualizarAlunoAdminPayload,
 } from "@/lib/api/admin-alunos";
 
@@ -42,4 +44,18 @@ export async function cancelarAssinaturaAction(
     revalidatePath("/admin/alunos");
     revalidatePath("/admin/financeiro");
     revalidatePath("/admin/dashboard");
+}
+
+export async function salvarMensagemProfessoraAction(
+    alunoId: number,
+    mensagemProfessora: string
+) {
+    await atualizarMensagemProfessoraAdmin(
+        alunoId,
+        mensagemProfessora
+    );
+
+    revalidatePath(`/admin/alunos/${alunoId}`);
+    revalidatePath("/admin/alunos");
+    revalidatePath("/aluno/perfil");
 }

@@ -250,6 +250,42 @@ export default async function PerfilAlunoPage() {
                 </div>
 
                 <section className="mt-6 rounded-[28px] border border-[#dce8e5] bg-white p-6 shadow-sm">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#0d6666]">
+                                Mensagem da professora
+                            </p>
+
+                            <h2 className="mt-3 text-2xl font-black text-[#10263d]">
+                                Recado para você
+                            </h2>
+
+                            <p className="mt-2 text-sm text-[#607579]">
+                                Orientações e avisos deixados pela professora.
+                            </p>
+                        </div>
+                    </div>
+
+                    {aluno.mensagemProfessora ? (
+                        <div className="mt-6 rounded-3xl border border-[#b8e5df] bg-[#f3faf8] p-6">
+                            <p className="whitespace-pre-line text-sm leading-7 text-[#255252]">
+                                {aluno.mensagemProfessora}
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="mt-6 rounded-3xl border border-dashed border-[#d7e5e2] bg-[#f8fcfb] px-6 py-10 text-center">
+                            <p className="font-bold text-[#10263d]">
+                                Nenhuma mensagem no momento
+                            </p>
+
+                            <p className="mt-2 text-sm text-[#607579]">
+                                Quando houver algum recado da professora, ele aparecerá aqui.
+                            </p>
+                        </div>
+                    )}
+                </section>
+
+                <section className="mt-6 rounded-[28px] border border-[#dce8e5] bg-white p-6 shadow-sm">
                     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div>
                             <h2 className="text-2xl font-black text-[#10263d]">
