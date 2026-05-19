@@ -15,6 +15,11 @@ import com.rockepilates.gerenciador.repository.PlanoRepository;
 import com.rockepilates.gerenciador.security.JwtAlunoService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -322,6 +327,122 @@ public class AlunoService {
                         pagamento.getStatus().name()
                 ))
                 .toList();
+    }
+
+    public PagamentoPaginadoResponse listarPagamentosPorAlunoPaginado(
+            Long alunoId,
+            String status,
+            String inicio,
+            String fim,
+            int page,
+            int size
+    ) {
+        if (!alunoRepository.existsById(alunoId)) {
+            throw new ResourceNotFoundException("Aluno não encontrado");
+        }
+
+        StatusPagamento statusPagamento = null;
+
+        if (status != null && !status.isBlank() && !"TODOS".equalsIgnoreCase(status)) {
+            try {
+                statusPagamento = StatusPagamento.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException("Status de pagamento inválido");
+            }
+        }
+
+        LocalDate dataInicio =
+                inicio != null && !inicio.isBlank()
+                        ? LocalDate.parse(inicio)
+                        : null;
+
+        LocalDate dataFim =
+                fim != null && !fim.isBlank()
+                        ? LocalDate.parse(fim)
+                        : null;
+
+        final StatusPagamento filtroStatusPagamento = statusPagamento;
+        final LocalDate filtroDataInicio = dataInicio;
+        final LocalDate filtroDataFim = dataFim;
+
+        int paginaSegura = Math.max(page, 0);
+        int tamanhoSeguro = Math.min(Math.max(size, 1), 20);
+
+        Pageable pageable = PageRequest.of(
+                paginaSegura,
+                tamanhoSeguro,
+                Sort.by(Sort.Direction.DESC, "dataVencimento")
+        );
+
+        Specification<Pagamento> specification =
+                (root, query, criteriaBuilder) -> {
+                    var predicates = criteriaBuilder.conjunction();
+
+                    predicates = criteriaBuilder.and(
+                            predicates,
+                            criteriaBuilder.equal(
+                                    root.get("assinatura").get("aluno").get("id"),
+                                    alunoId
+                            )
+                    );
+
+                    if (filtroStatusPagamento != null) {
+                        predicates = criteriaBuilder.and(
+                                predicates,
+                                criteriaBuilder.equal(
+                                        root.get("status"),
+                                        filtroStatusPagamento
+                                )
+                        );
+                    }
+
+                    if (filtroDataInicio != null) {
+                        predicates = criteriaBuilder.and(
+                                predicates,
+                                criteriaBuilder.greaterThanOrEqualTo(
+                                        root.get("dataVencimento"),
+                                        filtroDataInicio
+                                )
+                        );
+                    }
+
+                    if (filtroDataFim != null) {
+                        predicates = criteriaBuilder.and(
+                                predicates,
+                                criteriaBuilder.lessThanOrEqualTo(
+                                        root.get("dataVencimento"),
+                                        filtroDataFim
+                                )
+                        );
+                    }
+
+                    return predicates;
+                };
+
+        Page<Pagamento> pagamentos =
+                pagamentoRepository.findAll(specification, pageable);
+
+        List<PagamentoResponse> content = pagamentos
+                .getContent()
+                .stream()
+                .map(pagamento -> new PagamentoResponse(
+                        pagamento.getId(),
+                        pagamento.getValor(),
+                        pagamento.getDataVencimento(),
+                        pagamento.getDataPagamento(),
+                        pagamento.getStatus().name()
+                ))
+                .toList();
+
+        return new PagamentoPaginadoResponse(
+                content,
+                pagamentos.getTotalElements(),
+                pagamentos.getTotalPages(),
+                pagamentos.getNumber(),
+                pagamentos.getSize(),
+                pagamentos.isFirst(),
+                pagamentos.isLast()
+        );
     }
 
     @Transactional

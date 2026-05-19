@@ -4,12 +4,14 @@ import com.rockepilates.gerenciador.entity.Assinatura;
 import com.rockepilates.gerenciador.entity.Pagamento;
 import com.rockepilates.gerenciador.enums.StatusPagamento;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
+public interface PagamentoRepository extends JpaRepository<Pagamento, Long>,
+        JpaSpecificationExecutor<Pagamento> {
 
     Optional<Pagamento> findFirstByAssinaturaAndStatusOrderByDataVencimentoDesc(
             Assinatura assinatura,

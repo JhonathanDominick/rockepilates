@@ -37,6 +37,25 @@ public class AlunoController {
         return service.listarPagamentosPorAluno(id);
     }
 
+    @GetMapping("/{id}/pagamentos/paginado")
+    public PagamentoPaginadoResponse listarPagamentosPorAlunoPaginado(
+            @PathVariable Long id,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String inicio,
+            @RequestParam(required = false) String fim,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size
+    ) {
+        return service.listarPagamentosPorAlunoPaginado(
+                id,
+                status,
+                inicio,
+                fim,
+                page,
+                size
+        );
+    }
+
     @PostMapping("/admin")
     @ResponseStatus(HttpStatus.CREATED)
     public void cadastrarAdmin(@Valid @RequestBody CadastroAdminAlunoRequest request) {
@@ -103,5 +122,4 @@ public class AlunoController {
     public void cancelarAssinatura(@PathVariable Long id) {
         service.cancelarAssinatura(id);
     }
-
 }
