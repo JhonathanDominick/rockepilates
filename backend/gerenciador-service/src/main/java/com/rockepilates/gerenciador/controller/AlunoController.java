@@ -32,6 +32,11 @@ public class AlunoController {
         return service.buscarPerfilAluno(id);
     }
 
+    @GetMapping("/{id}/pagamentos")
+    public List<PagamentoResponse> listarPagamentosPorAluno(@PathVariable Long id) {
+        return service.listarPagamentosPorAluno(id);
+    }
+
     @PostMapping("/admin")
     @ResponseStatus(HttpStatus.CREATED)
     public void cadastrarAdmin(@Valid @RequestBody CadastroAdminAlunoRequest request) {
@@ -86,4 +91,5 @@ public class AlunoController {
     public void cancelarAssinatura(@PathVariable Long id) {
         service.cancelarAssinatura(id);
     }
+
 }

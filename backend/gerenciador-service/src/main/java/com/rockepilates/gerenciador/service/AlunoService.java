@@ -245,12 +245,15 @@ public class AlunoService {
         }
 
         Pagamento pagamento = pagamentoRepository
-                .findFirstByAssinaturaAndStatusOrderByDataVencimentoDesc(
+                .findFirstByAssinaturaAndStatusInOrderByDataVencimentoDesc(
                         assinatura,
-                        StatusPagamento.PENDENTE
+                        List.of(
+                                StatusPagamento.PENDENTE,
+                                StatusPagamento.ATRASADO
+                        )
                 )
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Pagamento pendente não encontrado"));
+                        new ResourceNotFoundException("Pagamento pendente ou atrasado não encontrado"));
 
         pagamento.setStatus(StatusPagamento.PAGO);
         pagamento.setDataPagamento(LocalDate.now());
@@ -282,6 +285,24 @@ public class AlunoService {
         }
 
         return pagamentoRepository.findByAssinaturaIdOrderByDataVencimentoDesc(assinaturaId)
+                .stream()
+                .map(pagamento -> new PagamentoResponse(
+                        pagamento.getId(),
+                        pagamento.getValor(),
+                        pagamento.getDataVencimento(),
+                        pagamento.getDataPagamento(),
+                        pagamento.getStatus().name()
+                ))
+                .toList();
+    }
+
+    public List<PagamentoResponse> listarPagamentosPorAluno(Long alunoId) {
+
+        if (!alunoRepository.existsById(alunoId)) {
+            throw new ResourceNotFoundException("Aluno não encontrado");
+        }
+
+        return pagamentoRepository.findByAssinaturaAlunoIdOrderByDataVencimentoDesc(alunoId)
                 .stream()
                 .map(pagamento -> new PagamentoResponse(
                         pagamento.getId(),

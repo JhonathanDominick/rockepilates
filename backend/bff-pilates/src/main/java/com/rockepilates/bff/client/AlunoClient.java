@@ -18,6 +18,9 @@ public interface AlunoClient {
     @GetMapping("/alunos/{id}/perfil")
     Map<String, Object> buscarPerfil(@PathVariable Long id);
 
+    @GetMapping("/alunos/{id}/pagamentos")
+    List<Map<String, Object>> listarPagamentosPorAluno(@PathVariable Long id);
+
     @PostMapping("/alunos/admin")
     void cadastrarAdmin(@RequestBody Map<String, Object> body);
 

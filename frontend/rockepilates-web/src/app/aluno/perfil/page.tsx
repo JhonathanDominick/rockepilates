@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { buscarPerfilAluno } from "@/lib/api/aluno-perfil";
+import {
+    buscarPagamentosAluno,
+    buscarPerfilAluno,
+} from "@/lib/api/aluno-perfil";
 
 function formatarData(data: string | null) {
     if (!data) {
@@ -8,6 +11,13 @@ function formatarData(data: string | null) {
     }
 
     return data.split("-").reverse().join("/");
+}
+
+function formatarMoeda(valor: number) {
+    return new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+    }).format(valor);
 }
 
 function getStatusClass(status: string) {
@@ -47,7 +57,20 @@ export default async function PerfilAlunoPage() {
         redirect("/login");
     }
 
-    const aluno = await buscarPerfilAluno();
+    const [aluno, pagamentos] = await Promise.all([
+        buscarPerfilAluno(),
+        buscarPagamentosAluno(),
+    ]);
+
+    const pagamentosPagos = pagamentos.filter(
+        (pagamento: any) => pagamento.status === "PAGO"
+    );
+
+    const pagamentosPendentes = pagamentos.filter(
+        (pagamento: any) =>
+            pagamento.status === "PENDENTE" ||
+            pagamento.status === "ATRASADO"
+    );
 
     return (
         <main className="min-h-screen bg-[#f6fbfa] px-6 py-10">
@@ -93,6 +116,38 @@ export default async function PerfilAlunoPage() {
                         <span className="rounded-full border border-[#b8e5df] bg-[#dff4f2] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#0d6666]">
                             Plano {aluno.plano}
                         </span>
+                    </div>
+                </div>
+
+                <div className="mt-6 grid gap-4 md:grid-cols-3">
+                    <div className="rounded-[24px] border border-[#dce8e5] bg-white p-5 shadow-sm">
+                        <p className="text-xs font-bold uppercase tracking-wide text-[#607579]">
+                            Pagamentos realizados
+                        </p>
+
+                        <p className="mt-3 text-3xl font-black text-[#10263d]">
+                            {pagamentosPagos.length}
+                        </p>
+                    </div>
+
+                    <div className="rounded-[24px] border border-[#dce8e5] bg-white p-5 shadow-sm">
+                        <p className="text-xs font-bold uppercase tracking-wide text-[#607579]">
+                            Pendências em aberto
+                        </p>
+
+                        <p className="mt-3 text-3xl font-black text-[#10263d]">
+                            {pagamentosPendentes.length}
+                        </p>
+                    </div>
+
+                    <div className="rounded-[24px] border border-[#dce8e5] bg-white p-5 shadow-sm">
+                        <p className="text-xs font-bold uppercase tracking-wide text-[#607579]">
+                            Próximo vencimento
+                        </p>
+
+                        <p className="mt-3 text-3xl font-black text-[#10263d]">
+                            {formatarData(aluno.dataVencimento)}
+                        </p>
                     </div>
                 </div>
 
@@ -193,6 +248,96 @@ export default async function PerfilAlunoPage() {
                         </div>
                     </section>
                 </div>
+
+                <section className="mt-6 rounded-[28px] border border-[#dce8e5] bg-white p-6 shadow-sm">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h2 className="text-2xl font-black text-[#10263d]">
+                                Histórico financeiro
+                            </h2>
+
+                            <p className="mt-2 text-sm text-[#607579]">
+                                Seus pagamentos e vencimentos registrados no
+                                sistema.
+                            </p>
+                        </div>
+
+                        <div className="rounded-2xl border border-[#b8e5df] bg-[#f3faf8] px-4 py-3 text-xs text-[#4b6666]">
+                            Pagamentos realizados diretamente para a professora
+                            podem levar um tempo até serem confirmados no
+                            sistema.
+                        </div>
+                    </div>
+
+                    {pagamentos.length === 0 ? (
+                        <div className="mt-6 rounded-3xl border border-dashed border-[#d7e5e2] bg-[#f8fcfb] px-6 py-14 text-center">
+                            <p className="text-lg font-bold text-[#10263d]">
+                                Nenhum registro financeiro encontrado
+                            </p>
+
+                            <p className="mt-2 text-sm text-[#607579]">
+                                Seus pagamentos aparecerão aqui conforme forem
+                                registrados pela administração.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="mt-8 space-y-4">
+                            {pagamentos.map((pagamento: any) => (
+                                <div
+                                    key={pagamento.id}
+                                    className="rounded-[24px] border border-[#e2ece9] bg-[#fcfefe] p-5"
+                                >
+                                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                                        <div>
+                                            <div className="flex flex-wrap items-center gap-3">
+                                                <span
+                                                    className={`rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${getStatusClass(
+                                                        pagamento.status
+                                                    )}`}
+                                                >
+                                                    {pagamento.status}
+                                                </span>
+
+                                                <span className="text-xs font-bold uppercase tracking-wide text-[#607579]">
+                                                    Vencimento{" "}
+                                                    {formatarData(
+                                                        pagamento.dataVencimento
+                                                    )}
+                                                </span>
+                                            </div>
+
+                                            <p className="mt-4 text-2xl font-black text-[#10263d]">
+                                                {formatarMoeda(
+                                                    pagamento.valor
+                                                )}
+                                            </p>
+
+                                            <div className="mt-3 flex flex-wrap gap-5 text-sm text-[#607579]">
+                                                <div>
+                                                    <span className="font-bold text-[#10263d]">
+                                                        Data de vencimento:
+                                                    </span>{" "}
+                                                    {formatarData(
+                                                        pagamento.dataVencimento
+                                                    )}
+                                                </div>
+
+                                                <div>
+                                                    <span className="font-bold text-[#10263d]">
+                                                        Confirmação:
+                                                    </span>{" "}
+                                                    {formatarData(
+                                                        pagamento.dataPagamento
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </section>
             </div>
         </main>
     );
