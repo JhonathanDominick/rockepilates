@@ -237,6 +237,25 @@ public class AlunoController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/admin/{id}/mensagem-professora")
+    public ResponseEntity<SuccessResponse<Void>> atualizarMensagemProfessora(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body,
+            HttpServletRequest request
+    ) {
+        service.atualizarMensagemProfessora(id, body, request);
+
+        SuccessResponse<Void> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Mensagem da professora atualizada com sucesso",
+                        null
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
     @PatchMapping("/admin/{id}")
     public ResponseEntity<SuccessResponse<Void>> atualizarAdmin(
             @PathVariable Long id,

@@ -40,6 +40,9 @@ public class Aluno {
     @Column(name = "observacoes_internas", columnDefinition = "TEXT")
     private String observacoesInternas;
 
+    @Column(name = "mensagem_professora", columnDefinition = "TEXT")
+    private String mensagemProfessora;
+
     @Column(name = "senha_hash", length = 255)
     private String senhaHash;
 
@@ -51,6 +54,7 @@ public class Aluno {
 
     @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;
+
 
     @PrePersist
     public void prePersist() {

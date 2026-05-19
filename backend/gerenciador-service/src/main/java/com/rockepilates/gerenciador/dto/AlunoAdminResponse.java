@@ -16,6 +16,7 @@ public record AlunoAdminResponse(
         String statusPagamento,
         LocalDate dataVencimento,
         LocalDate dataCancelamento,
-        String observacoesInternas
+        String observacoesInternas,
+        String mensagemProfessora
 ) {
 }

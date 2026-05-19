@@ -77,6 +77,18 @@ public class AlunoController {
         );
     }
 
+    @PatchMapping("/admin/{id}/mensagem-professora")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void atualizarMensagemProfessora(
+            @PathVariable Long id,
+            @RequestBody MensagemProfessoraRequest request
+    ) {
+        service.atualizarMensagemProfessora(
+                id,
+                request.mensagemProfessora()
+        );
+    }
+
     @PatchMapping("/admin/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void atualizarAdmin(

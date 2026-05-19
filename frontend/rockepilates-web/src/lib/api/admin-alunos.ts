@@ -152,3 +152,32 @@ export async function cancelarAssinaturaAdmin(
         );
     }
 }
+
+export async function atualizarMensagemProfessoraAdmin(
+    alunoId: number,
+    mensagemProfessora: string
+) {
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore.toString();
+
+    const res = await fetch(
+        `${getBffUrl()}/bff/alunos/admin/${alunoId}/mensagem-professora`,
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Cookie: cookieHeader,
+            },
+            body: JSON.stringify({
+                mensagemProfessora,
+            }),
+            cache: "no-store",
+        }
+    );
+
+    if (!res.ok) {
+        throw new Error(
+            await extrairErro(res, "Erro ao atualizar mensagem da professora")
+        );
+    }
+}

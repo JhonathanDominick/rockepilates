@@ -4,6 +4,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { ObservacoesInternasAlunoForm } from "@/components/admin/ObservacoesInternasAlunoForm";
 import { EditarAlunoAdminForm } from "@/components/admin/EditarAlunoAdminForm";
 import { CancelarAssinaturaButton } from "@/components/admin/CancelarAssinaturaButton";
+import { MensagemProfessoraAlunoForm } from "@/components/admin/MensagemProfessoraAlunoForm";
 import {
     buscarAlunoAdminPorId,
     listarPagamentosPorAssinaturaAdmin,
@@ -227,6 +228,11 @@ export default async function AdminAlunoDetalhePage({ params }: PageProps) {
             <ObservacoesInternasAlunoForm
                 alunoId={aluno.alunoId}
                 valorInicial={aluno.observacoesInternas ?? ""}
+            />
+
+            <MensagemProfessoraAlunoForm
+                alunoId={aluno.alunoId}
+                valorInicial={aluno.mensagemProfessora ?? ""}
             />
 
             <section className="mt-6 rounded-[28px] border border-[#dce8e5] bg-white p-6 shadow-sm">

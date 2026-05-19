@@ -15,6 +15,7 @@ public record AlunoPerfilResponse(
         String status,
         String statusPagamento,
         LocalDate dataVencimento,
-        LocalDate dataCancelamento
+        LocalDate dataCancelamento,
+        String mensagemProfessora
 ) {
 }
