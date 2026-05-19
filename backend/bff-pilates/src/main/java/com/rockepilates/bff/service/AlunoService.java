@@ -1,6 +1,7 @@
 package com.rockepilates.bff.service;
 
 import com.rockepilates.bff.client.AlunoClient;
+import com.rockepilates.bff.security.JwtAlunoService;
 import feign.FeignException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,10 +16,16 @@ public class AlunoService {
 
     private final AlunoClient client;
     private final UsuariosService usuariosService;
+    private final JwtAlunoService jwtAlunoService;
 
-    public AlunoService(AlunoClient client, UsuariosService usuariosService) {
+    public AlunoService(
+            AlunoClient client,
+            UsuariosService usuariosService,
+            JwtAlunoService jwtAlunoService
+    ) {
         this.client = client;
         this.usuariosService = usuariosService;
+        this.jwtAlunoService = jwtAlunoService;
     }
 
     public void cadastrar(Map<String, Object> body) {
@@ -74,7 +81,10 @@ public class AlunoService {
         client.cancelarAssinatura(id);
     }
 
-    public void cadastrarAdmin(Map<String, Object> body, HttpServletRequest request) {
+    public void cadastrarAdmin(
+            Map<String, Object> body,
+            HttpServletRequest request
+    ) {
         String authorization = extrairAuthorization(request);
 
         usuariosService.validarAdmin(authorization);
@@ -134,24 +144,36 @@ public class AlunoService {
     }
 
     private Long extrairAlunoId(HttpServletRequest request) {
+
         if (request.getCookies() == null) {
             throw new RuntimeException("Aluno não autenticado");
         }
 
-        String alunoId = Arrays.stream(request.getCookies())
-                .filter(cookie -> "aluno_id".equals(cookie.getName()))
+        String token = Arrays.stream(request.getCookies())
+                .filter(cookie -> "aluno_token".equals(cookie.getName()))
                 .findFirst()
                 .map(Cookie::getValue)
-                .orElseThrow(() -> new RuntimeException("Aluno não autenticado"));
+                .orElseThrow(() ->
+                        new RuntimeException("Aluno não autenticado")
+                );
 
-        try {
-            return Long.valueOf(alunoId);
-        } catch (NumberFormatException e) {
+        boolean tokenValido = jwtAlunoService.isTokenValid(token);
+
+        if (!tokenValido) {
             throw new RuntimeException("Sessão do aluno inválida");
         }
+
+        Long alunoId = jwtAlunoService.extractAlunoId(token);
+
+        if (alunoId == null) {
+            throw new RuntimeException("Sessão do aluno inválida");
+        }
+
+        return alunoId;
     }
 
     private String extrairAuthorization(HttpServletRequest request) {
+
         if (request.getCookies() == null) {
             throw new RuntimeException("Token não encontrado");
         }
@@ -160,10 +182,13 @@ public class AlunoService {
                 .filter(cookie -> "admin_token".equals(cookie.getName()))
                 .findFirst()
                 .map(cookie -> "Bearer " + cookie.getValue())
-                .orElseThrow(() -> new RuntimeException("Token não encontrado"));
+                .orElseThrow(() ->
+                        new RuntimeException("Token não encontrado")
+                );
     }
 
     private String extractMessage(FeignException ex) {
+
         String body = ex.contentUTF8();
 
         if (body == null || body.isBlank()) {
@@ -171,6 +196,7 @@ public class AlunoService {
         }
 
         try {
+
             int index = body.indexOf("\"message\":\"");
 
             if (index == -1) {
@@ -178,6 +204,7 @@ public class AlunoService {
             }
 
             int start = index + "\"message\":\"".length();
+
             int end = body.indexOf("\"", start);
 
             if (end == -1) {
@@ -185,6 +212,7 @@ public class AlunoService {
             }
 
             return body.substring(start, end);
+
         } catch (Exception e) {
             return body;
         }

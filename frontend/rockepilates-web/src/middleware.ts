@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
     const adminToken = request.cookies.get("admin_token")?.value;
-    const alunoId = request.cookies.get("aluno_id")?.value;
+    const alunoToken = request.cookies.get("aluno_token")?.value;
 
     const pathname = request.nextUrl.pathname;
 
@@ -20,11 +20,11 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/admin/login", request.url));
     }
 
-    if (isAlunoLoginRoute && alunoId) {
+    if (isAlunoLoginRoute && alunoToken) {
         return NextResponse.redirect(new URL("/aluno/perfil", request.url));
     }
 
-    if (isAlunoRoute && !alunoId) {
+    if (isAlunoRoute && !alunoToken) {
         return NextResponse.redirect(new URL("/login", request.url));
     }
 

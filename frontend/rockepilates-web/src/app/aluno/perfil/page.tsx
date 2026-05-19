@@ -51,9 +51,9 @@ function getStatusClass(status: string) {
 export default async function PerfilAlunoPage() {
     const cookieStore = await cookies();
 
-    const alunoId = cookieStore.get("aluno_id");
+    const alunoToken = cookieStore.get("aluno_token");
 
-    if (!alunoId) {
+    if (!alunoToken) {
         redirect("/login");
     }
 

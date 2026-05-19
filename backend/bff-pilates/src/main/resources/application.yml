@@ -25,3 +25,7 @@ gerenciador:
 
 usuarios:
   url: ${USUARIOS_URL:http://localhost:8081}
+
+jwt:
+  aluno:
+    secret: ${JWT_ALUNO_SECRET:rockepilates-aluno-secret-key-dev-precisa-ter-mais-de-32-caracteres}

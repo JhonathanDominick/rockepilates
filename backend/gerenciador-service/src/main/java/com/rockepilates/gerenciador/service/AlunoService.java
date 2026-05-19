@@ -12,6 +12,7 @@ import com.rockepilates.gerenciador.repository.AlunoRepository;
 import com.rockepilates.gerenciador.repository.AssinaturaRepository;
 import com.rockepilates.gerenciador.repository.PagamentoRepository;
 import com.rockepilates.gerenciador.repository.PlanoRepository;
+import com.rockepilates.gerenciador.security.JwtAlunoService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +31,7 @@ public class AlunoService {
     private final AssinaturaRepository assinaturaRepository;
     private final PagamentoRepository pagamentoRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtAlunoService jwtAlunoService;
 
     @Transactional
     public void cadastrar(CadastroAlunoRequest request) {
@@ -155,10 +157,16 @@ public class AlunoService {
             throw new IllegalArgumentException("Email ou senha inválidos");
         }
 
+        String token = jwtAlunoService.generateToken(
+                aluno.getId(),
+                aluno.getEmail()
+        );
+
         return new LoginAlunoResponse(
                 aluno.getId(),
                 aluno.getNome(),
-                aluno.getEmail()
+                aluno.getEmail(),
+                token
         );
     }
 
