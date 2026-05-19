@@ -258,4 +258,22 @@ public class AlunoController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/me/pagamentos")
+    public ResponseEntity<SuccessResponse<List<Map<String, Object>>>> listarPagamentosAlunoLogado(
+            HttpServletRequest request
+    ) {
+        List<Map<String, Object>> data =
+                service.listarPagamentosAlunoLogado(request);
+
+        SuccessResponse<List<Map<String, Object>>> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Histórico financeiro do aluno",
+                        data
+                );
+
+        return ResponseEntity.ok(response);
+    }
 }

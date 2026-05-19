@@ -43,6 +43,14 @@ public class AlunoService {
         return client.buscarPerfil(alunoId);
     }
 
+    public List<Map<String, Object>> listarPagamentosAlunoLogado(
+            HttpServletRequest request
+    ) {
+        Long alunoId = extrairAlunoId(request);
+
+        return client.listarPagamentosPorAluno(alunoId);
+    }
+
     public void atualizarAdmin(
             Long alunoId,
             Map<String, Object> body,

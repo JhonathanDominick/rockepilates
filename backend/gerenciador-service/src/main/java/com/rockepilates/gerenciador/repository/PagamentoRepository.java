@@ -16,11 +16,18 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
             StatusPagamento status
     );
 
+    Optional<Pagamento> findFirstByAssinaturaAndStatusInOrderByDataVencimentoDesc(
+            Assinatura assinatura,
+            List<StatusPagamento> status
+    );
+
     Optional<Pagamento> findFirstByAssinaturaOrderByDataVencimentoDesc(
             Assinatura assinatura
     );
 
     List<Pagamento> findByAssinaturaIdOrderByDataVencimentoDesc(Long assinaturaId);
+
+    List<Pagamento> findByAssinaturaAlunoIdOrderByDataVencimentoDesc(Long alunoId);
 
     List<Pagamento> findByStatusAndDataVencimentoBefore(
             StatusPagamento status,
@@ -41,4 +48,3 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
 
     List<Pagamento> findAllByOrderByDataVencimentoDesc();
 }
-
