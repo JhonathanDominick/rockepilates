@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import {
-    buscarPagamentosAluno,
+    buscarPagamentosAlunoPaginado,
     buscarPerfilAluno,
 } from "@/lib/api/aluno-perfil";
 
@@ -57,10 +57,15 @@ export default async function PerfilAlunoPage() {
         redirect("/login");
     }
 
-    const [aluno, pagamentos] = await Promise.all([
+    const [aluno, pagamentosResponse] = await Promise.all([
         buscarPerfilAluno(),
-        buscarPagamentosAluno(),
+        buscarPagamentosAlunoPaginado({
+            page: 0,
+            size: 3,
+        }),
     ]);
+
+    const pagamentos = pagamentosResponse.content ?? [];
 
     const pagamentosPagos = pagamentos.filter(
         (pagamento: any) => pagamento.status === "PAGO"
@@ -293,15 +298,12 @@ export default async function PerfilAlunoPage() {
                             </h2>
 
                             <p className="mt-2 text-sm text-[#607579]">
-                                Seus pagamentos e vencimentos registrados no
-                                sistema.
+                                Resumo dos registros financeiros mais recentes.
                             </p>
                         </div>
 
                         <div className="rounded-2xl border border-[#b8e5df] bg-[#f3faf8] px-4 py-3 text-xs text-[#4b6666]">
-                            Pagamentos realizados diretamente para a professora
-                            podem levar um tempo até serem confirmados no
-                            sistema.
+                            Os pagamentos são registrados manualmente pela professora.
                         </div>
                     </div>
 
@@ -362,15 +364,23 @@ export default async function PerfilAlunoPage() {
                                                     <span className="font-bold text-[#10263d]">
                                                         Confirmação:
                                                     </span>{" "}
-                                                    {formatarData(
-                                                        pagamento.dataPagamento
-                                                    )}
+                                                    {pagamento.dataPagamento
+                                                        ? formatarData(pagamento.dataPagamento)
+                                                        : "Aguardando confirmação da professora"}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             ))}
+                            <div className="pt-2">
+                                <a
+                                    href="/aluno/financeiro"
+                                    className="inline-flex items-center gap-2 rounded-2xl border border-[#b8e5df] bg-[#f3faf8] px-5 py-3 text-sm font-bold text-[#0d6666] transition hover:bg-[#e4f5f2]"
+                                >
+                                    Ver histórico financeiro completo →
+                                </a>
+                            </div>
                         </div>
                     )}
                 </section>

@@ -56,4 +56,14 @@ public interface AlunoClient {
 
     @PatchMapping("/alunos/assinaturas/{id}/cancelar")
     void cancelarAssinatura(@PathVariable Long id);
+
+    @GetMapping("/alunos/{id}/pagamentos/paginado")
+    Map<String, Object> listarPagamentosPorAlunoPaginado(
+            @PathVariable Long id,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String inicio,
+            @RequestParam(required = false) String fim,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size
+    );
 }

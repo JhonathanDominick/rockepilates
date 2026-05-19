@@ -70,3 +70,61 @@ export async function buscarPagamentosAluno() {
 
     return data?.data ?? [];
 }
+
+export type BuscarPagamentosPaginadoParams = {
+    status?: string;
+    inicio?: string;
+    fim?: string;
+    page?: number;
+    size?: number;
+};
+
+export async function buscarPagamentosAlunoPaginado({
+                                                        status,
+                                                        inicio,
+                                                        fim,
+                                                        page = 0,
+                                                        size = 6,
+                                                    }: BuscarPagamentosPaginadoParams = {}) {
+    const cookieHeader = await getCookieHeader();
+
+    const params = new URLSearchParams();
+
+    if (status && status !== "TODOS") {
+        params.set("status", status);
+    }
+
+    if (inicio && inicio.trim() !== "") {
+        params.set("inicio", inicio);
+    }
+
+    if (fim && fim.trim() !== "") {
+        params.set("fim", fim);
+    }
+
+    params.set("page", String(page));
+    params.set("size", String(size));
+
+    const response = await fetch(
+        `${getBffUrl()}/bff/alunos/me/pagamentos/paginado?${params.toString()}`,
+        {
+            headers: {
+                Cookie: cookieHeader,
+            },
+            cache: "no-store",
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(
+            await extrairErro(
+                response,
+                "Erro ao carregar histórico financeiro paginado"
+            )
+        );
+    }
+
+    const data = await response.json();
+
+    return data?.data ?? data;
+}

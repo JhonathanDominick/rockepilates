@@ -313,4 +313,34 @@ public class AlunoController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/me/pagamentos/paginado")
+    public ResponseEntity<SuccessResponse<Map<String, Object>>> listarPagamentosAlunoLogadoPaginado(
+            HttpServletRequest request,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String inicio,
+            @RequestParam(required = false) String fim,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size
+    ) {
+        Map<String, Object> data =
+                service.listarPagamentosAlunoLogadoPaginado(
+                        request,
+                        status,
+                        inicio,
+                        fim,
+                        page,
+                        size
+                );
+
+        SuccessResponse<Map<String, Object>> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Histórico financeiro paginado do aluno",
+                        data
+                );
+
+        return ResponseEntity.ok(response);
+    }
 }
