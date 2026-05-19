@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { buscarPagamentosAlunoPaginado } from "@/lib/api/aluno-perfil";
+import { FinanceiroAlunoClient } from "./FinanceiroAlunoClient";
 
 type PageProps = {
     searchParams: Promise<{
@@ -42,37 +43,6 @@ function getStatusClass(status: string) {
     }
 
     return "bg-[#eef7f6] text-[#255252] border-[#cfe7e4]";
-}
-
-function montarUrl(params: {
-    status?: string;
-    inicio?: string;
-    fim?: string;
-    page?: number;
-}) {
-    const search = new URLSearchParams();
-
-    if (params.status && params.status !== "TODOS") {
-        search.set("status", params.status);
-    }
-
-    if (params.inicio && params.inicio.trim() !== "") {
-        search.set("inicio", params.inicio);
-    }
-
-    if (params.fim && params.fim.trim() !== "") {
-        search.set("fim", params.fim);
-    }
-
-    if (params.page && params.page > 0) {
-        search.set("page", String(params.page));
-    }
-
-    const query = search.toString();
-
-    return query
-        ? `/aluno/financeiro?${query}`
-        : "/aluno/financeiro";
 }
 
 export default async function FinanceiroAlunoPage({
@@ -134,180 +104,123 @@ export default async function FinanceiroAlunoPage({
                     </p>
                 </section>
 
-                <form className="mt-5 rounded-[28px] border border-[#dce8e5] bg-white p-4 shadow-sm md:p-6">
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <FinanceiroAlunoClient
+                    status={status}
+                    inicio={inicio}
+                    fim={fim}
+                    page={page}
+                >
 
-                        <div>
-                            <label className="text-[11px] font-bold uppercase tracking-wide text-[#607579]">
-                                Status
-                            </label>
+                    <section className="mt-5 rounded-[28px] border border-[#dce8e5] bg-white p-4 shadow-sm md:p-6">
 
-                            <select
-                                name="status"
-                                defaultValue={status}
-                                className="mt-2 h-12 w-full rounded-2xl border border-[#dce8e5] bg-[#f8fcfb] px-4 text-sm outline-none"
-                            >
-                                <option value="TODOS">Todos</option>
-                                <option value="PAGO">Pago</option>
-                                <option value="PENDENTE">Pendente</option>
-                                <option value="ATRASADO">Atrasado</option>
-                                <option value="CANCELADO">Cancelado</option>
-                            </select>
-                        </div>
+                        {pagamentos.length === 0 ? (
+                            <div className="rounded-3xl border border-dashed border-[#d7e5e2] bg-[#f8fcfb] px-6 py-12 text-center">
+                                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#eef7f6] text-2xl">
+                                    📄
+                                </div>
 
-                        <div>
-                            <label className="text-[11px] font-bold uppercase tracking-wide text-[#607579]">
-                                Data inicial
-                            </label>
+                                <p className="mt-5 text-xl font-black text-[#10263d]">
+                                    Nenhum pagamento encontrado
+                                </p>
 
-                            <input
-                                name="inicio"
-                                type="date"
-                                defaultValue={inicio}
-                                className="mt-2 h-12 w-full rounded-2xl border border-[#dce8e5] bg-[#f8fcfb] px-4 text-sm outline-none"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="text-[11px] font-bold uppercase tracking-wide text-[#607579]">
-                                Data final
-                            </label>
-
-                            <input
-                                name="fim"
-                                type="date"
-                                defaultValue={fim}
-                                className="mt-2 h-12 w-full rounded-2xl border border-[#dce8e5] bg-[#f8fcfb] px-4 text-sm outline-none"
-                            />
-                        </div>
-
-                        <div className="flex items-end">
-                            <button className="h-12 w-full rounded-2xl bg-[#ef4b3f] text-sm font-bold text-white transition hover:bg-[#dc3f34]">
-                                Filtrar histórico
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-                <section className="mt-5 rounded-[28px] border border-[#dce8e5] bg-white p-4 shadow-sm md:p-6">
-
-                    {pagamentos.length === 0 ? (
-                        <div className="rounded-3xl border border-dashed border-[#d7e5e2] bg-[#f8fcfb] px-6 py-12 text-center">
-                            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#eef7f6] text-2xl">
-                                📄
+                                <p className="mt-2 text-sm leading-6 text-[#607579]">
+                                    Ajuste os filtros ou acompanhe novos registros futuramente.
+                                </p>
                             </div>
+                        ) : (
+                            <div className="space-y-4 md:space-y-6">
 
-                            <p className="mt-5 text-xl font-black text-[#10263d]">
-                                Nenhum pagamento encontrado
-                            </p>
+                                {pagamentos.map((pagamento: any) => (
+                                    <div
+                                        key={pagamento.id}
+                                        className="relative pl-0 md:pl-8"
+                                    >
 
-                            <p className="mt-2 text-sm leading-6 text-[#607579]">
-                                Ajuste os filtros ou acompanhe novos registros futuramente.
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="space-y-4 md:space-y-6">
+                                        <div className="absolute left-2 top-2 hidden h-full w-px bg-[#dce8e5] md:block" />
 
-                            {pagamentos.map((pagamento: any) => (
-                                <div
-                                    key={pagamento.id}
-                                    className="relative pl-0 md:pl-8"
-                                >
+                                        <div className="absolute left-0 top-2 hidden h-4 w-4 rounded-full border-4 border-white bg-[#0d6666] shadow md:block" />
 
-                                    <div className="absolute left-2 top-2 hidden h-full w-px bg-[#dce8e5] md:block" />
+                                        <div className="rounded-[24px] border border-[#e2ece9] bg-[#fcfefe] p-4 md:p-5">
 
-                                    <div className="absolute left-0 top-2 hidden h-4 w-4 rounded-full border-4 border-white bg-[#0d6666] shadow md:block" />
+                                            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
 
-                                    <div className="rounded-[24px] border border-[#e2ece9] bg-[#fcfefe] p-4 md:p-5">
+                                                <span
+                                                    className={`inline-flex w-fit rounded-full border px-3 py-1 text-[11px] font-bold uppercase ${getStatusClass(
+                                                        pagamento.status
+                                                    )}`}
+                                                >
+                                                    {pagamento.status}
+                                                </span>
 
-                                        <div className="flex items-start justify-between gap-3">
-
-                                            <span
-                                                className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-bold uppercase ${getStatusClass(
-                                                    pagamento.status
-                                                )}`}
-                                            >
-                                                {pagamento.status}
-                                            </span>
-
-                                            <h3 className="text-2xl font-black text-[#10263d] md:text-3xl">
-                                                {formatarMoeda(pagamento.valor)}
-                                            </h3>
-                                        </div>
-
-                                        <div className="mt-4 grid gap-2 text-sm text-[#607579] md:grid-cols-2">
-
-                                            <div>
-                                                <span className="font-semibold text-[#10263d]">
-                                                    Vencimento:
-                                                </span>{" "}
-                                                {formatarData(
-                                                    pagamento.dataVencimento
-                                                )}
+                                                <h3 className="text-2xl font-black text-[#10263d] md:text-3xl">
+                                                    {formatarMoeda(pagamento.valor)}
+                                                </h3>
                                             </div>
 
-                                            <div>
-                                                <span className="font-semibold text-[#10263d]">
-                                                    Confirmação:
-                                                </span>{" "}
-                                                {pagamento.dataPagamento
-                                                    ? formatarData(
-                                                        pagamento.dataPagamento
-                                                    )
-                                                    : "Aguardando confirmação"}
+                                            <div className="mt-4 grid gap-2 text-sm text-[#607579] md:grid-cols-2">
+
+                                                <div>
+                                                    <span className="font-semibold text-[#10263d]">
+                                                        Vencimento:
+                                                    </span>{" "}
+                                                    {formatarData(
+                                                        pagamento.dataVencimento
+                                                    )}
+                                                </div>
+
+                                                <div>
+                                                    <span className="font-semibold text-[#10263d]">
+                                                        Confirmação:
+                                                    </span>{" "}
+                                                    {pagamento.dataPagamento
+                                                        ? formatarData(
+                                                            pagamento.dataPagamento
+                                                        )
+                                                        : "Aguardando confirmação"}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="mt-8 flex flex-col gap-4 border-t border-[#edf3f1] pt-5 md:flex-row md:items-center md:justify-between">
+
+                            <p className="text-sm text-[#607579]">
+                                Página{" "}
+                                <strong className="text-[#10263d]">
+                                    {historico.page + 1}
+                                </strong>{" "}
+                                de{" "}
+                                <strong className="text-[#10263d]">
+                                    {Math.max(historico.totalPages, 1)}
+                                </strong>
+                            </p>
+
+                            <div className="flex flex-wrap gap-3">
+
+                                {!historico.first && (
+                                    <a
+                                        href={`?status=${status}&inicio=${inicio ?? ""}&fim=${fim ?? ""}&page=${page - 1}`}
+                                        className="rounded-2xl border border-[#b8e5df] px-5 py-3 text-sm font-bold text-[#0d6666] transition hover:bg-[#eef7f6]"
+                                    >
+                                        ← Anterior
+                                    </a>
+                                )}
+
+                                {!historico.last && (
+                                    <a
+                                        href={`?status=${status}&inicio=${inicio ?? ""}&fim=${fim ?? ""}&page=${page + 1}`}
+                                        className="rounded-2xl bg-[#0d6666] px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
+                                    >
+                                        Próxima →
+                                    </a>
+                                )}
+                            </div>
                         </div>
-                    )}
-
-                    <div className="mt-8 flex flex-col gap-4 border-t border-[#edf3f1] pt-5 md:flex-row md:items-center md:justify-between">
-
-                        <p className="text-sm text-[#607579]">
-                            Página{" "}
-                            <strong className="text-[#10263d]">
-                                {historico.page + 1}
-                            </strong>{" "}
-                            de{" "}
-                            <strong className="text-[#10263d]">
-                                {Math.max(historico.totalPages, 1)}
-                            </strong>
-                        </p>
-
-                        <div className="flex flex-wrap gap-3">
-
-                            {!historico.first && (
-                                <a
-                                    href={montarUrl({
-                                        status,
-                                        inicio,
-                                        fim,
-                                        page: page - 1,
-                                    })}
-                                    className="rounded-2xl border border-[#b8e5df] px-5 py-3 text-sm font-bold text-[#0d6666] transition hover:bg-[#eef7f6]"
-                                >
-                                    ← Anterior
-                                </a>
-                            )}
-
-                            {!historico.last && (
-                                <a
-                                    href={montarUrl({
-                                        status,
-                                        inicio,
-                                        fim,
-                                        page: page + 1,
-                                    })}
-                                    className="rounded-2xl bg-[#0d6666] px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
-                                >
-                                    Próxima →
-                                </a>
-                            )}
-                        </div>
-                    </div>
-                </section>
+                    </section>
+                </FinanceiroAlunoClient>
             </div>
         </main>
     );
