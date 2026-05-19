@@ -22,7 +22,9 @@ public class AlunoController {
     }
 
     @PostMapping
-    public ResponseEntity<SuccessResponse<Void>> cadastrar(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<SuccessResponse<Void>> cadastrar(
+            @RequestBody Map<String, Object> body
+    ) {
 
         service.cadastrar(body);
 
@@ -40,15 +42,19 @@ public class AlunoController {
     public ResponseEntity<SuccessResponse<Void>> login(
             @RequestBody Map<String, Object> body
     ) {
+
         Map<String, Object> aluno = service.login(body);
 
-        Object alunoId = aluno.get("alunoId");
+        Object token = aluno.get("token");
 
-        if (alunoId == null) {
-            throw new IllegalStateException("Resposta de login inválida");
+        if (token == null) {
+            throw new IllegalStateException(
+                    "Resposta de login inválida"
+            );
         }
 
-        ResponseCookie cookie = ResponseCookie.from("aluno_id", String.valueOf(alunoId))
+        ResponseCookie cookie = ResponseCookie
+                .from("aluno_token", String.valueOf(token))
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
@@ -72,7 +78,8 @@ public class AlunoController {
     @PostMapping("/logout")
     public ResponseEntity<SuccessResponse<Void>> logout() {
 
-        ResponseCookie cookie = ResponseCookie.from("aluno_id", "")
+        ResponseCookie cookie = ResponseCookie
+                .from("aluno_token", "")
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
@@ -97,7 +104,9 @@ public class AlunoController {
     public ResponseEntity<SuccessResponse<Map<String, Object>>> me(
             HttpServletRequest request
     ) {
-        Map<String, Object> data = service.buscarPerfilAluno(request);
+
+        Map<String, Object> data =
+                service.buscarPerfilAluno(request);
 
         SuccessResponse<Map<String, Object>> response =
                 new SuccessResponse<>(
@@ -132,7 +141,9 @@ public class AlunoController {
     public ResponseEntity<SuccessResponse<List<Map<String, Object>>>> listarAdmin(
             HttpServletRequest request
     ) {
-        List<Map<String, Object>> data = service.listarAdmin(request);
+
+        List<Map<String, Object>> data =
+                service.listarAdmin(request);
 
         SuccessResponse<List<Map<String, Object>>> response =
                 new SuccessResponse<>(
@@ -169,6 +180,7 @@ public class AlunoController {
             @PathVariable Long id,
             HttpServletRequest request
     ) {
+
         List<Map<String, Object>> data =
                 service.listarPagamentosPorAssinatura(id, request);
 
@@ -208,7 +220,11 @@ public class AlunoController {
             HttpServletRequest request
     ) {
 
-        service.atualizarObservacoesInternas(id, body, request);
+        service.atualizarObservacoesInternas(
+                id,
+                body,
+                request
+        );
 
         SuccessResponse<Void> response =
                 new SuccessResponse<>(
@@ -227,6 +243,7 @@ public class AlunoController {
             @RequestBody Map<String, Object> body,
             HttpServletRequest request
     ) {
+
         service.atualizarAdmin(id, body, request);
 
         SuccessResponse<Void> response =
@@ -263,6 +280,7 @@ public class AlunoController {
     public ResponseEntity<SuccessResponse<List<Map<String, Object>>>> listarPagamentosAlunoLogado(
             HttpServletRequest request
     ) {
+
         List<Map<String, Object>> data =
                 service.listarPagamentosAlunoLogado(request);
 
