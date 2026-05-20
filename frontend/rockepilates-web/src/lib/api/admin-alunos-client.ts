@@ -75,6 +75,8 @@ export type CadastroAlunoAdminRequest = {
     tipoPlano: "MENSAL" | "SEMESTRAL" | "ANUAL";
     dataVencimento: string;
     pago: boolean;
+    senha?: string;
+    confirmarSenha?: string;
 };
 
 export async function cadastrarAlunoAdmin(data: CadastroAlunoAdminRequest) {

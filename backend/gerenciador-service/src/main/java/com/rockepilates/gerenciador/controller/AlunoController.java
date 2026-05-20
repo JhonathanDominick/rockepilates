@@ -32,6 +32,13 @@ public class AlunoController {
         return service.buscarPerfilAluno(id);
     }
 
+    @GetMapping("/{id}/financeiro/resumo")
+    public ResumoFinanceiroAlunoResponse buscarResumoFinanceiroAluno(
+            @PathVariable Long id
+    ) {
+        return service.buscarResumoFinanceiroAluno(id);
+    }
+
     @GetMapping("/{id}/pagamentos")
     public List<PagamentoResponse> listarPagamentosPorAluno(@PathVariable Long id) {
         return service.listarPagamentosPorAluno(id);
@@ -121,5 +128,14 @@ public class AlunoController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void cancelarAssinatura(@PathVariable Long id) {
         service.cancelarAssinatura(id);
+    }
+
+    @PatchMapping("/{id}/senha")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void alterarSenhaAluno(
+            @PathVariable Long id,
+            @Valid @RequestBody AlterarSenhaAlunoRequest request
+    ) {
+        service.alterarSenhaAluno(id, request);
     }
 }

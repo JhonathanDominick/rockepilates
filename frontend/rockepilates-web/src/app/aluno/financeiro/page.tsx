@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { buscarPagamentosAlunoPaginado } from "@/lib/api/aluno-perfil";
+import {
+    buscarPagamentosAlunoPaginado,
+    buscarResumoFinanceiroAluno,
+} from "@/lib/api/aluno-perfil";
 import { FinanceiroAlunoClient } from "./FinanceiroAlunoClient";
 
 type PageProps = {
@@ -45,9 +48,27 @@ function getStatusClass(status: string) {
     return "bg-[#eef7f6] text-[#255252] border-[#cfe7e4]";
 }
 
+function getCardClass(tipo: string) {
+
+    if (tipo === "danger") {
+        return "border-[#ffd2cb] bg-[#fff4f1]";
+    }
+
+    if (tipo === "warning") {
+        return "border-[#ffe0a6] bg-[#fff8eb]";
+    }
+
+    if (tipo === "success") {
+        return "border-[#b8e5df] bg-[#effaf8]";
+    }
+
+    return "border-[#dce8e5] bg-white";
+}
+
 export default async function FinanceiroAlunoPage({
                                                       searchParams,
                                                   }: PageProps) {
+
     const cookieStore = await cookies();
 
     const alunoToken = cookieStore.get("aluno_token");
@@ -68,14 +89,16 @@ export default async function FinanceiroAlunoPage({
 
     const page = Number(params.page ?? "0");
 
-    const historico =
-        await buscarPagamentosAlunoPaginado({
+    const [historico, resumo] = await Promise.all([
+        buscarPagamentosAlunoPaginado({
             status,
             inicio,
             fim,
             page,
             size: 6,
-        });
+        }),
+        buscarResumoFinanceiroAluno(),
+    ]);
 
     const pagamentos = historico.content ?? [];
 
@@ -102,6 +125,96 @@ export default async function FinanceiroAlunoPage({
                     <p className="mt-3 max-w-3xl text-sm leading-6 text-[#607579]">
                         Os pagamentos são registrados manualmente pela professora.
                     </p>
+                </section>
+
+                <section className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+
+                    <div
+                        className={`rounded-[24px] border p-5 shadow-sm ${getCardClass(
+                            resumo.pagamentosAtrasados > 0
+                                ? "danger"
+                                : "success"
+                        )}`}
+                    >
+                        <p className="text-[11px] font-bold uppercase tracking-wide text-[#607579]">
+                            Status financeiro
+                        </p>
+
+                        <h2 className="mt-3 text-2xl font-black text-[#10263d]">
+                            {resumo.statusFinanceiro}
+                        </h2>
+                    </div>
+
+                    <div
+                        className={`rounded-[24px] border p-5 shadow-sm ${getCardClass(
+                            resumo.pagamentosPendentes > 0
+                                ? "warning"
+                                : "success"
+                        )}`}
+                    >
+                        <p className="text-[11px] font-bold uppercase tracking-wide text-[#607579]">
+                            Pendências
+                        </p>
+
+                        <h2 className="mt-3 text-2xl font-black text-[#10263d]">
+                            {resumo.pagamentosPendentes}
+                        </h2>
+                    </div>
+
+                    <div
+                        className={`rounded-[24px] border p-5 shadow-sm ${getCardClass(
+                            resumo.pagamentosAtrasados > 0
+                                ? "danger"
+                                : "success"
+                        )}`}
+                    >
+                        <p className="text-[11px] font-bold uppercase tracking-wide text-[#607579]">
+                            Pagamentos atrasados
+                        </p>
+
+                        <h2 className="mt-3 text-2xl font-black text-[#10263d]">
+                            {resumo.pagamentosAtrasados}
+                        </h2>
+                    </div>
+
+                    <div className="rounded-[24px] border border-[#dce8e5] bg-white p-5 shadow-sm">
+                        <p className="text-[11px] font-bold uppercase tracking-wide text-[#607579]">
+                            Próximo vencimento
+                        </p>
+
+                        <h2 className="mt-3 text-2xl font-black text-[#10263d]">
+                            {formatarData(
+                                resumo.proximoVencimento
+                            )}
+                        </h2>
+                    </div>
+                </section>
+
+                <section className="mt-5 grid gap-4 md:grid-cols-2">
+
+                    <div className="rounded-[24px] border border-[#dce8e5] bg-white p-5 shadow-sm">
+                        <p className="text-[11px] font-bold uppercase tracking-wide text-[#607579]">
+                            Última confirmação
+                        </p>
+
+                        <h2 className="mt-3 text-2xl font-black text-[#10263d]">
+                            {resumo.ultimoPagamentoConfirmado
+                                ? formatarData(
+                                    resumo.ultimoPagamentoConfirmado
+                                )
+                                : "Sem confirmação"}
+                        </h2>
+                    </div>
+
+                    <div className="rounded-[24px] border border-[#dce8e5] bg-white p-5 shadow-sm">
+                        <p className="text-[11px] font-bold uppercase tracking-wide text-[#607579]">
+                            Assinatura
+                        </p>
+
+                        <h2 className="mt-3 text-2xl font-black text-[#10263d]">
+                            {resumo.statusAssinatura}
+                        </h2>
+                    </div>
                 </section>
 
                 <FinanceiroAlunoClient

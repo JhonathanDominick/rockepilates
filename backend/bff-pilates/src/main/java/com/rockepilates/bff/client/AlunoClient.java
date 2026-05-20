@@ -18,6 +18,11 @@ public interface AlunoClient {
     @GetMapping("/alunos/{id}/perfil")
     Map<String, Object> buscarPerfil(@PathVariable Long id);
 
+    @GetMapping("/alunos/{id}/financeiro/resumo")
+    Map<String, Object> buscarResumoFinanceiroAluno(
+            @PathVariable Long id
+    );
+
     @GetMapping("/alunos/{id}/pagamentos")
     List<Map<String, Object>> listarPagamentosPorAluno(@PathVariable Long id);
 
@@ -65,5 +70,11 @@ public interface AlunoClient {
             @RequestParam(required = false) String fim,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size
+    );
+
+    @PatchMapping("/alunos/{id}/senha")
+    void alterarSenhaAluno(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body
     );
 }

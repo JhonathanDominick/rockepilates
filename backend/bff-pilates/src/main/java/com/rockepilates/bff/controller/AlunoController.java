@@ -119,6 +119,25 @@ public class AlunoController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/me/financeiro/resumo")
+    public ResponseEntity<SuccessResponse<Map<String, Object>>> resumoFinanceiro(
+            HttpServletRequest request
+    ) {
+
+        Map<String, Object> data =
+                service.buscarResumoFinanceiroAluno(request);
+
+        SuccessResponse<Map<String, Object>> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Resumo financeiro do aluno",
+                        data
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/admin")
     public ResponseEntity<SuccessResponse<Void>> cadastrarAdmin(
             @RequestBody Map<String, Object> body,
@@ -339,6 +358,24 @@ public class AlunoController {
                         200,
                         "Histórico financeiro paginado do aluno",
                         data
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/me/senha")
+    public ResponseEntity<SuccessResponse<Void>> alterarSenhaAluno(
+            @RequestBody Map<String, Object> body,
+            HttpServletRequest request
+    ) {
+        service.alterarSenhaAluno(body, request);
+
+        SuccessResponse<Void> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Senha alterada com sucesso",
+                        null
                 );
 
         return ResponseEntity.ok(response);

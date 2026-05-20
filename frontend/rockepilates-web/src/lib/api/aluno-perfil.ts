@@ -128,3 +128,30 @@ export async function buscarPagamentosAlunoPaginado({
 
     return data?.data ?? data;
 }
+
+export async function buscarResumoFinanceiroAluno() {
+    const cookieHeader = await getCookieHeader();
+
+    const response = await fetch(
+        `${getBffUrl()}/bff/alunos/me/financeiro/resumo`,
+        {
+            headers: {
+                Cookie: cookieHeader,
+            },
+            cache: "no-store",
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(
+            await extrairErro(
+                response,
+                "Erro ao carregar resumo financeiro"
+            )
+        );
+    }
+
+    const data = await response.json();
+
+    return data?.data ?? data;
+}

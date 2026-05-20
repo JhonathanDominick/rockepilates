@@ -22,13 +22,17 @@ export default function NovoAlunoAdminPage() {
         tipoPlano: "MENSAL",
         dataVencimento: "",
         pago: false,
+        senha: "",
+        confirmarSenha: "",
     });
 
     const [loading, setLoading] = useState(false);
     const [erro, setErro] = useState<string | null>(null);
 
     function handleChange(
-        event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+        event: React.ChangeEvent<
+            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >
     ) {
         const { name, value, type } = event.target;
 
@@ -56,7 +60,16 @@ export default function NovoAlunoAdminPage() {
             setLoading(true);
             setErro(null);
 
-            await cadastrarAlunoAdmin(form);
+            if (form.senha && form.senha !== form.confirmarSenha) {
+                setErro("As senhas não coincidem.");
+                setLoading(false);
+                return;
+            }
+
+            const payload = { ...form };
+            delete payload.confirmarSenha;
+
+            await cadastrarAlunoAdmin(payload);
 
             router.push("/admin/alunos");
             router.refresh();
@@ -174,6 +187,37 @@ export default function NovoAlunoAdminPage() {
                             value={form.dataVencimento}
                             onChange={handleChange}
                             required
+                            className="w-full rounded-2xl border border-[#dce8e5] px-4 py-3 text-sm outline-none transition focus:border-[#0d6666] focus:ring-2 focus:ring-[#0d6666]/20"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="mb-2 block text-sm font-bold text-[#10263d]">
+                            Senha de acesso
+                        </label>
+                        <input
+                            type="password"
+                            name="senha"
+                            value={form.senha}
+                            onChange={handleChange}
+                            placeholder="Opcional"
+                            className="w-full rounded-2xl border border-[#dce8e5] px-4 py-3 text-sm outline-none transition focus:border-[#0d6666] focus:ring-2 focus:ring-[#0d6666]/20"
+                        />
+                        <p className="mt-2 text-xs text-[#607579]">
+                            Se preencher, o aluno já poderá acessar o portal.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label className="mb-2 block text-sm font-bold text-[#10263d]">
+                            Confirmar senha
+                        </label>
+                        <input
+                            type="password"
+                            name="confirmarSenha"
+                            value={form.confirmarSenha}
+                            onChange={handleChange}
+                            placeholder="Repita a senha"
                             className="w-full rounded-2xl border border-[#dce8e5] px-4 py-3 text-sm outline-none transition focus:border-[#0d6666] focus:ring-2 focus:ring-[#0d6666]/20"
                         />
                     </div>
