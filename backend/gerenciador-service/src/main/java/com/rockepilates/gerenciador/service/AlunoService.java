@@ -101,6 +101,7 @@ public class AlunoService {
                 .dataNascimento(request.dataNascimento())
                 .objetivo(request.objetivo())
                 .observacoesSaude(request.observacoesSaude())
+                .senhaHash(passwordEncoder.encode(request.senha()))
                 .ativo(true)
                 .build();
 
@@ -192,10 +193,7 @@ public class AlunoService {
                         )
                 );
 
-        String statusPagamento = pagamentoRepository
-                .findFirstByAssinaturaOrderByDataVencimentoDesc(assinatura)
-                .map(pagamento -> pagamento.getStatus().name())
-                .orElse("SEM_PAGAMENTO");
+        String statusPagamento = resolverStatusFinanceiroAluno(assinatura);
 
         return new AlunoPerfilResponse(
                 aluno.getId(),
@@ -445,6 +443,58 @@ public class AlunoService {
         );
     }
 
+    public ResumoFinanceiroAlunoResponse buscarResumoFinanceiroAluno(
+            Long alunoId
+    ) {
+
+        Aluno aluno = alunoRepository.findById(alunoId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Aluno não encontrado")
+                );
+
+        Assinatura assinatura = assinaturaRepository
+                .findByAlunoIdOrderByCriadoEmDesc(alunoId)
+                .stream()
+                .findFirst()
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Assinatura não encontrada"
+                        )
+                );
+
+        String statusFinanceiro = resolverStatusFinanceiroAluno(assinatura);
+
+        Long pagamentosPendentes =
+                pagamentoRepository.countByAssinaturaAndStatus(
+                        assinatura,
+                        StatusPagamento.PENDENTE
+                );
+
+        Long pagamentosAtrasados =
+                pagamentoRepository.countByAssinaturaAndStatus(
+                        assinatura,
+                        StatusPagamento.ATRASADO
+                );
+
+        LocalDate ultimoPagamentoConfirmado =
+                pagamentoRepository
+                        .findFirstByAssinaturaAndStatusOrderByDataPagamentoDesc(
+                                assinatura,
+                                StatusPagamento.PAGO
+                        )
+                        .map(Pagamento::getDataPagamento)
+                        .orElse(null);
+
+        return new ResumoFinanceiroAlunoResponse(
+                assinatura.getStatus().name(),
+                statusFinanceiro,
+                pagamentosPendentes,
+                pagamentosAtrasados,
+                assinatura.getDataVencimento(),
+                ultimoPagamentoConfirmado
+        );
+    }
+
     @Transactional
     public void atualizarPagamentosAtrasados() {
 
@@ -520,5 +570,72 @@ public class AlunoService {
         assinaturaRepository.save(assinatura);
 
         pagamentoRepository.saveAll(pagamentos);
+    }
+
+    @Transactional
+    public void alterarSenhaAluno(Long alunoId, AlterarSenhaAlunoRequest request) {
+        Aluno aluno = alunoRepository.findById(alunoId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Aluno não encontrado")
+                );
+
+        boolean senhaAtualValida = passwordEncoder.matches(
+                request.senhaAtual(),
+                aluno.getSenhaHash()
+        );
+
+        if (!senhaAtualValida) {
+            throw new IllegalArgumentException("Senha atual inválida");
+        }
+
+        aluno.setSenhaHash(passwordEncoder.encode(request.novaSenha()));
+    }
+
+    private String resolverStatusFinanceiroAluno(Assinatura assinatura) {
+        if (assinatura.getStatus() == StatusAssinatura.CANCELADA) {
+            return "CANCELADO";
+        }
+
+        Long pagamentosAtrasados = pagamentoRepository.countByAssinaturaAndStatus(
+                assinatura,
+                StatusPagamento.ATRASADO
+        );
+
+        if (pagamentosAtrasados > 0) {
+            return "ATRASADO";
+        }
+
+        return pagamentoRepository
+                .findFirstByAssinaturaOrderByDataVencimentoDesc(assinatura)
+                .map(pagamento -> {
+                    if (pagamento.getStatus() == StatusPagamento.PAGO) {
+                        return "PAGO";
+                    }
+
+                    if (pagamento.getStatus() == StatusPagamento.CANCELADO) {
+                        return "CANCELADO";
+                    }
+
+                    if (
+                            pagamento.getStatus() == StatusPagamento.PENDENTE
+                                    && !pagamento.getDataVencimento().isBefore(LocalDate.now())
+                    ) {
+                        return "EM_DIA";
+                    }
+
+                    if (
+                            pagamento.getStatus() == StatusPagamento.PENDENTE
+                                    && pagamento.getDataVencimento().isBefore(LocalDate.now())
+                    ) {
+                        return "PENDENTE";
+                    }
+
+                    if (pagamento.getStatus() == StatusPagamento.ATRASADO) {
+                        return "ATRASADO";
+                    }
+
+                    return pagamento.getStatus().name();
+                })
+                .orElse("SEM_PAGAMENTO");
     }
 }

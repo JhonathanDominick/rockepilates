@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { AlterarSenhaForm } from "@/components/aluno/AlterarSenhaForm";
+
 import {
     buscarPagamentosAlunoPaginado,
     buscarPerfilAluno,
@@ -29,7 +31,8 @@ function getStatusClass(status: string) {
 
     if (
         statusNormalizado.includes("ATIVA") ||
-        statusNormalizado.includes("PAGO")
+        statusNormalizado.includes("PAGO") ||
+        statusNormalizado.includes("EM_DIA")
     ) {
         return "bg-[#dff4f2] text-[#0d6666] border-[#b8e5df]";
     }
@@ -71,11 +74,22 @@ export default async function PerfilAlunoPage() {
         (pagamento: any) => pagamento.status === "PAGO"
     );
 
-    const pagamentosPendentes = pagamentos.filter(
-        (pagamento: any) =>
-            pagamento.status === "PENDENTE" ||
-            pagamento.status === "ATRASADO"
-    );
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const pagamentosAtrasados = pagamentos.filter((pagamento: any) => {
+        if (pagamento.status === "ATRASADO") {
+            return true;
+        }
+
+        if (pagamento.status !== "PENDENTE") {
+            return false;
+        }
+
+        const dataVencimento = new Date(`${pagamento.dataVencimento}T00:00:00`);
+
+        return dataVencimento < hoje;
+    });
 
     return (
         <main className="min-h-screen bg-[#f6fbfa] px-6 py-10">
@@ -115,7 +129,9 @@ export default async function PerfilAlunoPage() {
                                 aluno.statusPagamento
                             )}`}
                         >
-                            Financeiro {aluno.statusPagamento}
+                            Financeiro {aluno.statusPagamento === "EM_DIA"
+                            ? "EM DIA"
+                            : aluno.statusPagamento}
                         </span>
 
                         <span className="rounded-full border border-[#b8e5df] bg-[#dff4f2] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#0d6666]">
@@ -137,11 +153,11 @@ export default async function PerfilAlunoPage() {
 
                     <div className="rounded-[24px] border border-[#dce8e5] bg-white p-5 shadow-sm">
                         <p className="text-xs font-bold uppercase tracking-wide text-[#607579]">
-                            Pendências em aberto
+                            Pagamentos atrasados
                         </p>
 
                         <p className="mt-3 text-3xl font-black text-[#10263d]">
-                            {pagamentosPendentes.length}
+                            {pagamentosAtrasados.length}
                         </p>
                     </div>
 
@@ -289,6 +305,8 @@ export default async function PerfilAlunoPage() {
                         </div>
                     )}
                 </section>
+
+                <AlterarSenhaForm />
 
                 <section className="mt-6 rounded-[28px] border border-[#dce8e5] bg-white p-6 shadow-sm">
                     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">

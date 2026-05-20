@@ -50,6 +50,14 @@ public class AlunoService {
         return client.buscarPerfil(alunoId);
     }
 
+    public Map<String, Object> buscarResumoFinanceiroAluno(
+            HttpServletRequest request
+    ) {
+        Long alunoId = extrairAlunoId(request);
+
+        return client.buscarResumoFinanceiroAluno(alunoId);
+    }
+
     public List<Map<String, Object>> listarPagamentosAlunoLogado(
             HttpServletRequest request
     ) {
@@ -173,6 +181,19 @@ public class AlunoService {
         usuariosService.validarAdmin(authorization);
 
         client.atualizarMensagemProfessora(alunoId, body);
+    }
+
+    public void alterarSenhaAluno(
+            Map<String, Object> body,
+            HttpServletRequest request
+    ) {
+        Long alunoId = extrairAlunoId(request);
+
+        try {
+            client.alterarSenhaAluno(alunoId, body);
+        } catch (FeignException.BadRequest ex) {
+            throw new IllegalArgumentException(extractMessage(ex));
+        }
     }
 
     private Long extrairAlunoId(HttpServletRequest request) {

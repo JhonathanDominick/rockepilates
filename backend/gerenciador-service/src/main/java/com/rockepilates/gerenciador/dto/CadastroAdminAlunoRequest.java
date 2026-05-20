@@ -31,6 +31,9 @@ public record CadastroAdminAlunoRequest(
         LocalDate dataVencimento,
 
         @NotNull
-        Boolean pago
+        Boolean pago,
+
+        @NotBlank
+        String senha
 ) {
 }
