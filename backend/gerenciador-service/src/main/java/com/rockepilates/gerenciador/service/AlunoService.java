@@ -94,6 +94,13 @@ public class AlunoService {
         Plano plano = planoRepository.findByTipoAndAtivoTrue(request.tipoPlano())
                 .orElseThrow(() -> new IllegalArgumentException("Plano não encontrado"));
 
+        LocalDate dataInicio = request.dataInicioAssinatura();
+
+        LocalDate primeiroVencimento =
+                dataInicio.plusMonths(plano.getDuracaoMeses());
+
+        validarDataInicioNovoAluno(dataInicio);
+
         Aluno aluno = Aluno.builder()
                 .nome(request.nome().trim())
                 .email(request.email().trim().toLowerCase())
@@ -107,13 +114,11 @@ public class AlunoService {
 
         aluno = alunoRepository.save(aluno);
 
-        LocalDate dataInicio = LocalDate.now();
-
         Assinatura assinatura = Assinatura.builder()
                 .aluno(aluno)
                 .plano(plano)
                 .dataInicio(dataInicio)
-                .dataVencimento(request.dataVencimento())
+                .dataVencimento(primeiroVencimento)
                 .status(StatusAssinatura.ATIVA)
                 .build();
 
@@ -127,7 +132,7 @@ public class AlunoService {
         Pagamento pagamento = Pagamento.builder()
                 .assinatura(assinatura)
                 .valor(plano.getValor())
-                .dataVencimento(request.dataVencimento())
+                .dataVencimento(primeiroVencimento)
                 .dataPagamento(
                         request.pago()
                                 ? LocalDate.now()
@@ -589,6 +594,16 @@ public class AlunoService {
         }
 
         aluno.setSenhaHash(passwordEncoder.encode(request.novaSenha()));
+    }
+
+    private void validarDataInicioNovoAluno(LocalDate dataInicio) {
+        LocalDate primeiroDiaMesAtual = LocalDate.now().withDayOfMonth(1);
+
+        if (dataInicio.isBefore(primeiroDiaMesAtual)) {
+            throw new IllegalArgumentException(
+                    "Para novo aluno, a data de início não pode ser anterior ao mês atual. Use a importação de aluno existente."
+            );
+        }
     }
 
     private String resolverStatusFinanceiroAluno(Assinatura assinatura) {

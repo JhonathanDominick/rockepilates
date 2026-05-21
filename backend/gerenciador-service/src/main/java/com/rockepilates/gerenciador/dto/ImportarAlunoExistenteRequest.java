@@ -1,11 +1,13 @@
 package com.rockepilates.gerenciador.dto;
 
 import com.rockepilates.gerenciador.enums.TipoPlano;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
-public record CadastroAdminAlunoRequest(
+public record ImportarAlunoExistenteRequest(
 
         @NotBlank
         String nome,
@@ -30,10 +32,11 @@ public record CadastroAdminAlunoRequest(
         @NotNull
         LocalDate dataInicioAssinatura,
 
-        @NotNull
-        Boolean pago,
-
         @NotBlank
-        String senha
+        @Size(min = 6, message = "A senha deve ter pelo menos 6 caracteres")
+        String senha,
+
+        @NotEmpty
+        List<@Valid PagamentoImportadoRequest> pagamentos
 ) {
 }

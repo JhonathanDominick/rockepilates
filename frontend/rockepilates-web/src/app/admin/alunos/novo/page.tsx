@@ -9,6 +9,10 @@ import {
     CadastroAlunoAdminRequest,
 } from "@/lib/api/admin-alunos-client";
 
+function getPrimeiroDiaMesAtual() {
+    return new Date().toISOString().split("T")[0].slice(0, 8) + "01";
+}
+
 export default function NovoAlunoAdminPage() {
     const router = useRouter();
 
@@ -20,7 +24,7 @@ export default function NovoAlunoAdminPage() {
         objetivo: "",
         observacoesSaude: "",
         tipoPlano: "MENSAL",
-        dataVencimento: "",
+        dataInicioAssinatura: "",
         pago: false,
         senha: "",
         confirmarSenha: "",
@@ -75,7 +79,11 @@ export default function NovoAlunoAdminPage() {
             router.refresh();
         } catch (error) {
             console.error("Erro ao cadastrar aluno pelo admin:", error);
-            setErro("Não foi possível cadastrar o aluno.");
+            setErro(
+                error instanceof Error
+                    ? error.message
+                    : "Não foi possível cadastrar o aluno."
+            );
         } finally {
             setLoading(false);
         }
@@ -84,7 +92,7 @@ export default function NovoAlunoAdminPage() {
     return (
         <AdminLayout
             title="Novo aluno"
-            description="Cadastre alunos antigos, presenciais ou vindos por canais externos."
+            description="Cadastre novos alunos e inicie seus ciclos financeiros automaticamente."
         >
             <div className="mb-6">
                 <Link
@@ -179,16 +187,20 @@ export default function NovoAlunoAdminPage() {
 
                     <div>
                         <label className="mb-2 block text-sm font-bold text-[#10263d]">
-                            Vencimento atual
+                            Data de início da assinatura
                         </label>
                         <input
                             type="date"
-                            name="dataVencimento"
-                            value={form.dataVencimento}
+                            name="dataInicioAssinatura"
+                            value={form.dataInicioAssinatura}
                             onChange={handleChange}
                             required
+                            min={getPrimeiroDiaMesAtual()}
                             className="w-full rounded-2xl border border-[#dce8e5] px-4 py-3 text-sm outline-none transition focus:border-[#0d6666] focus:ring-2 focus:ring-[#0d6666]/20"
                         />
+                        <p className="mt-2 text-xs text-[#607579]">
+                            Esta data será usada para calcular os ciclos financeiros do aluno.
+                        </p>
                     </div>
 
                     <div>
@@ -200,11 +212,13 @@ export default function NovoAlunoAdminPage() {
                             name="senha"
                             value={form.senha}
                             onChange={handleChange}
-                            placeholder="Opcional"
+                            required
+                            minLength={6}
+                            placeholder="Mínimo 6 caracteres"
                             className="w-full rounded-2xl border border-[#dce8e5] px-4 py-3 text-sm outline-none transition focus:border-[#0d6666] focus:ring-2 focus:ring-[#0d6666]/20"
                         />
                         <p className="mt-2 text-xs text-[#607579]">
-                            Se preencher, o aluno já poderá acessar o portal.
+                            O aluno poderá alterar essa senha depois de acessar o portal.
                         </p>
                     </div>
 
@@ -217,6 +231,8 @@ export default function NovoAlunoAdminPage() {
                             name="confirmarSenha"
                             value={form.confirmarSenha}
                             onChange={handleChange}
+                            required
+                            minLength={6}
                             placeholder="Repita a senha"
                             className="w-full rounded-2xl border border-[#dce8e5] px-4 py-3 text-sm outline-none transition focus:border-[#0d6666] focus:ring-2 focus:ring-[#0d6666]/20"
                         />
@@ -256,7 +272,7 @@ export default function NovoAlunoAdminPage() {
                             onChange={handleChange}
                             className="h-4 w-4"
                         />
-                        Este aluno já pagou o período atual
+                        Este aluno já pagou o primeiro período da assinatura
                     </label>
                 </div>
 
@@ -273,7 +289,7 @@ export default function NovoAlunoAdminPage() {
                         disabled={loading}
                         className="rounded-2xl bg-[#ef4b3f] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#ef4b3f]/20 transition hover:-translate-y-[1px] hover:bg-[#dc3f34] disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                        {loading ? "Cadastrando..." : "Cadastrar aluno"}
+                        {loading ? "Cadastrando..." : "Criar novo aluno"}
                     </button>
                 </div>
             </form>
