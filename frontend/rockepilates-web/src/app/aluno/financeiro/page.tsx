@@ -65,6 +65,14 @@ function getCardClass(tipo: string) {
     return "border-[#dce8e5] bg-white";
 }
 
+function formatarStatusFinanceiro(status: string) {
+    if (status === "EM_DIA") {
+        return "EM DIA";
+    }
+
+    return status;
+}
+
 export default async function FinanceiroAlunoPage({
                                                       searchParams,
                                                   }: PageProps) {
@@ -141,7 +149,7 @@ export default async function FinanceiroAlunoPage({
                         </p>
 
                         <h2 className="mt-3 text-2xl font-black text-[#10263d]">
-                            {resumo.statusFinanceiro}
+                            {formatarStatusFinanceiro(resumo.statusFinanceiro)}
                         </h2>
                     </div>
 
@@ -153,7 +161,7 @@ export default async function FinanceiroAlunoPage({
                         )}`}
                     >
                         <p className="text-[11px] font-bold uppercase tracking-wide text-[#607579]">
-                            Pendências
+                            Pagamentos futuros
                         </p>
 
                         <h2 className="mt-3 text-2xl font-black text-[#10263d]">
