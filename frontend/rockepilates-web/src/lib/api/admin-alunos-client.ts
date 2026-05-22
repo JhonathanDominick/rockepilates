@@ -98,3 +98,41 @@ export async function cadastrarAlunoAdmin(data: CadastroAlunoAdminRequest) {
         );
     }
 }
+
+export async function marcarPagamentoComoAusente(pagamentoId: number) {
+    const res = await fetch(
+        `${getPublicBffUrl()}/bff/alunos/pagamentos/${pagamentoId}/ausente`,
+        {
+            method: "PATCH",
+            credentials: "include",
+        }
+    );
+
+    if (!res.ok) {
+        throw new Error(
+            await extrairErro(
+                res,
+                "Erro ao marcar pagamento como ausente"
+            )
+        );
+    }
+}
+
+export async function reverterPagamentoAusenteParaPendente(pagamentoId: number) {
+    const res = await fetch(
+        `${getPublicBffUrl()}/bff/alunos/pagamentos/${pagamentoId}/reverter-ausente`,
+        {
+            method: "PATCH",
+            credentials: "include",
+        }
+    );
+
+    if (!res.ok) {
+        throw new Error(
+            await extrairErro(
+                res,
+                "Erro ao reverter pagamento ausente para pendente"
+            )
+        );
+    }
+}

@@ -80,6 +80,24 @@ public class AlunoController {
         service.marcarComoPago(id);
     }
 
+    @PatchMapping("/assinaturas/{id}/ausente")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void marcarComoAusente(@PathVariable Long id) {
+        service.marcarComoAusente(id);
+    }
+
+    @PatchMapping("/pagamentos/{id}/reverter-ausente")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reverterPagamentoAusenteParaPendente(@PathVariable Long id) {
+        service.reverterPagamentoAusenteParaPendente(id);
+    }
+
+    @PatchMapping("/pagamentos/{id}/ausente")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void marcarPagamentoComoAusente(@PathVariable Long id) {
+        service.marcarPagamentoComoAusente(id);
+    }
+
     @PatchMapping("/pagamentos/atualizar-atrasados")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void atualizarPagamentosAtrasados() {

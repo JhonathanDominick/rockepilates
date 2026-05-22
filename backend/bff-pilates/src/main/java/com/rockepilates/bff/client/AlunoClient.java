@@ -77,4 +77,13 @@ public interface AlunoClient {
             @PathVariable Long id,
             @RequestBody Map<String, Object> body
     );
+
+    @PatchMapping("/alunos/assinaturas/{id}/ausente")
+    void marcarComoAusente(@PathVariable Long id);
+
+    @PatchMapping("/alunos/pagamentos/{id}/ausente")
+    void marcarPagamentoComoAusente(@PathVariable Long id);
+
+    @PatchMapping("/alunos/pagamentos/{id}/reverter-ausente")
+    void reverterPagamentoAusenteParaPendente(@PathVariable Long id);
 }

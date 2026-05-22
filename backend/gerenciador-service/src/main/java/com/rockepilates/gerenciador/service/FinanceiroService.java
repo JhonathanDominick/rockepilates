@@ -24,11 +24,8 @@ public class FinanceiroService {
         List<Pagamento> pagamentos =
                 pagamentoRepository.findAllByOrderByDataVencimentoDesc();
 
-        LocalDate inicioMes =
-                LocalDate.now().withDayOfMonth(1);
-
-        LocalDate fimMes =
-                inicioMes.plusMonths(1).minusDays(1);
+        LocalDate inicioMes = LocalDate.now().withDayOfMonth(1);
+        LocalDate fimMes = inicioMes.plusMonths(1).minusDays(1);
 
         BigDecimal recebidoMes =
                 pagamentos.stream()
@@ -45,7 +42,7 @@ public class FinanceiroService {
                 pagamentos.stream()
                         .filter(pagamento ->
                                 pagamento.getStatus() == StatusPagamento.PENDENTE
-                                        && !pagamento.getDataVencimento().isAfter(fimMes)
+                                        && vencimentoNoMesAtual(pagamento, inicioMes, fimMes)
                         )
                         .map(Pagamento::getValor)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -54,6 +51,7 @@ public class FinanceiroService {
                 pagamentos.stream()
                         .filter(pagamento ->
                                 pagamento.getStatus() == StatusPagamento.ATRASADO
+                                        && vencimentoNoMesAtual(pagamento, inicioMes, fimMes)
                         )
                         .map(Pagamento::getValor)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -80,5 +78,15 @@ public class FinanceiroService {
                 ),
                 response
         );
+    }
+
+    private boolean vencimentoNoMesAtual(
+            Pagamento pagamento,
+            LocalDate inicioMes,
+            LocalDate fimMes
+    ) {
+        return pagamento.getDataVencimento() != null
+                && !pagamento.getDataVencimento().isBefore(inicioMes)
+                && !pagamento.getDataVencimento().isAfter(fimMes);
     }
 }

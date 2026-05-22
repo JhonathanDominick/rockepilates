@@ -71,7 +71,7 @@ export default async function DashboardFinanceiroPage() {
                             Financeiro
                         </p>
                         <h2 className="mt-2 text-2xl font-black text-[#10263d]">
-                            Últimos pagamentos
+                            Últimos registros financeiros
                         </h2>
                     </div>
 
