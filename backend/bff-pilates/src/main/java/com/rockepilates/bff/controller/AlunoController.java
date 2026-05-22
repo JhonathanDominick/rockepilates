@@ -194,6 +194,62 @@ public class AlunoController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/assinaturas/{id}/ausente")
+    public ResponseEntity<SuccessResponse<Void>> marcarComoAusente(
+            @PathVariable Long id,
+            HttpServletRequest request
+    ) {
+
+        service.marcarComoAusente(id, request);
+
+        SuccessResponse<Void> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Pagamento marcado como ausente",
+                        null
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/pagamentos/{id}/ausente")
+    public ResponseEntity<SuccessResponse<Void>> marcarPagamentoComoAusente(
+            @PathVariable Long id,
+            HttpServletRequest request
+    ) {
+        service.marcarPagamentoComoAusente(id, request);
+
+        SuccessResponse<Void> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Pagamento marcado como ausente",
+                        null
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/pagamentos/{id}/reverter-ausente")
+    public ResponseEntity<SuccessResponse<Void>> reverterPagamentoAusenteParaPendente(
+            @PathVariable Long id,
+            HttpServletRequest request
+    ) {
+
+        service.reverterPagamentoAusenteParaPendente(id, request);
+
+        SuccessResponse<Void> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Pagamento revertido para pendente com sucesso",
+                        null
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/assinaturas/{id}/pagamentos")
     public ResponseEntity<SuccessResponse<List<Map<String, Object>>>> listarPagamentosPorAssinatura(
             @PathVariable Long id,

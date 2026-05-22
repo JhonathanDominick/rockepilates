@@ -140,6 +140,33 @@ public class AlunoService {
         client.marcarComoPago(id);
     }
 
+    public void marcarComoAusente(Long id, HttpServletRequest request) {
+        String authorization = extrairAuthorization(request);
+
+        usuariosService.validarAdmin(authorization);
+
+        client.marcarComoAusente(id);
+    }
+
+    public void marcarPagamentoComoAusente(Long pagamentoId, HttpServletRequest request) {
+        String authorization = extrairAuthorization(request);
+
+        usuariosService.validarAdmin(authorization);
+
+        client.marcarPagamentoComoAusente(pagamentoId);
+    }
+
+    public void reverterPagamentoAusenteParaPendente(
+            Long pagamentoId,
+            HttpServletRequest request
+    ) {
+        String authorization = extrairAuthorization(request);
+
+        usuariosService.validarAdmin(authorization);
+
+        client.reverterPagamentoAusenteParaPendente(pagamentoId);
+    }
+
     public List<Map<String, Object>> listarPagamentosPorAssinatura(
             Long id,
             HttpServletRequest request

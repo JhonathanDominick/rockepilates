@@ -5,6 +5,8 @@ import Link from "next/link";
 import {
     listarPagamentosPorAssinatura,
     marcarAssinaturaComoPaga,
+    marcarPagamentoComoAusente,
+    reverterPagamentoAusenteParaPendente,
     PagamentoHistorico,
 } from "@/lib/api/admin-alunos-client";
 
@@ -40,15 +42,15 @@ function getStatusClass(status: string) {
         return "bg-[#fff1d6] text-[#9a5b00] border-[#ffd98c]";
     }
 
+    if (statusNormalizado.includes("AUSENTE")) {
+        return "bg-[#eef1f1] text-[#5f6f72] border-[#d8dddd]";
+    }
+
     if (
         statusNormalizado.includes("ATIVA") ||
         statusNormalizado.includes("PAGO")
     ) {
         return "bg-[#dff4f2] text-[#0d6666] border-[#b8e5df]";
-    }
-
-    if (statusNormalizado.includes("VENCIDA")) {
-        return "bg-[#fff1d6] text-[#9a5b00] border-[#ffd98c]";
     }
 
     if (
@@ -73,6 +75,19 @@ function podeMarcarComoPago(statusPagamento: string, statusAssinatura: string) {
         statusPagamentoNormalizado === "PENDENTE" ||
         statusPagamentoNormalizado === "ATRASADO"
     );
+}
+
+function podeMarcarPagamentoComoAusente(statusPagamento: string) {
+    const statusPagamentoNormalizado = normalizarStatus(statusPagamento);
+
+    return (
+        statusPagamentoNormalizado === "PENDENTE" ||
+        statusPagamentoNormalizado === "ATRASADO"
+    );
+}
+
+function podeReverterPagamentoAusente(statusPagamento: string) {
+    return normalizarStatus(statusPagamento) === "AUSENTE";
 }
 
 function formatarMoeda(valor: number) {
@@ -130,6 +145,7 @@ function isPagamentoAtual(
 
     if (
         statusPagamento === "CANCELADO" ||
+        statusPagamento === "AUSENTE" ||
         statusAssinatura === "CANCELADA"
     ) {
         return false;
@@ -143,8 +159,7 @@ function isPagamentoAtual(
 
 export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
     const [alunos, setAlunos] = useState(alunosIniciais);
-    const [assinaturaProcessando, setAssinaturaProcessando] =
-        useState<number | null>(null);
+    const [processandoId, setProcessandoId] = useState<number | null>(null);
     const [erro, setErro] = useState<string | null>(null);
     const [modalAberto, setModalAberto] = useState(false);
     const [alunoSelecionado, setAlunoSelecionado] =
@@ -158,12 +173,13 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
     const totalPago = somarPorStatus(pagamentos, "PAGO");
     const totalPendente = somarPorStatus(pagamentos, "PENDENTE");
     const totalAtrasado = somarPorStatus(pagamentos, "ATRASADO");
+    const totalAusente = somarPorStatus(pagamentos, "AUSENTE");
     const totalCancelado = somarPorStatus(pagamentos, "CANCELADO");
 
     async function handleMarcarComoPago(assinaturaId: number) {
         try {
             setErro(null);
-            setAssinaturaProcessando(assinaturaId);
+            setProcessandoId(assinaturaId);
 
             await marcarAssinaturaComoPaga(assinaturaId);
 
@@ -191,7 +207,7 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
             console.error("Erro ao marcar assinatura como paga:", error);
             setErro("Não foi possível marcar a assinatura como paga.");
         } finally {
-            setAssinaturaProcessando(null);
+            setProcessandoId(null);
         }
     }
 
@@ -213,6 +229,90 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
             );
         } finally {
             setCarregandoHistorico(false);
+        }
+    }
+
+    async function handleMarcarPagamentoComoAusente(pagamentoId: number) {
+        try {
+            setErroHistorico(null);
+            setProcessandoId(pagamentoId);
+
+            await marcarPagamentoComoAusente(pagamentoId);
+
+            setPagamentos((pagamentosAtuais) =>
+                pagamentosAtuais.map((pagamento) => {
+                    if (pagamento.id !== pagamentoId) {
+                        return pagamento;
+                    }
+
+                    return {
+                        ...pagamento,
+                        status: "AUSENTE",
+                        dataPagamento: null,
+                    };
+                })
+            );
+
+            setAlunos((alunosAtuais) =>
+                alunosAtuais.map((aluno) => {
+                    if (aluno.assinaturaId !== alunoSelecionado?.assinaturaId) {
+                        return aluno;
+                    }
+
+                    return {
+                        ...aluno,
+                        statusPagamento: "AUSENTE",
+                    };
+                })
+            );
+        } catch (error) {
+            console.error("Erro ao marcar pagamento como ausente:", error);
+            setErroHistorico("Não foi possível marcar o pagamento como ausente.");
+        } finally {
+            setProcessandoId(null);
+        }
+    }
+
+    async function handleReverterPagamentoAusenteParaPendente(pagamentoId: number) {
+        try {
+            setErroHistorico(null);
+            setProcessandoId(pagamentoId);
+
+            await reverterPagamentoAusenteParaPendente(pagamentoId);
+
+            setPagamentos((pagamentosAtuais) =>
+                pagamentosAtuais.map((pagamento) => {
+                    if (pagamento.id !== pagamentoId) {
+                        return pagamento;
+                    }
+
+                    return {
+                        ...pagamento,
+                        status: "PENDENTE",
+                        dataPagamento: null,
+                    };
+                })
+            );
+
+            setAlunos((alunosAtuais) =>
+                alunosAtuais.map((aluno) => {
+                    if (aluno.assinaturaId !== alunoSelecionado?.assinaturaId) {
+                        return aluno;
+                    }
+
+                    return {
+                        ...aluno,
+                        statusPagamento: "PENDENTE",
+                    };
+                })
+            );
+        } catch (error) {
+            console.error("Erro ao reverter pagamento ausente:", error);
+            setErroHistorico(
+                "Não foi possível reverter o pagamento para pendente."
+            );
+        } finally {
+            setProcessandoId(null);
         }
     }
 
@@ -263,7 +363,7 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                         <tbody className="divide-y divide-[#e1ece9]">
                         {alunos.map((aluno) => {
                             const processando =
-                                assinaturaProcessando === aluno.assinaturaId;
+                                processandoId === aluno.assinaturaId;
 
                             return (
                                 <tr
@@ -298,29 +398,29 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                     </td>
 
                                     <td className="px-5 py-5">
-                                        <span className="rounded-full border border-[#b8e5df] bg-[#dff4f2] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0d6666]">
-                                            {aluno.plano}
-                                        </span>
+                                            <span className="rounded-full border border-[#b8e5df] bg-[#dff4f2] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0d6666]">
+                                                {aluno.plano}
+                                            </span>
                                     </td>
 
                                     <td className="px-5 py-5">
-                                        <span
-                                            className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${getStatusClass(
-                                                aluno.status
-                                            )}`}
-                                        >
-                                            {aluno.status}
-                                        </span>
+                                            <span
+                                                className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${getStatusClass(
+                                                    aluno.status
+                                                )}`}
+                                            >
+                                                {aluno.status}
+                                            </span>
                                     </td>
 
                                     <td className="px-5 py-5">
-                                        <span
-                                            className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${getStatusClass(
-                                                aluno.statusPagamento
-                                            )}`}
-                                        >
-                                            {aluno.statusPagamento}
-                                        </span>
+                                            <span
+                                                className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${getStatusClass(
+                                                    aluno.statusPagamento
+                                                )}`}
+                                            >
+                                                {aluno.statusPagamento}
+                                            </span>
                                     </td>
 
                                     <td className="px-5 py-5 font-medium text-[#50666a]">
@@ -341,7 +441,9 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                             <button
                                                 type="button"
                                                 onClick={() =>
-                                                    handleAbrirHistorico(aluno)
+                                                    handleAbrirHistorico(
+                                                        aluno
+                                                    )
                                                 }
                                                 className="min-w-[110px] rounded-2xl border border-[#b8e5df] bg-white px-4 py-2 text-xs font-bold text-[#0d6666] transition hover:-translate-y-[1px] hover:bg-[#eaf7f5]"
                                             >
@@ -368,8 +470,8 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                                 </button>
                                             ) : (
                                                 <span className="min-w-[110px] rounded-2xl px-3 py-2 text-center text-xs font-bold uppercase tracking-wide text-[#7b8d91]">
-                                                    Sem ação
-                                                </span>
+                                                        Sem ação
+                                                    </span>
                                             )}
                                         </div>
                                     </td>
@@ -429,9 +531,8 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                 </div>
 
                                 <p className="mt-2 text-sm text-[#607579]">
-                                    Assinatura #
-                                    {alunoSelecionado.assinaturaId} · Vencimento
-                                    atual{" "}
+                                    Assinatura #{alunoSelecionado.assinaturaId} ·
+                                    Vencimento atual{" "}
                                     {formatarData(
                                         alunoSelecionado.dataVencimento
                                     )}
@@ -462,7 +563,7 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
 
                             {!carregandoHistorico && !erroHistorico && (
                                 <>
-                                    <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                                    <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                                         <div className="rounded-3xl border border-[#b8e5df] bg-[#dff4f2] p-4">
                                             <p className="text-xs font-bold uppercase tracking-wide text-[#0d6666]">
                                                 Pago
@@ -490,6 +591,15 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                             </p>
                                         </div>
 
+                                        <div className="rounded-3xl border border-[#d8dddd] bg-[#f5f6f6] p-4">
+                                            <p className="text-xs font-bold uppercase tracking-wide text-[#5f6f72]">
+                                                Ausente
+                                            </p>
+                                            <p className="mt-2 text-lg font-black text-[#10263d]">
+                                                {formatarMoeda(totalAusente)}
+                                            </p>
+                                        </div>
+
                                         <div className="rounded-3xl border border-[#d8dddd] bg-[#eef1f1] p-4">
                                             <p className="text-xs font-bold uppercase tracking-wide text-[#5f6f72]">
                                                 Cancelado
@@ -501,7 +611,7 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                     </div>
 
                                     <div className="overflow-x-auto rounded-3xl border border-[#dce8e5]">
-                                        <table className="w-full min-w-[760px] text-left text-sm">
+                                        <table className="w-full min-w-[860px] text-left text-sm">
                                             <thead className="bg-[#eaf7f5] text-xs uppercase tracking-wide text-[#255252]">
                                             <tr>
                                                 <th className="px-4 py-3">
@@ -522,6 +632,9 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                                 <th className="px-4 py-3">
                                                     Status
                                                 </th>
+                                                <th className="px-4 py-3">
+                                                    Ações
+                                                </th>
                                             </tr>
                                             </thead>
 
@@ -534,9 +647,21 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                                             alunoSelecionado
                                                         );
 
+                                                    const podeMarcarAusente =
+                                                        podeMarcarPagamentoComoAusente(
+                                                            pagamento.status
+                                                        );
+
+                                                    const podeReverterAusente =
+                                                        podeReverterPagamentoAusente(
+                                                            pagamento.status
+                                                        );
+
                                                     return (
                                                         <tr
-                                                            key={pagamento.id}
+                                                            key={
+                                                                pagamento.id
+                                                            }
                                                             className={
                                                                 pagamentoAtual
                                                                     ? "bg-[#f0faf8]"
@@ -560,11 +685,11 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                                             </td>
 
                                                             <td className="px-4 py-4">
-                                                                <span className="rounded-full border border-[#b8e5df] bg-[#dff4f2] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0d6666]">
-                                                                    {
-                                                                        alunoSelecionado.plano
-                                                                    }
-                                                                </span>
+                                                                    <span className="rounded-full border border-[#b8e5df] bg-[#dff4f2] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0d6666]">
+                                                                        {
+                                                                            alunoSelecionado.plano
+                                                                        }
+                                                                    </span>
                                                             </td>
 
                                                             <td className="px-4 py-4 font-medium text-[#50666a]">
@@ -586,15 +711,59 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                                             </td>
 
                                                             <td className="px-4 py-4">
-                                                                <span
-                                                                    className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${getStatusClass(
-                                                                        pagamento.status
-                                                                    )}`}
-                                                                >
-                                                                    {
-                                                                        pagamento.status
-                                                                    }
-                                                                </span>
+                                                                    <span
+                                                                        className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${getStatusClass(
+                                                                            pagamento.status
+                                                                        )}`}
+                                                                    >
+                                                                        {
+                                                                            pagamento.status
+                                                                        }
+                                                                    </span>
+                                                            </td>
+
+                                                            <td className="px-4 py-4">
+                                                                {podeMarcarAusente ? (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            handleMarcarPagamentoComoAusente(
+                                                                                pagamento.id
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            processandoId ===
+                                                                            pagamento.id
+                                                                        }
+                                                                        className="rounded-xl border border-[#d8dddd] bg-[#eef1f1] px-3 py-2 text-xs font-bold text-[#5f6f72] transition hover:bg-[#e1e6e6] disabled:cursor-not-allowed disabled:opacity-60"
+                                                                    >
+                                                                        {processandoId === pagamento.id
+                                                                            ? "Salvando..."
+                                                                            : "Marcar ausente"}
+                                                                    </button>
+                                                                ) : podeReverterAusente ? (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            handleReverterPagamentoAusenteParaPendente(
+                                                                                pagamento.id
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            processandoId ===
+                                                                            pagamento.id
+                                                                        }
+                                                                        className="rounded-xl border border-[#ffd98c] bg-[#fff1d6] px-3 py-2 text-xs font-bold text-[#9a5b00] transition hover:bg-[#ffe7b3] disabled:cursor-not-allowed disabled:opacity-60"
+                                                                    >
+                                                                        {processandoId === pagamento.id
+                                                                            ? "Salvando..."
+                                                                            : "Reverter para pendente"}
+                                                                    </button>
+                                                                ) : (
+                                                                    <span className="text-xs font-bold uppercase tracking-wide text-[#7b8d91]">
+                                                                          Sem ação
+                                                                    </span>
+                                                                )}
                                                             </td>
                                                         </tr>
                                                     );
@@ -605,7 +774,7 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                                 0 && (
                                                     <tr>
                                                         <td
-                                                            colSpan={6}
+                                                            colSpan={7}
                                                             className="px-4 py-10 text-center"
                                                         >
                                                             <p className="font-bold text-[#10263d]">
@@ -614,10 +783,11 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                                             </p>
                                                             <p className="mt-1 text-sm text-[#607579]">
                                                                 Quando houver
-                                                                cobranças geradas
-                                                                para esta
-                                                                assinatura, elas
-                                                                aparecerão aqui.
+                                                                cobranças
+                                                                geradas para
+                                                                esta assinatura,
+                                                                elas aparecerão
+                                                                aqui.
                                                             </p>
                                                         </td>
                                                     </tr>

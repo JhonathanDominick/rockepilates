@@ -578,6 +578,93 @@ public class AlunoService {
     }
 
     @Transactional
+    public void marcarComoAusente(Long assinaturaId) {
+
+        Assinatura assinatura = assinaturaRepository.findById(assinaturaId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Assinatura não encontrada")
+                );
+
+        if (assinatura.getStatus() == StatusAssinatura.CANCELADA) {
+            throw new IllegalStateException(
+                    "Não é possível marcar ausência em uma assinatura cancelada"
+            );
+        }
+
+        Pagamento pagamento = pagamentoRepository
+                .findFirstByAssinaturaAndStatusInOrderByDataVencimentoDesc(
+                        assinatura,
+                        List.of(
+                                StatusPagamento.PENDENTE,
+                                StatusPagamento.ATRASADO
+                        )
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Pagamento pendente ou atrasado não encontrado")
+                );
+
+        pagamento.setStatus(StatusPagamento.AUSENTE);
+        pagamento.setDataPagamento(null);
+
+        pagamentoRepository.save(pagamento);
+    }
+
+    @Transactional
+    public void marcarPagamentoComoAusente(Long pagamentoId) {
+
+        Pagamento pagamento = pagamentoRepository.findById(pagamentoId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Pagamento não encontrado")
+                );
+
+        if (pagamento.getAssinatura().getStatus() == StatusAssinatura.CANCELADA) {
+            throw new IllegalStateException(
+                    "Não é possível marcar ausência em uma assinatura cancelada"
+            );
+        }
+
+        if (
+                pagamento.getStatus() != StatusPagamento.PENDENTE &&
+                        pagamento.getStatus() != StatusPagamento.ATRASADO
+        ) {
+            throw new IllegalStateException(
+                    "Só é possível marcar como ausente pagamentos pendentes ou atrasados"
+            );
+        }
+
+        pagamento.setStatus(StatusPagamento.AUSENTE);
+        pagamento.setDataPagamento(null);
+
+        pagamentoRepository.save(pagamento);
+    }
+
+    @Transactional
+    public void reverterPagamentoAusenteParaPendente(Long pagamentoId) {
+
+        Pagamento pagamento = pagamentoRepository.findById(pagamentoId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Pagamento não encontrado")
+                );
+
+        if (pagamento.getAssinatura().getStatus() == StatusAssinatura.CANCELADA) {
+            throw new IllegalStateException(
+                    "Não é possível reverter pagamento de uma assinatura cancelada"
+            );
+        }
+
+        if (pagamento.getStatus() != StatusPagamento.AUSENTE) {
+            throw new IllegalStateException(
+                    "Só é possível reverter pagamentos com status AUSENTE"
+            );
+        }
+
+        pagamento.setStatus(StatusPagamento.PENDENTE);
+        pagamento.setDataPagamento(null);
+
+        pagamentoRepository.save(pagamento);
+    }
+
+    @Transactional
     public void alterarSenhaAluno(Long alunoId, AlterarSenhaAlunoRequest request) {
         Aluno aluno = alunoRepository.findById(alunoId)
                 .orElseThrow(() ->
@@ -607,14 +694,16 @@ public class AlunoService {
     }
 
     private String resolverStatusFinanceiroAluno(Assinatura assinatura) {
+
         if (assinatura.getStatus() == StatusAssinatura.CANCELADA) {
             return "CANCELADO";
         }
 
-        Long pagamentosAtrasados = pagamentoRepository.countByAssinaturaAndStatus(
-                assinatura,
-                StatusPagamento.ATRASADO
-        );
+        Long pagamentosAtrasados =
+                pagamentoRepository.countByAssinaturaAndStatus(
+                        assinatura,
+                        StatusPagamento.ATRASADO
+                );
 
         if (pagamentosAtrasados > 0) {
             return "ATRASADO";
@@ -623,6 +712,11 @@ public class AlunoService {
         return pagamentoRepository
                 .findFirstByAssinaturaOrderByDataVencimentoDesc(assinatura)
                 .map(pagamento -> {
+
+                    if (pagamento.getStatus() == StatusPagamento.AUSENTE) {
+                        return "EM_DIA";
+                    }
+
                     if (pagamento.getStatus() == StatusPagamento.PAGO) {
                         return "PAGO";
                     }
