@@ -21,8 +21,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -144,6 +146,96 @@ public class AlunoService {
         pagamentoRepository.save(pagamento);
     }
 
+    @Transactional
+    public void importarAlunoRetroativo(ImportarAlunoRetroativoRequest request) {
+
+        if (alunoRepository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("Email já cadastrado");
+        }
+
+        Plano plano = planoRepository.findByTipoAndAtivoTrue(request.tipoPlano())
+                .orElseThrow(() -> new IllegalArgumentException("Plano não encontrado"));
+
+        validarImportacaoRetroativa(request, plano);
+
+        Aluno aluno = Aluno.builder()
+                .nome(request.nome().trim())
+                .email(request.email().trim().toLowerCase())
+                .telefone(request.telefone().trim())
+                .dataNascimento(request.dataNascimento())
+                .objetivo(request.objetivo())
+                .observacoesSaude(request.observacoesSaude())
+                .senhaHash(passwordEncoder.encode(request.senha()))
+                .ativo(true)
+                .build();
+
+        aluno = alunoRepository.save(aluno);
+
+        List<PagamentoRetroativoRequest> pagamentosOrdenados =
+                request.pagamentos()
+                        .stream()
+                        .sorted(Comparator.comparing(PagamentoRetroativoRequest::dataVencimento))
+                        .toList();
+
+        PagamentoRetroativoRequest ultimoPagamentoImportado =
+                pagamentosOrdenados.get(pagamentosOrdenados.size() - 1);
+
+        LocalDate dataVencimentoAssinatura =
+                ultimoPagamentoImportado.dataVencimento();
+
+        boolean ultimoCicloFoiPago =
+                ultimoPagamentoImportado.status() == StatusPagamento.PAGO;
+
+        if (ultimoCicloFoiPago) {
+            dataVencimentoAssinatura =
+                    ultimoPagamentoImportado
+                            .dataVencimento()
+                            .plusMonths(plano.getDuracaoMeses());
+        }
+
+        Assinatura assinatura = Assinatura.builder()
+                .aluno(aluno)
+                .plano(plano)
+                .dataInicio(request.dataInicioAssinatura())
+                .dataVencimento(dataVencimentoAssinatura)
+                .status(StatusAssinatura.ATIVA)
+                .build();
+
+        assinatura = assinaturaRepository.save(assinatura);
+
+        List<Pagamento> pagamentos = new ArrayList<>();
+
+        for (PagamentoRetroativoRequest pagamentoRequest : pagamentosOrdenados) {
+            Pagamento pagamento = Pagamento.builder()
+                    .assinatura(assinatura)
+                    .valor(plano.getValor())
+                    .dataVencimento(pagamentoRequest.dataVencimento())
+                    .dataPagamento(
+                            pagamentoRequest.status() == StatusPagamento.PAGO
+                                    ? pagamentoRequest.dataPagamento()
+                                    : null
+                    )
+                    .status(pagamentoRequest.status())
+                    .build();
+
+            pagamentos.add(pagamento);
+        }
+
+        if (ultimoCicloFoiPago) {
+            Pagamento proximoPagamento = Pagamento.builder()
+                    .assinatura(assinatura)
+                    .valor(plano.getValor())
+                    .dataVencimento(dataVencimentoAssinatura)
+                    .dataPagamento(null)
+                    .status(StatusPagamento.PENDENTE)
+                    .build();
+
+            pagamentos.add(proximoPagamento);
+        }
+
+        pagamentoRepository.saveAll(pagamentos);
+    }
+
     public LoginAlunoResponse loginAluno(LoginAlunoRequest request) {
 
         Aluno aluno = alunoRepository.findByEmail(
@@ -223,10 +315,26 @@ public class AlunoService {
                 .stream()
                 .sorted(Comparator.comparing(Assinatura::getCriadoEm).reversed())
                 .map(assinatura -> {
-                    String statusPagamento = pagamentoRepository
+                    String statusPagamento = resolverStatusFinanceiroAdmin(assinatura);
+
+                    Pagamento pagamentoAtual = pagamentoRepository
                             .findFirstByAssinaturaOrderByDataVencimentoDesc(assinatura)
-                            .map(pagamento -> pagamento.getStatus().name())
-                            .orElse("SEM_PAGAMENTO");
+                            .orElse(null);
+
+                    Long pagamentoAtualId =
+                            pagamentoAtual != null
+                                    ? pagamentoAtual.getId()
+                                    : null;
+
+                    String statusPagamentoAtual =
+                            pagamentoAtual != null
+                                    ? pagamentoAtual.getStatus().name()
+                                    : "SEM_PAGAMENTO";
+
+                    LocalDate dataVencimentoAtual =
+                            pagamentoAtual != null
+                                    ? pagamentoAtual.getDataVencimento()
+                                    : assinatura.getDataVencimento();
 
                     return new AlunoAdminResponse(
                             assinatura.getId(),
@@ -240,7 +348,9 @@ public class AlunoService {
                             assinatura.getPlano().getTipo().name(),
                             assinatura.getStatus().name(),
                             statusPagamento,
-                            assinatura.getDataVencimento(),
+                            pagamentoAtualId,
+                            statusPagamentoAtual,
+                            dataVencimentoAtual,
                             assinatura.getDataCancelamento(),
                             assinatura.getAluno().getObservacoesInternas(),
                             assinatura.getAluno().getMensagemProfessora()
@@ -639,6 +749,64 @@ public class AlunoService {
     }
 
     @Transactional
+    public void marcarPagamentoComoPago(Long pagamentoId) {
+
+        Pagamento pagamento = pagamentoRepository.findById(pagamentoId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Pagamento não encontrado")
+                );
+
+        Assinatura assinatura = pagamento.getAssinatura();
+
+        if (assinatura.getStatus() == StatusAssinatura.CANCELADA) {
+            throw new IllegalStateException(
+                    "Não é possível marcar pagamento de uma assinatura cancelada"
+            );
+        }
+
+        if (
+                pagamento.getStatus() != StatusPagamento.PENDENTE &&
+                        pagamento.getStatus() != StatusPagamento.ATRASADO
+        ) {
+            throw new IllegalStateException(
+                    "Só é possível marcar como pago pagamentos pendentes ou atrasados"
+            );
+        }
+
+        pagamento.setStatus(StatusPagamento.PAGO);
+        pagamento.setDataPagamento(LocalDate.now());
+
+        Pagamento ultimoPagamento = pagamentoRepository
+                .findFirstByAssinaturaOrderByDataVencimentoDesc(assinatura)
+                .orElse(pagamento);
+
+        boolean pagamentoEhUltimoCiclo =
+                ultimoPagamento.getId().equals(pagamento.getId());
+
+        if (pagamentoEhUltimoCiclo) {
+            LocalDate proximoVencimento =
+                    pagamento.getDataVencimento().plusMonths(
+                            assinatura.getPlano().getDuracaoMeses()
+                    );
+
+            assinatura.setDataVencimento(proximoVencimento);
+            assinatura.setStatus(StatusAssinatura.ATIVA);
+
+            Pagamento proximoPagamento = Pagamento.builder()
+                    .assinatura(assinatura)
+                    .valor(assinatura.getPlano().getValor())
+                    .dataVencimento(proximoVencimento)
+                    .status(StatusPagamento.PENDENTE)
+                    .build();
+
+            pagamentoRepository.save(proximoPagamento);
+            assinaturaRepository.save(assinatura);
+        }
+
+        pagamentoRepository.save(pagamento);
+    }
+
+    @Transactional
     public void reverterPagamentoAusenteParaPendente(Long pagamentoId) {
 
         Pagamento pagamento = pagamentoRepository.findById(pagamentoId)
@@ -746,5 +914,241 @@ public class AlunoService {
                     return pagamento.getStatus().name();
                 })
                 .orElse("SEM_PAGAMENTO");
+    }
+
+    private String resolverStatusFinanceiroAdmin(Assinatura assinatura) {
+
+        if (assinatura.getStatus() == StatusAssinatura.CANCELADA) {
+            return "CANCELADO";
+        }
+
+        List<Pagamento> pagamentos =
+                pagamentoRepository.findByAssinaturaIdOrderByDataVencimentoDesc(
+                        assinatura.getId()
+                );
+
+        if (pagamentos.isEmpty()) {
+            return "SEM_PAGAMENTO";
+        }
+
+        LocalDate hoje = LocalDate.now();
+        LocalDate primeiroDiaMesAtual = hoje.withDayOfMonth(1);
+        LocalDate ultimoDiaMesAtual = primeiroDiaMesAtual.plusMonths(1).minusDays(1);
+
+        boolean existeAtrasado = pagamentos
+                .stream()
+                .anyMatch(pagamento ->
+                        pagamento.getStatus() == StatusPagamento.ATRASADO
+                                || (
+                                pagamento.getStatus() == StatusPagamento.PENDENTE
+                                        && pagamento.getDataVencimento().isBefore(hoje)
+                        )
+                );
+
+        if (existeAtrasado) {
+            return "ATRASADO";
+        }
+
+        boolean existePendenteNoMesAtual = pagamentos
+                .stream()
+                .anyMatch(pagamento ->
+                        pagamento.getStatus() == StatusPagamento.PENDENTE
+                                && !pagamento.getDataVencimento().isBefore(primeiroDiaMesAtual)
+                                && !pagamento.getDataVencimento().isAfter(ultimoDiaMesAtual)
+                );
+
+        if (existePendenteNoMesAtual) {
+            return "PENDENTE";
+        }
+
+        Pagamento ultimoPagamento = pagamentos.get(0);
+
+        if (ultimoPagamento.getStatus() == StatusPagamento.AUSENTE) {
+            return "AUSENTE";
+        }
+
+        if (ultimoPagamento.getStatus() == StatusPagamento.CANCELADO) {
+            return "CANCELADO";
+        }
+
+        return "EM_DIA";
+    }
+
+    private void validarImportacaoRetroativa(
+            ImportarAlunoRetroativoRequest request,
+            Plano plano
+    ) {
+
+        LocalDate hoje = LocalDate.now();
+        LocalDate primeiroDiaMesAtual = hoje.withDayOfMonth(1);
+        LocalDate ultimoDiaMesAtual = primeiroDiaMesAtual.plusMonths(1).minusDays(1);
+
+        if (request.dataInicioAssinatura() == null) {
+            throw new IllegalArgumentException(
+                    "Data de início da assinatura é obrigatória"
+            );
+        }
+
+        if (!request.dataInicioAssinatura().isBefore(primeiroDiaMesAtual)) {
+            throw new IllegalArgumentException(
+                    "A importação retroativa deve ser usada apenas para alunos com início anterior ao mês atual"
+            );
+        }
+
+        if (request.pagamentos() == null || request.pagamentos().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Informe ao menos um pagamento para a importação retroativa"
+            );
+        }
+
+        for (PagamentoRetroativoRequest pagamento : request.pagamentos()) {
+
+            if (pagamento.dataVencimento() == null) {
+                throw new IllegalArgumentException(
+                        "Todos os pagamentos precisam ter data de vencimento"
+                );
+            }
+
+            if (pagamento.status() == null) {
+                throw new IllegalArgumentException(
+                        "Todos os pagamentos precisam ter status"
+                );
+            }
+        }
+
+        List<PagamentoRetroativoRequest> pagamentosOrdenados =
+                request.pagamentos()
+                        .stream()
+                        .sorted(Comparator.comparing(PagamentoRetroativoRequest::dataVencimento))
+                        .toList();
+
+        PagamentoRetroativoRequest primeiroPagamento = pagamentosOrdenados.get(0);
+
+        if (!primeiroPagamento.dataVencimento().equals(request.dataInicioAssinatura())) {
+            throw new IllegalArgumentException(
+                    "O vencimento do primeiro ciclo financeiro deve ser igual à data de início da assinatura"
+            );
+        }
+
+        if (primeiroPagamento.status() != StatusPagamento.PAGO) {
+            throw new IllegalArgumentException(
+                    "O primeiro ciclo financeiro deve estar com status PAGO"
+            );
+        }
+
+        if (primeiroPagamento.dataPagamento() == null) {
+            throw new IllegalArgumentException(
+                    "O primeiro ciclo financeiro precisa ter data de pagamento"
+            );
+        }
+
+        if (primeiroPagamento.dataPagamento().isAfter(hoje)) {
+            throw new IllegalArgumentException(
+                    "A data de pagamento do primeiro ciclo não pode ser futura"
+            );
+        }
+
+        List<LocalDate> vencimentosRecebidos =
+                pagamentosOrdenados
+                        .stream()
+                        .map(PagamentoRetroativoRequest::dataVencimento)
+                        .toList();
+
+        List<LocalDate> vencimentosEsperados = new ArrayList<>();
+
+        LocalDate vencimentoEsperado = request.dataInicioAssinatura();
+
+        while (!vencimentoEsperado.isAfter(ultimoDiaMesAtual)) {
+            vencimentosEsperados.add(vencimentoEsperado);
+            vencimentoEsperado = vencimentoEsperado.plusMonths(plano.getDuracaoMeses());
+        }
+
+        if (!vencimentosRecebidos.equals(vencimentosEsperados)) {
+            throw new IllegalArgumentException(
+                    "A importação retroativa precisa conter todos os ciclos financeiros contínuos desde o início da assinatura até o ciclo atual"
+            );
+        }
+
+        List<LocalDate> vencimentosUnicos = new ArrayList<>();
+
+        for (PagamentoRetroativoRequest pagamento : pagamentosOrdenados) {
+
+            if (vencimentosUnicos.contains(pagamento.dataVencimento())) {
+                throw new IllegalArgumentException(
+                        "Não é permitido importar dois ciclos com o mesmo vencimento"
+                );
+            }
+
+            vencimentosUnicos.add(pagamento.dataVencimento());
+
+            if (pagamento.dataVencimento().isBefore(request.dataInicioAssinatura())) {
+                throw new IllegalArgumentException(
+                        "Pagamento não pode ter vencimento anterior ao início da assinatura"
+                );
+            }
+
+            if (pagamento.dataVencimento().isAfter(ultimoDiaMesAtual)) {
+                throw new IllegalArgumentException(
+                        "Importação retroativa não deve gerar pagamentos futuros"
+                );
+            }
+
+            if (
+                    pagamento.status() != StatusPagamento.PAGO
+                            && pagamento.status() != StatusPagamento.ATRASADO
+                            && pagamento.status() != StatusPagamento.AUSENTE
+                            && pagamento.status() != StatusPagamento.PENDENTE
+            ) {
+                throw new IllegalArgumentException(
+                        "Status inválido para importação retroativa"
+                );
+            }
+
+            boolean pagamentoVencido =
+                    pagamento.dataVencimento().isBefore(hoje);
+
+            boolean pagamentoNoMesAtual =
+                    !pagamento.dataVencimento().isBefore(primeiroDiaMesAtual)
+                            && !pagamento.dataVencimento().isAfter(ultimoDiaMesAtual);
+
+            if (pagamento.status() == StatusPagamento.PENDENTE && pagamentoVencido) {
+                throw new IllegalArgumentException(
+                        "Pagamento vencido não pode ser importado como PENDENTE"
+                );
+            }
+
+            if (pagamento.status() == StatusPagamento.PENDENTE && !pagamentoNoMesAtual) {
+                throw new IllegalArgumentException(
+                        "Somente o ciclo atual ainda não vencido pode ser PENDENTE"
+                );
+            }
+
+            if (pagamento.status() == StatusPagamento.ATRASADO && !pagamentoVencido) {
+                throw new IllegalArgumentException(
+                        "Pagamento ainda não vencido não pode ser importado como ATRASADO"
+                );
+            }
+
+            if (pagamento.status() == StatusPagamento.PAGO && pagamento.dataPagamento() == null) {
+                throw new IllegalArgumentException(
+                        "Pagamento com status PAGO precisa ter data de pagamento"
+                );
+            }
+
+            if (pagamento.status() != StatusPagamento.PAGO && pagamento.dataPagamento() != null) {
+                throw new IllegalArgumentException(
+                        "Somente pagamentos PAGO podem ter data de pagamento"
+                );
+            }
+
+            if (
+                    pagamento.dataPagamento() != null
+                            && pagamento.dataPagamento().isAfter(hoje)
+            ) {
+                throw new IllegalArgumentException(
+                        "Data de pagamento não pode ser futura"
+                );
+            }
+        }
     }
 }

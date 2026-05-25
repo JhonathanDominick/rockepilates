@@ -14,6 +14,8 @@ public record AlunoAdminResponse(
         String plano,
         String status,
         String statusPagamento,
+        Long pagamentoAtualId,
+        String statusPagamentoAtual,
         LocalDate dataVencimento,
         LocalDate dataCancelamento,
         String observacoesInternas,

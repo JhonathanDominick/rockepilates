@@ -4,9 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import {
     listarPagamentosPorAssinatura,
-    marcarAssinaturaComoPaga,
     marcarPagamentoComoAusente,
     reverterPagamentoAusenteParaPendente,
+    marcarPagamentoComoPago,
     PagamentoHistorico,
 } from "@/lib/api/admin-alunos-client";
 
@@ -19,12 +19,23 @@ export type AlunoAdmin = {
     plano: string;
     status: string;
     statusPagamento: string;
+    pagamentoAtualId: number | null;
+    statusPagamentoAtual: string;
     dataVencimento: string;
     dataCancelamento: string | null;
 };
 
 type AlunosAdminTableProps = {
     alunosIniciais: AlunoAdmin[];
+};
+
+type ConfirmacaoPagamento = {
+    tipo: "principal" | "historico";
+    aluno?: AlunoAdmin;
+    pagamentoId?: number;
+    nomeAluno: string;
+    dataVencimento: string;
+    valor?: number;
 };
 
 function normalizarStatus(status: string | null | undefined) {
@@ -48,7 +59,9 @@ function getStatusClass(status: string) {
 
     if (
         statusNormalizado.includes("ATIVA") ||
-        statusNormalizado.includes("PAGO")
+        statusNormalizado.includes("PAGO") ||
+        statusNormalizado.includes("EM_DIA") ||
+        statusNormalizado.includes("EM DIA")
     ) {
         return "bg-[#dff4f2] text-[#0d6666] border-[#b8e5df]";
     }
@@ -63,18 +76,30 @@ function getStatusClass(status: string) {
     return "bg-[#eef7f6] text-[#255252] border-[#cfe7e4]";
 }
 
-function podeMarcarComoPago(statusPagamento: string, statusAssinatura: string) {
-    const statusPagamentoNormalizado = normalizarStatus(statusPagamento);
-    const statusAssinaturaNormalizado = normalizarStatus(statusAssinatura);
+function podeMarcarComoPago(aluno: AlunoAdmin) {
+    const statusPagamentoNormalizado = normalizarStatus(aluno.statusPagamento);
+    const statusPagamentoAtualNormalizado = normalizarStatus(
+        aluno.statusPagamentoAtual
+    );
+    const statusAssinaturaNormalizado = normalizarStatus(aluno.status);
 
     if (statusAssinaturaNormalizado === "CANCELADA") {
         return false;
     }
 
-    return (
+    if (!aluno.pagamentoAtualId) {
+        return false;
+    }
+
+    const statusGeralPermite =
         statusPagamentoNormalizado === "PENDENTE" ||
-        statusPagamentoNormalizado === "ATRASADO"
-    );
+        statusPagamentoNormalizado === "ATRASADO";
+
+    const pagamentoAtualPermite =
+        statusPagamentoAtualNormalizado === "PENDENTE" ||
+        statusPagamentoAtualNormalizado === "ATRASADO";
+
+    return statusGeralPermite && pagamentoAtualPermite;
 }
 
 function podeMarcarPagamentoComoAusente(statusPagamento: string) {
@@ -105,21 +130,6 @@ function formatarData(data: string | null) {
     return data.split("-").reverse().join("/");
 }
 
-function calcularProximoVencimento(dataVencimento: string, plano: string) {
-    const data = new Date(`${dataVencimento}T00:00:00`);
-    const planoNormalizado = normalizarStatus(plano);
-
-    if (planoNormalizado.includes("MENSAL")) {
-        data.setMonth(data.getMonth() + 1);
-    } else if (planoNormalizado.includes("SEMESTRAL")) {
-        data.setMonth(data.getMonth() + 6);
-    } else if (planoNormalizado.includes("ANUAL")) {
-        data.setFullYear(data.getFullYear() + 1);
-    }
-
-    return data.toISOString().split("T")[0];
-}
-
 function ordenarPagamentosPorVencimentoDesc(pagamentos: PagamentoHistorico[]) {
     return [...pagamentos].sort((a, b) => {
         return b.dataVencimento.localeCompare(a.dataVencimento);
@@ -145,16 +155,97 @@ function isPagamentoAtual(
 
     if (
         statusPagamento === "CANCELADO" ||
-        statusPagamento === "AUSENTE" ||
         statusAssinatura === "CANCELADA"
     ) {
         return false;
     }
 
-    return (
-        pagamento.dataVencimento === aluno.dataVencimento &&
-        statusPagamento === normalizarStatus(aluno.statusPagamento)
-    );
+    return pagamento.dataVencimento === aluno.dataVencimento;
+}
+
+function isPagamentoVencido(dataVencimento: string) {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const vencimento = new Date(`${dataVencimento}T00:00:00`);
+
+    return vencimento < hoje;
+}
+
+function isPagamentoNoMesAtual(dataVencimento: string) {
+    const hoje = new Date();
+    const inicioMesAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const fimMesAtual = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+    const vencimento = new Date(`${dataVencimento}T00:00:00`);
+
+    return vencimento >= inicioMesAtual && vencimento <= fimMesAtual;
+}
+
+function resolverStatusFinanceiroLocal(
+    pagamentos: PagamentoHistorico[],
+    statusAssinatura: string
+) {
+    if (normalizarStatus(statusAssinatura) === "CANCELADA") {
+        return "CANCELADO";
+    }
+
+    if (pagamentos.length === 0) {
+        return "SEM_PAGAMENTO";
+    }
+
+    const possuiAtrasado = pagamentos.some((pagamento) => {
+        const status = normalizarStatus(pagamento.status);
+
+        return (
+            status === "ATRASADO" ||
+            (status === "PENDENTE" &&
+                isPagamentoVencido(pagamento.dataVencimento))
+        );
+    });
+
+    if (possuiAtrasado) {
+        return "ATRASADO";
+    }
+
+    const possuiPendenteMesAtual = pagamentos.some((pagamento) => {
+        return (
+            normalizarStatus(pagamento.status) === "PENDENTE" &&
+            isPagamentoNoMesAtual(pagamento.dataVencimento)
+        );
+    });
+
+    if (possuiPendenteMesAtual) {
+        return "PENDENTE";
+    }
+
+    const pagamentosOrdenados =
+        ordenarPagamentosPorVencimentoDesc(pagamentos);
+
+    const ultimoPagamento = pagamentosOrdenados[0];
+
+    if (normalizarStatus(ultimoPagamento.status) === "AUSENTE") {
+        return "AUSENTE";
+    }
+
+    if (normalizarStatus(ultimoPagamento.status) === "CANCELADO") {
+        return "CANCELADO";
+    }
+
+    return "EM_DIA";
+}
+
+function resolverVencimentoAtualLocal(pagamentos: PagamentoHistorico[]) {
+    const pagamentosOrdenados =
+        ordenarPagamentosPorVencimentoDesc(pagamentos);
+
+    return pagamentosOrdenados[0]?.dataVencimento ?? "";
+}
+
+function resolverPagamentoAtualLocal(pagamentos: PagamentoHistorico[]) {
+    const pagamentosOrdenados =
+        ordenarPagamentosPorVencimentoDesc(pagamentos);
+
+    return pagamentosOrdenados[0] ?? null;
 }
 
 export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
@@ -167,6 +258,8 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
     const [pagamentos, setPagamentos] = useState<PagamentoHistorico[]>([]);
     const [carregandoHistorico, setCarregandoHistorico] = useState(false);
     const [erroHistorico, setErroHistorico] = useState<string | null>(null);
+    const [confirmacaoPagamento, setConfirmacaoPagamento] =
+        useState<ConfirmacaoPagamento | null>(null);
 
     const pagamentosOrdenados = ordenarPagamentosPorVencimentoDesc(pagamentos);
 
@@ -176,36 +269,54 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
     const totalAusente = somarPorStatus(pagamentos, "AUSENTE");
     const totalCancelado = somarPorStatus(pagamentos, "CANCELADO");
 
-    async function handleMarcarComoPago(assinaturaId: number) {
+    async function handleMarcarComoPago(aluno: AlunoAdmin) {
+        if (!aluno.pagamentoAtualId) {
+            setErro("Pagamento atual não encontrado para este aluno.");
+            return;
+        }
+
         try {
             setErro(null);
-            setProcessandoId(assinaturaId);
+            setProcessandoId(aluno.pagamentoAtualId);
 
-            await marcarAssinaturaComoPaga(assinaturaId);
+            await marcarPagamentoComoPago(aluno.pagamentoAtualId);
+
+            const pagamentosAtualizados =
+                await listarPagamentosPorAssinatura(aluno.assinaturaId);
+
+            const novoStatus = resolverStatusFinanceiroLocal(
+                pagamentosAtualizados,
+                aluno.status
+            );
+
+            const novoVencimento =
+                resolverVencimentoAtualLocal(pagamentosAtualizados);
+
+            const pagamentoAtual =
+                resolverPagamentoAtualLocal(pagamentosAtualizados);
 
             setAlunos((alunosAtuais) =>
-                alunosAtuais.map((aluno) => {
-                    if (aluno.assinaturaId !== assinaturaId) {
-                        return aluno;
+                alunosAtuais.map((alunoAtual) => {
+                    if (alunoAtual.assinaturaId !== aluno.assinaturaId) {
+                        return alunoAtual;
                     }
 
-                    const novaDataVencimento = calcularProximoVencimento(
-                        aluno.dataVencimento,
-                        aluno.plano
-                    );
-
                     return {
-                        ...aluno,
+                        ...alunoAtual,
                         status: "ATIVA",
-                        statusPagamento: "PENDENTE",
-                        dataVencimento: novaDataVencimento,
+                        statusPagamento: novoStatus,
+                        pagamentoAtualId: pagamentoAtual?.id ?? null,
+                        statusPagamentoAtual:
+                            pagamentoAtual?.status ?? "SEM_PAGAMENTO",
+                        dataVencimento:
+                            novoVencimento || alunoAtual.dataVencimento,
                         dataCancelamento: null,
                     };
                 })
             );
         } catch (error) {
-            console.error("Erro ao marcar assinatura como paga:", error);
-            setErro("Não foi possível marcar a assinatura como paga.");
+            console.error("Erro ao marcar pagamento atual como pago:", error);
+            setErro("Não foi possível marcar o pagamento atual como pago.");
         } finally {
             setProcessandoId(null);
         }
@@ -232,6 +343,80 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
         }
     }
 
+    async function handleMarcarPagamentoComoPago(pagamentoId: number) {
+        try {
+            setErroHistorico(null);
+            setProcessandoId(pagamentoId);
+
+            await marcarPagamentoComoPago(pagamentoId);
+
+            if (!alunoSelecionado) {
+                return;
+            }
+
+            const pagamentosAtualizados =
+                await listarPagamentosPorAssinatura(
+                    alunoSelecionado.assinaturaId
+                );
+
+            const novoStatus = resolverStatusFinanceiroLocal(
+                pagamentosAtualizados,
+                alunoSelecionado.status
+            );
+
+            const novoVencimento =
+                resolverVencimentoAtualLocal(pagamentosAtualizados);
+
+            const pagamentoAtual =
+                resolverPagamentoAtualLocal(pagamentosAtualizados);
+
+            setPagamentos(pagamentosAtualizados);
+
+            setAlunos((alunosAtuais) =>
+                alunosAtuais.map((aluno) => {
+                    if (aluno.assinaturaId !== alunoSelecionado.assinaturaId) {
+                        return aluno;
+                    }
+
+                    return {
+                        ...aluno,
+                        statusPagamento: novoStatus,
+                        pagamentoAtualId: pagamentoAtual?.id ?? null,
+                        statusPagamentoAtual:
+                            pagamentoAtual?.status ?? "SEM_PAGAMENTO",
+                        dataVencimento: novoVencimento || aluno.dataVencimento,
+                    };
+                })
+            );
+
+            setAlunoSelecionado((atual) => {
+                if (!atual) {
+                    return atual;
+                }
+
+                return {
+                    ...atual,
+                    statusPagamento: novoStatus,
+                    pagamentoAtualId: pagamentoAtual?.id ?? null,
+                    statusPagamentoAtual:
+                        pagamentoAtual?.status ?? "SEM_PAGAMENTO",
+                    dataVencimento: novoVencimento || atual.dataVencimento,
+                };
+            });
+        } catch (error) {
+            console.error(
+                "Erro ao marcar pagamento como pago:",
+                error
+            );
+
+            setErroHistorico(
+                "Não foi possível marcar o pagamento como pago."
+            );
+        } finally {
+            setProcessandoId(null);
+        }
+    }
+
     async function handleMarcarPagamentoComoAusente(pagamentoId: number) {
         try {
             setErroHistorico(null);
@@ -239,32 +424,59 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
 
             await marcarPagamentoComoAusente(pagamentoId);
 
-            setPagamentos((pagamentosAtuais) =>
-                pagamentosAtuais.map((pagamento) => {
-                    if (pagamento.id !== pagamentoId) {
-                        return pagamento;
-                    }
+            if (!alunoSelecionado) {
+                return;
+            }
 
-                    return {
-                        ...pagamento,
-                        status: "AUSENTE",
-                        dataPagamento: null,
-                    };
-                })
+            const pagamentosAtualizados =
+                await listarPagamentosPorAssinatura(
+                    alunoSelecionado.assinaturaId
+                );
+
+            const novoStatus = resolverStatusFinanceiroLocal(
+                pagamentosAtualizados,
+                alunoSelecionado.status
             );
+
+            const novoVencimento =
+                resolverVencimentoAtualLocal(pagamentosAtualizados);
+
+            const pagamentoAtual =
+                resolverPagamentoAtualLocal(pagamentosAtualizados);
+
+            setPagamentos(pagamentosAtualizados);
 
             setAlunos((alunosAtuais) =>
                 alunosAtuais.map((aluno) => {
-                    if (aluno.assinaturaId !== alunoSelecionado?.assinaturaId) {
+                    if (aluno.assinaturaId !== alunoSelecionado.assinaturaId) {
                         return aluno;
                     }
 
                     return {
                         ...aluno,
-                        statusPagamento: "AUSENTE",
+                        statusPagamento: novoStatus,
+                        pagamentoAtualId: pagamentoAtual?.id ?? null,
+                        statusPagamentoAtual:
+                            pagamentoAtual?.status ?? "SEM_PAGAMENTO",
+                        dataVencimento: novoVencimento || aluno.dataVencimento,
                     };
                 })
             );
+
+            setAlunoSelecionado((atual) => {
+                if (!atual) {
+                    return atual;
+                }
+
+                return {
+                    ...atual,
+                    statusPagamento: novoStatus,
+                    pagamentoAtualId: pagamentoAtual?.id ?? null,
+                    statusPagamentoAtual:
+                        pagamentoAtual?.status ?? "SEM_PAGAMENTO",
+                    dataVencimento: novoVencimento || atual.dataVencimento,
+                };
+            });
         } catch (error) {
             console.error("Erro ao marcar pagamento como ausente:", error);
             setErroHistorico("Não foi possível marcar o pagamento como ausente.");
@@ -280,32 +492,59 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
 
             await reverterPagamentoAusenteParaPendente(pagamentoId);
 
-            setPagamentos((pagamentosAtuais) =>
-                pagamentosAtuais.map((pagamento) => {
-                    if (pagamento.id !== pagamentoId) {
-                        return pagamento;
-                    }
+            if (!alunoSelecionado) {
+                return;
+            }
 
-                    return {
-                        ...pagamento,
-                        status: "PENDENTE",
-                        dataPagamento: null,
-                    };
-                })
+            const pagamentosAtualizados =
+                await listarPagamentosPorAssinatura(
+                    alunoSelecionado.assinaturaId
+                );
+
+            const novoStatus = resolverStatusFinanceiroLocal(
+                pagamentosAtualizados,
+                alunoSelecionado.status
             );
+
+            const novoVencimento =
+                resolverVencimentoAtualLocal(pagamentosAtualizados);
+
+            const pagamentoAtual =
+                resolverPagamentoAtualLocal(pagamentosAtualizados);
+
+            setPagamentos(pagamentosAtualizados);
 
             setAlunos((alunosAtuais) =>
                 alunosAtuais.map((aluno) => {
-                    if (aluno.assinaturaId !== alunoSelecionado?.assinaturaId) {
+                    if (aluno.assinaturaId !== alunoSelecionado.assinaturaId) {
                         return aluno;
                     }
 
                     return {
                         ...aluno,
-                        statusPagamento: "PENDENTE",
+                        statusPagamento: novoStatus,
+                        pagamentoAtualId: pagamentoAtual?.id ?? null,
+                        statusPagamentoAtual:
+                            pagamentoAtual?.status ?? "SEM_PAGAMENTO",
+                        dataVencimento: novoVencimento || aluno.dataVencimento,
                     };
                 })
             );
+
+            setAlunoSelecionado((atual) => {
+                if (!atual) {
+                    return atual;
+                }
+
+                return {
+                    ...atual,
+                    statusPagamento: novoStatus,
+                    pagamentoAtualId: pagamentoAtual?.id ?? null,
+                    statusPagamentoAtual:
+                        pagamentoAtual?.status ?? "SEM_PAGAMENTO",
+                    dataVencimento: novoVencimento || atual.dataVencimento,
+                };
+            });
         } catch (error) {
             console.error("Erro ao reverter pagamento ausente:", error);
             setErroHistorico(
@@ -314,6 +553,56 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
         } finally {
             setProcessandoId(null);
         }
+    }
+
+    function abrirConfirmacaoPagamentoPrincipal(aluno: AlunoAdmin) {
+        setConfirmacaoPagamento({
+            tipo: "principal",
+            aluno,
+            nomeAluno: aluno.nome,
+            dataVencimento: aluno.dataVencimento,
+        });
+    }
+
+    function abrirConfirmacaoPagamentoHistorico(pagamento: PagamentoHistorico) {
+        setConfirmacaoPagamento({
+            tipo: "historico",
+            pagamentoId: pagamento.id,
+            nomeAluno: alunoSelecionado?.nome ?? "aluno selecionado",
+            dataVencimento: pagamento.dataVencimento,
+            valor: pagamento.valor,
+        });
+    }
+
+    function fecharConfirmacaoPagamento() {
+        if (processandoId !== null) {
+            return;
+        }
+
+        setConfirmacaoPagamento(null);
+    }
+
+    async function confirmarPagamento() {
+        if (!confirmacaoPagamento) {
+            return;
+        }
+
+        if (confirmacaoPagamento.tipo === "principal") {
+            if (!confirmacaoPagamento.aluno) {
+                return;
+            }
+
+            await handleMarcarComoPago(confirmacaoPagamento.aluno);
+            setConfirmacaoPagamento(null);
+            return;
+        }
+
+        if (!confirmacaoPagamento.pagamentoId) {
+            return;
+        }
+
+        await handleMarcarPagamentoComoPago(confirmacaoPagamento.pagamentoId);
+        setConfirmacaoPagamento(null);
     }
 
     function handleFecharModal() {
@@ -363,7 +652,8 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                         <tbody className="divide-y divide-[#e1ece9]">
                         {alunos.map((aluno) => {
                             const processando =
-                                processandoId === aluno.assinaturaId;
+                                processandoId === aluno.assinaturaId ||
+                                processandoId === aluno.pagamentoAtualId;
 
                             return (
                                 <tr
@@ -450,15 +740,12 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                                 Histórico
                                             </button>
 
-                                            {podeMarcarComoPago(
-                                                aluno.statusPagamento,
-                                                aluno.status
-                                            ) ? (
+                                            {podeMarcarComoPago(aluno) ? (
                                                 <button
                                                     type="button"
                                                     onClick={() =>
-                                                        handleMarcarComoPago(
-                                                            aluno.assinaturaId
+                                                        abrirConfirmacaoPagamentoPrincipal(
+                                                            aluno
                                                         )
                                                     }
                                                     disabled={processando}
@@ -723,47 +1010,69 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                                             </td>
 
                                                             <td className="px-4 py-4">
-                                                                {podeMarcarAusente ? (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            handleMarcarPagamentoComoAusente(
-                                                                                pagamento.id
-                                                                            )
-                                                                        }
-                                                                        disabled={
-                                                                            processandoId ===
-                                                                            pagamento.id
-                                                                        }
-                                                                        className="rounded-xl border border-[#d8dddd] bg-[#eef1f1] px-3 py-2 text-xs font-bold text-[#5f6f72] transition hover:bg-[#e1e6e6] disabled:cursor-not-allowed disabled:opacity-60"
-                                                                    >
-                                                                        {processandoId === pagamento.id
-                                                                            ? "Salvando..."
-                                                                            : "Marcar ausente"}
-                                                                    </button>
-                                                                ) : podeReverterAusente ? (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            handleReverterPagamentoAusenteParaPendente(
-                                                                                pagamento.id
-                                                                            )
-                                                                        }
-                                                                        disabled={
-                                                                            processandoId ===
-                                                                            pagamento.id
-                                                                        }
-                                                                        className="rounded-xl border border-[#ffd98c] bg-[#fff1d6] px-3 py-2 text-xs font-bold text-[#9a5b00] transition hover:bg-[#ffe7b3] disabled:cursor-not-allowed disabled:opacity-60"
-                                                                    >
-                                                                        {processandoId === pagamento.id
-                                                                            ? "Salvando..."
-                                                                            : "Reverter para pendente"}
-                                                                    </button>
-                                                                ) : (
-                                                                    <span className="text-xs font-bold uppercase tracking-wide text-[#7b8d91]">
-                                                                          Sem ação
-                                                                    </span>
-                                                                )}
+                                                                <div className="flex flex-wrap gap-2">
+                                                                    {podeMarcarAusente && (
+                                                                        <>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() =>
+                                                                                    abrirConfirmacaoPagamentoHistorico(
+                                                                                        pagamento
+                                                                                    )
+                                                                                }
+                                                                                disabled={
+                                                                                    processandoId === pagamento.id
+                                                                                }
+                                                                                className="rounded-xl bg-[#ef4b3f] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#dc3f34] disabled:cursor-not-allowed disabled:opacity-60"
+                                                                            >
+                                                                                {processandoId === pagamento.id
+                                                                                    ? "Salvando..."
+                                                                                    : "Marcar pago"}
+                                                                            </button>
+
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() =>
+                                                                                    handleMarcarPagamentoComoAusente(
+                                                                                        pagamento.id
+                                                                                    )
+                                                                                }
+                                                                                disabled={
+                                                                                    processandoId === pagamento.id
+                                                                                }
+                                                                                className="rounded-xl border border-[#d8dddd] bg-[#eef1f1] px-3 py-2 text-xs font-bold text-[#5f6f72] transition hover:bg-[#e1e6e6] disabled:cursor-not-allowed disabled:opacity-60"
+                                                                            >
+                                                                                Marcar ausente
+                                                                            </button>
+                                                                        </>
+                                                                    )}
+
+                                                                    {podeReverterAusente && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                                handleReverterPagamentoAusenteParaPendente(
+                                                                                    pagamento.id
+                                                                                )
+                                                                            }
+                                                                            disabled={
+                                                                                processandoId === pagamento.id
+                                                                            }
+                                                                            className="rounded-xl border border-[#ffd98c] bg-[#fff1d6] px-3 py-2 text-xs font-bold text-[#9a5b00] transition hover:bg-[#ffe7b3] disabled:cursor-not-allowed disabled:opacity-60"
+                                                                        >
+                                                                            {processandoId === pagamento.id
+                                                                                ? "Salvando..."
+                                                                                : "Reverter para pendente"}
+                                                                        </button>
+                                                                    )}
+
+                                                                    {!podeMarcarAusente &&
+                                                                        !podeReverterAusente && (
+                                                                            <span className="text-xs font-bold uppercase tracking-wide text-[#7b8d91]">
+                                                                                    Sem ação
+                                                                                </span>
+                                                                        )}
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     );
@@ -797,6 +1106,75 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                                     </div>
                                 </>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {confirmacaoPagamento && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4">
+                    <div className="w-full max-w-lg rounded-[28px] border border-[#dce8e5] bg-white p-6 shadow-2xl">
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#ef4b3f]">
+                                Confirmar pagamento
+                            </p>
+
+                            <h3 className="mt-2 text-2xl font-black text-[#10263d]">
+                                Deseja realmente marcar este pagamento como pago?
+                            </h3>
+
+                            <p className="mt-3 text-sm leading-6 text-[#607579]">
+                                Essa ação vai registrar o pagamento do aluno(a){" "}
+                                <strong className="text-[#10263d]">
+                                    {confirmacaoPagamento.nomeAluno}
+                                </strong>{" "}
+                                com vencimento em{" "}
+                                <strong className="text-[#10263d]">
+                                    {formatarData(
+                                        confirmacaoPagamento.dataVencimento
+                                    )}
+                                </strong>
+                                .
+                            </p>
+
+                            {confirmacaoPagamento.valor !== undefined && (
+                                <p className="mt-2 text-sm leading-6 text-[#607579]">
+                                    Valor do ciclo:{" "}
+                                    <strong className="text-[#10263d]">
+                                        {formatarMoeda(
+                                            confirmacaoPagamento.valor
+                                        )}
+                                    </strong>
+                                </p>
+                            )}
+
+                            <p className="mt-4 rounded-2xl border border-[#ffd98c] bg-[#fff1d6] px-4 py-3 text-sm font-bold text-[#9a5b00]">
+                                Atenção: atualmente não existe botão para
+                                desfazer esta ação. Confirme apenas se o
+                                pagamento realmente foi recebido.
+                            </p>
+                        </div>
+
+                        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                            <button
+                                type="button"
+                                onClick={fecharConfirmacaoPagamento}
+                                disabled={processandoId !== null}
+                                className="rounded-2xl border border-[#dce8e5] bg-white px-5 py-3 text-sm font-bold text-[#255252] transition hover:bg-[#eaf7f5] disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                Fechar
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={confirmarPagamento}
+                                disabled={processandoId !== null}
+                                className="rounded-2xl bg-[#ef4b3f] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#ef4b3f]/20 transition hover:-translate-y-[1px] hover:bg-[#dc3f34] disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {processandoId !== null
+                                    ? "Confirmando..."
+                                    : "Confirmar pagamento"}
+                            </button>
                         </div>
                     </div>
                 </div>

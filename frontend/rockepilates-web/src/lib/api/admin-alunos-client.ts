@@ -136,3 +136,69 @@ export async function reverterPagamentoAusenteParaPendente(pagamentoId: number) 
         );
     }
 }
+
+export type StatusPagamentoRetroativo =
+    | "PAGO"
+    | "ATRASADO"
+    | "AUSENTE"
+    | "PENDENTE";
+
+export type PagamentoRetroativoRequest = {
+    dataVencimento: string;
+    dataPagamento?: string | null;
+    status: StatusPagamentoRetroativo;
+};
+
+export type ImportarAlunoRetroativoRequest = {
+    nome: string;
+    email: string;
+    telefone: string;
+    dataNascimento: string;
+    objetivo: string;
+    observacoesSaude: string;
+    senha: string;
+    tipoPlano: "MENSAL" | "SEMESTRAL" | "ANUAL";
+    dataInicioAssinatura: string;
+    pagamentos: PagamentoRetroativoRequest[];
+};
+
+export async function importarAlunoRetroativo(
+    data: ImportarAlunoRetroativoRequest
+) {
+    const res = await fetch(
+        `${getPublicBffUrl()}/bff/alunos/admin/importar-retroativo`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(data),
+        }
+    );
+
+    if (!res.ok) {
+        throw new Error(
+            await extrairErro(
+                res,
+                "Erro ao importar aluno retroativo"
+            )
+        );
+    }
+}
+
+export async function marcarPagamentoComoPago(pagamentoId: number) {
+    const res = await fetch(
+        `${getPublicBffUrl()}/bff/alunos/pagamentos/${pagamentoId}/pagar`,
+        {
+            method: "PATCH",
+            credentials: "include",
+        }
+    );
+
+    if (!res.ok) {
+        throw new Error(
+            await extrairErro(res, "Erro ao marcar pagamento como pago")
+        );
+    }
+}
