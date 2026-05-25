@@ -74,10 +74,24 @@ public class AlunoController {
         return service.listarAdmin();
     }
 
+    @PostMapping("/admin/importar-retroativo")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void importarAlunoRetroativo(
+            @Valid @RequestBody ImportarAlunoRetroativoRequest request
+    ) {
+        service.importarAlunoRetroativo(request);
+    }
+
     @PatchMapping("/assinaturas/{id}/pagar")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void pagar(@PathVariable Long id) {
         service.marcarComoPago(id);
+    }
+
+    @PatchMapping("/pagamentos/{id}/pagar")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void marcarPagamentoComoPago(@PathVariable Long id) {
+        service.marcarPagamentoComoPago(id);
     }
 
     @PatchMapping("/assinaturas/{id}/ausente")

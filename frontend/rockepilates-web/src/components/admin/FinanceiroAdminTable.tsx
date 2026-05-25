@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { PagamentoAdmin } from "@/lib/api/admin-financeiro";
-import { marcarPagamentoComoPago } from "@/app/admin/financeiro/actions";
+import { marcarPagamentoComoPago } from "@/lib/api/admin-alunos-client";
 
 type FinanceiroAdminTableProps = {
     pagamentos: PagamentoAdmin[];
@@ -34,6 +34,10 @@ function formatarData(data: string | null) {
     return new Date(data).toLocaleDateString("pt-BR");
 }
 
+function hojeIso() {
+    return new Date().toISOString().split("T")[0];
+}
+
 function normalizarData(data: Date) {
     return new Date(data.getFullYear(), data.getMonth(), data.getDate());
 }
@@ -52,13 +56,10 @@ function getStatusStyle(status: string) {
     switch (status) {
         case "PAGO":
             return "bg-[#dff4ef] text-[#0d6666]";
-
         case "ATRASADO":
             return "bg-[#ffe2de] text-[#b42318]";
-
         case "AUSENTE":
             return "bg-[#eef1f1] text-[#5f6f72]";
-
         default:
             return "bg-[#fff4d6] text-[#9a6700]";
     }
@@ -86,19 +87,15 @@ function filtrarPorPeriodo(
     switch (periodoSelecionado) {
         case "VENCE_HOJE":
             return dataNormalizada.getTime() === hoje.getTime();
-
         case "VENCIDOS":
             return dataNormalizada < hoje;
-
         case "PROXIMOS_7_DIAS":
             return dataNormalizada >= hoje && dataNormalizada <= proximos7Dias;
-
         case "ESTE_MES":
             return (
                 dataNormalizada.getMonth() === hoje.getMonth() &&
                 dataNormalizada.getFullYear() === hoje.getFullYear()
             );
-
         default:
             return true;
     }
@@ -107,23 +104,19 @@ function filtrarPorPeriodo(
 export function FinanceiroAdminTable({
                                          pagamentos,
                                      }: FinanceiroAdminTableProps) {
+    const [pagamentosAtuais, setPagamentosAtuais] = useState(pagamentos);
     const [pagamentoSelecionado, setPagamentoSelecionado] =
         useState<PagamentoAdmin | null>(null);
-
     const [processandoId, setProcessandoId] = useState<number | null>(null);
-
     const [statusSelecionado, setStatusSelecionado] =
         useState<StatusFiltro>("TODOS");
-
     const [buscaAluno, setBuscaAluno] = useState("");
-
     const [planoSelecionado, setPlanoSelecionado] = useState("TODOS");
-
     const [periodoSelecionado, setPeriodoSelecionado] =
         useState<PeriodoFiltro>("TODOS");
 
     const pagamentosFiltrados = useMemo(() => {
-        return pagamentos.filter((pagamento) => {
+        return pagamentosAtuais.filter((pagamento) => {
             const filtroStatus =
                 statusSelecionado === "TODOS"
                     ? true
@@ -146,7 +139,7 @@ export function FinanceiroAdminTable({
             return filtroStatus && filtroAluno && filtroPlano && filtroPeriodo;
         });
     }, [
-        pagamentos,
+        pagamentosAtuais,
         statusSelecionado,
         buscaAluno,
         planoSelecionado,
@@ -159,7 +152,21 @@ export function FinanceiroAdminTable({
         try {
             setProcessandoId(pagamentoSelecionado.id);
 
-            await marcarPagamentoComoPago(pagamentoSelecionado.assinaturaId);
+            await marcarPagamentoComoPago(pagamentoSelecionado.id);
+
+            setPagamentosAtuais((atuais) =>
+                atuais.map((pagamento) => {
+                    if (pagamento.id !== pagamentoSelecionado.id) {
+                        return pagamento;
+                    }
+
+                    return {
+                        ...pagamento,
+                        status: "PAGO",
+                        dataPagamento: hojeIso(),
+                    };
+                })
+            );
 
             setPagamentoSelecionado(null);
         } finally {
@@ -375,7 +382,9 @@ export function FinanceiroAdminTable({
                         <p className="mt-3 text-sm leading-6 text-[#607579]">
                             Esta ação marcará o pagamento de{" "}
                             <strong>{pagamentoSelecionado.aluno}</strong>{" "}
-                            como pago e gerará a próxima cobrança da assinatura.
+                            como pago. Se este for o ciclo mais recente da
+                            assinatura, o sistema poderá gerar a próxima
+                            cobrança automaticamente.
                         </p>
 
                         <div className="mt-5 rounded-2xl bg-[#f3faf8] p-4 text-sm text-[#10263d]">

@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.http.HttpStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -156,6 +156,24 @@ public class AlunoController {
         return ResponseEntity.status(201).body(response);
     }
 
+    @PostMapping("/admin/importar-retroativo")
+    public ResponseEntity<SuccessResponse<Void>> importarAlunoRetroativo(
+            @RequestBody Map<String, Object> body,
+            HttpServletRequest request
+    ) {
+
+        service.importarAlunoRetroativo(body, request);
+
+        SuccessResponse<Void> response = new SuccessResponse<>(
+                LocalDateTime.now(),
+                201,
+                "Aluno retroativo importado com sucesso",
+                null
+        );
+
+        return ResponseEntity.status(201).body(response);
+    }
+
     @GetMapping("/admin")
     public ResponseEntity<SuccessResponse<List<Map<String, Object>>>> listarAdmin(
             HttpServletRequest request
@@ -188,6 +206,25 @@ public class AlunoController {
                         LocalDateTime.now(),
                         200,
                         "Assinatura marcada como paga",
+                        null
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/pagamentos/{id}/pagar")
+    public ResponseEntity<SuccessResponse<Void>> marcarPagamentoComoPago(
+            @PathVariable Long id,
+            HttpServletRequest request
+    ) {
+
+        service.marcarPagamentoComoPago(id, request);
+
+        SuccessResponse<Void> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Pagamento marcado como pago com sucesso",
                         null
                 );
 

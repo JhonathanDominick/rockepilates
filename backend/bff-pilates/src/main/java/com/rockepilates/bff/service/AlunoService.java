@@ -124,6 +124,21 @@ public class AlunoService {
         }
     }
 
+    public void importarAlunoRetroativo(
+            Map<String, Object> body,
+            HttpServletRequest request
+    ) {
+        String authorization = extrairAuthorization(request);
+
+        usuariosService.validarAdmin(authorization);
+
+        try {
+            client.importarAlunoRetroativo(body);
+        } catch (FeignException.BadRequest ex) {
+            throw new IllegalArgumentException(extractMessage(ex));
+        }
+    }
+
     public List<Map<String, Object>> listarAdmin(HttpServletRequest request) {
         String authorization = extrairAuthorization(request);
 
@@ -138,6 +153,14 @@ public class AlunoService {
         usuariosService.validarAdmin(authorization);
 
         client.marcarComoPago(id);
+    }
+
+    public void marcarPagamentoComoPago(Long pagamentoId, HttpServletRequest request) {
+        String authorization = extrairAuthorization(request);
+
+        usuariosService.validarAdmin(authorization);
+
+        client.marcarPagamentoComoPago(pagamentoId);
     }
 
     public void marcarComoAusente(Long id, HttpServletRequest request) {

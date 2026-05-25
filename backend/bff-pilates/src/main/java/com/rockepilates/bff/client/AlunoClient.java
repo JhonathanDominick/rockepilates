@@ -29,6 +29,9 @@ public interface AlunoClient {
     @PostMapping("/alunos/admin")
     void cadastrarAdmin(@RequestBody Map<String, Object> body);
 
+    @PostMapping("/alunos/admin/importar-retroativo")
+    void importarAlunoRetroativo(@RequestBody Map<String, Object> body);
+
     @GetMapping("/alunos/admin")
     List<Map<String, Object>> listarAdmin();
 
@@ -80,6 +83,9 @@ public interface AlunoClient {
 
     @PatchMapping("/alunos/assinaturas/{id}/ausente")
     void marcarComoAusente(@PathVariable Long id);
+
+    @PatchMapping("/alunos/pagamentos/{id}/pagar")
+    void marcarPagamentoComoPago(@PathVariable Long id);
 
     @PatchMapping("/alunos/pagamentos/{id}/ausente")
     void marcarPagamentoComoAusente(@PathVariable Long id);
