@@ -25,7 +25,7 @@ export default function NovoAlunoAdminPage() {
         observacoesSaude: "",
         tipoPlano: "MENSAL",
         dataInicioAssinatura: "",
-        pago: false,
+        dataPagamentoPrimeiroCiclo: "",
         senha: "",
         confirmarSenha: "",
     });
@@ -92,7 +92,7 @@ export default function NovoAlunoAdminPage() {
     return (
         <AdminLayout
             title="Novo aluno"
-            description="Cadastre novos alunos e inicie seus ciclos financeiros automaticamente."
+            description="Cadastre novos alunos com o primeiro período já pago e gere automaticamente o próximo ciclo financeiro."
         >
             <div className="mb-6">
                 <Link
@@ -264,16 +264,24 @@ export default function NovoAlunoAdminPage() {
                         />
                     </div>
 
-                    <label className="md:col-span-2 flex items-center gap-3 rounded-2xl border border-[#dce8e5] bg-white px-4 py-3 text-sm font-bold text-[#10263d]">
+                    <div className="md:col-span-2">
+                        <label className="mb-2 block text-sm font-bold text-[#10263d]">
+                            Data do pagamento inicial
+                        </label>
                         <input
-                            type="checkbox"
-                            name="pago"
-                            checked={form.pago}
+                            type="date"
+                            name="dataPagamentoPrimeiroCiclo"
+                            value={form.dataPagamentoPrimeiroCiclo}
                             onChange={handleChange}
-                            className="h-4 w-4"
+                            required
+                            max={new Date().toISOString().split("T")[0]}
+                            className="w-full rounded-2xl border border-[#dce8e5] px-4 py-3 text-sm outline-none transition focus:border-[#0d6666] focus:ring-2 focus:ring-[#0d6666]/20"
                         />
-                        Este aluno já pagou o primeiro período da assinatura
-                    </label>
+                        <p className="mt-2 text-xs text-[#607579]">
+                            Novo aluno só é cadastrado após o pagamento do primeiro período. O sistema criará o primeiro ciclo como pago e o próximo ciclo como pendente.
+                        </p>
+                    </div>
+
                 </div>
 
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-end">

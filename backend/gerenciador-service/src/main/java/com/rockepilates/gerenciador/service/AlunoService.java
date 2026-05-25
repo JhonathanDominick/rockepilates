@@ -98,10 +98,13 @@ public class AlunoService {
 
         LocalDate dataInicio = request.dataInicioAssinatura();
 
-        LocalDate primeiroVencimento =
-                dataInicio.plusMonths(plano.getDuracaoMeses());
-
         validarDataInicioNovoAluno(dataInicio);
+        validarDataPagamentoPrimeiroCiclo(request.dataPagamentoPrimeiroCiclo());
+
+        LocalDate primeiroVencimento = dataInicio;
+
+        LocalDate proximoVencimento =
+                primeiroVencimento.plusMonths(plano.getDuracaoMeses());
 
         Aluno aluno = Aluno.builder()
                 .nome(request.nome().trim())
@@ -120,30 +123,30 @@ public class AlunoService {
                 .aluno(aluno)
                 .plano(plano)
                 .dataInicio(dataInicio)
-                .dataVencimento(primeiroVencimento)
+                .dataVencimento(proximoVencimento)
                 .status(StatusAssinatura.ATIVA)
                 .build();
 
         assinatura = assinaturaRepository.save(assinatura);
 
-        StatusPagamento statusPagamento =
-                request.pago()
-                        ? StatusPagamento.PAGO
-                        : StatusPagamento.PENDENTE;
-
-        Pagamento pagamento = Pagamento.builder()
+        Pagamento primeiroPagamento = Pagamento.builder()
                 .assinatura(assinatura)
                 .valor(plano.getValor())
                 .dataVencimento(primeiroVencimento)
-                .dataPagamento(
-                        request.pago()
-                                ? LocalDate.now()
-                                : null
-                )
-                .status(statusPagamento)
+                .dataPagamento(request.dataPagamentoPrimeiroCiclo())
+                .status(StatusPagamento.PAGO)
                 .build();
 
-        pagamentoRepository.save(pagamento);
+        Pagamento proximoPagamento = Pagamento.builder()
+                .assinatura(assinatura)
+                .valor(plano.getValor())
+                .dataVencimento(proximoVencimento)
+                .dataPagamento(null)
+                .status(StatusPagamento.PENDENTE)
+                .build();
+
+        pagamentoRepository.save(primeiroPagamento);
+        pagamentoRepository.save(proximoPagamento);
     }
 
     @Transactional
@@ -857,6 +860,21 @@ public class AlunoService {
         if (dataInicio.isBefore(primeiroDiaMesAtual)) {
             throw new IllegalArgumentException(
                     "Para novo aluno, a data de início não pode ser anterior ao mês atual. Use a importação de aluno existente."
+            );
+        }
+    }
+
+    private void validarDataPagamentoPrimeiroCiclo(LocalDate dataPagamentoPrimeiroCiclo) {
+
+        if (dataPagamentoPrimeiroCiclo == null) {
+            throw new IllegalArgumentException(
+                    "Data de pagamento do primeiro ciclo é obrigatória"
+            );
+        }
+
+        if (dataPagamentoPrimeiroCiclo.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException(
+                    "Data de pagamento do primeiro ciclo não pode ser futura"
             );
         }
     }
