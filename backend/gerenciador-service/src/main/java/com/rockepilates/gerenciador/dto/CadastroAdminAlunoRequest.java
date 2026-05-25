@@ -1,7 +1,9 @@
 package com.rockepilates.gerenciador.dto;
 
 import com.rockepilates.gerenciador.enums.TipoPlano;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
@@ -31,7 +33,7 @@ public record CadastroAdminAlunoRequest(
         LocalDate dataInicioAssinatura,
 
         @NotNull
-        Boolean pago,
+        LocalDate dataPagamentoPrimeiroCiclo,
 
         @NotBlank
         String senha

@@ -74,7 +74,7 @@ export type CadastroAlunoAdminRequest = {
     observacoesSaude: string;
     tipoPlano: "MENSAL" | "SEMESTRAL" | "ANUAL";
     dataInicioAssinatura: string;
-    pago: boolean;
+    dataPagamentoPrimeiroCiclo: string;
     senha: string;
     confirmarSenha?: string;
 };
