@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { PagamentoAdmin } from "@/lib/api/admin-financeiro";
 import { marcarPagamentoComoPago } from "@/lib/api/admin-alunos-client";
 
@@ -22,6 +23,11 @@ type PeriodoFiltro =
     | "PROXIMOS_7_DIAS"
     | "ESTE_MES";
 
+type PagamentoComIdentificador = PagamentoAdmin & {
+    alunoId?: number | string | null;
+    assinaturaId?: number | string | null;
+};
+
 function formatarMoeda(valor: number) {
     return new Intl.NumberFormat("pt-BR", {
         style: "currency",
@@ -31,7 +37,12 @@ function formatarMoeda(valor: number) {
 
 function formatarData(data: string | null) {
     if (!data) return "-";
-    return new Date(data).toLocaleDateString("pt-BR");
+
+    const dataLocal = converterParaDataLocal(data);
+
+    if (!dataLocal) return "-";
+
+    return dataLocal.toLocaleDateString("pt-BR");
 }
 
 function hojeIso() {
@@ -101,9 +112,68 @@ function filtrarPorPeriodo(
     }
 }
 
+function compararPorVencimentoDesc(
+    primeiro: PagamentoAdmin,
+    segundo: PagamentoAdmin
+) {
+    const dataPrimeiro =
+        converterParaDataLocal(primeiro.dataVencimento)?.getTime() ?? 0;
+
+    const dataSegundo =
+        converterParaDataLocal(segundo.dataVencimento)?.getTime() ?? 0;
+
+    if (dataPrimeiro !== dataSegundo) {
+        return dataSegundo - dataPrimeiro;
+    }
+
+    return segundo.id - primeiro.id;
+}
+
+function getChaveAgrupamentoPagamento(pagamento: PagamentoAdmin) {
+    const pagamentoComIdentificador =
+        pagamento as PagamentoComIdentificador;
+
+    if (pagamentoComIdentificador.assinaturaId) {
+        return `assinatura-${pagamentoComIdentificador.assinaturaId}`;
+    }
+
+    if (pagamentoComIdentificador.alunoId) {
+        return `aluno-${pagamentoComIdentificador.alunoId}-${pagamento.plano}`;
+    }
+
+    return `${pagamento.aluno.toLowerCase().trim()}-${pagamento.plano}`;
+}
+
+function manterSomentePagamentoMaisRecentePorAluno(
+    pagamentos: PagamentoAdmin[]
+) {
+    const agrupados = new Map<string, PagamentoAdmin>();
+
+    pagamentos.forEach((pagamento) => {
+        const chave = getChaveAgrupamentoPagamento(pagamento);
+        const pagamentoAtual = agrupados.get(chave);
+
+        if (!pagamentoAtual) {
+            agrupados.set(chave, pagamento);
+            return;
+        }
+
+        const pagamentoMaisRecente =
+            compararPorVencimentoDesc(pagamento, pagamentoAtual) < 0
+                ? pagamento
+                : pagamentoAtual;
+
+        agrupados.set(chave, pagamentoMaisRecente);
+    });
+
+    return Array.from(agrupados.values()).sort(compararPorVencimentoDesc);
+}
+
 export function FinanceiroAdminTable({
                                          pagamentos,
                                      }: FinanceiroAdminTableProps) {
+    const router = useRouter();
+
     const [pagamentosAtuais, setPagamentosAtuais] = useState(pagamentos);
     const [pagamentoSelecionado, setPagamentoSelecionado] =
         useState<PagamentoAdmin | null>(null);
@@ -115,29 +185,45 @@ export function FinanceiroAdminTable({
     const [periodoSelecionado, setPeriodoSelecionado] =
         useState<PeriodoFiltro>("TODOS");
 
+    useEffect(() => {
+        setPagamentosAtuais(pagamentos);
+    }, [pagamentos]);
+
     const pagamentosFiltrados = useMemo(() => {
-        return pagamentosAtuais.filter((pagamento) => {
-            const filtroStatus =
-                statusSelecionado === "TODOS"
-                    ? true
-                    : pagamento.status === statusSelecionado;
+        const pagamentosBase =
+            statusSelecionado === "TODOS"
+                ? manterSomentePagamentoMaisRecentePorAluno(pagamentosAtuais)
+                : pagamentosAtuais;
 
-            const filtroAluno = pagamento.aluno
-                .toLowerCase()
-                .includes(buscaAluno.toLowerCase());
+        return pagamentosBase
+            .filter((pagamento) => {
+                const filtroStatus =
+                    statusSelecionado === "TODOS"
+                        ? true
+                        : pagamento.status === statusSelecionado;
 
-            const filtroPlano =
-                planoSelecionado === "TODOS"
-                    ? true
-                    : pagamento.plano === planoSelecionado;
+                const filtroAluno = pagamento.aluno
+                    .toLowerCase()
+                    .includes(buscaAluno.toLowerCase());
 
-            const filtroPeriodo = filtrarPorPeriodo(
-                pagamento.dataVencimento,
-                periodoSelecionado
-            );
+                const filtroPlano =
+                    planoSelecionado === "TODOS"
+                        ? true
+                        : pagamento.plano === planoSelecionado;
 
-            return filtroStatus && filtroAluno && filtroPlano && filtroPeriodo;
-        });
+                const filtroPeriodo = filtrarPorPeriodo(
+                    pagamento.dataVencimento,
+                    periodoSelecionado
+                );
+
+                return (
+                    filtroStatus &&
+                    filtroAluno &&
+                    filtroPlano &&
+                    filtroPeriodo
+                );
+            })
+            .sort(compararPorVencimentoDesc);
     }, [
         pagamentosAtuais,
         statusSelecionado,
@@ -169,6 +255,7 @@ export function FinanceiroAdminTable({
             );
 
             setPagamentoSelecionado(null);
+            router.refresh();
         } finally {
             setProcessandoId(null);
         }
@@ -192,7 +279,9 @@ export function FinanceiroAdminTable({
                             }
                             className="w-full rounded-2xl border border-[#dce8e5] bg-white px-4 py-3 text-sm font-semibold text-[#10263d] outline-none transition focus:border-[#0d6666]"
                         >
-                            <option value="TODOS">Todos</option>
+                            <option value="TODOS">
+                                Todos — ciclo atual por aluno
+                            </option>
                             <option value="PENDENTE">Pendente</option>
                             <option value="ATRASADO">Atrasado</option>
                             <option value="AUSENTE">Ausente</option>
