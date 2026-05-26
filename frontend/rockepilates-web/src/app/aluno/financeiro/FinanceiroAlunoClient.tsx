@@ -1,14 +1,14 @@
 "use client";
 
-import { useTransition } from "react";
+import type { ReactNode } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 type Props = {
-    children: React.ReactNode;
+    children: ReactNode;
     status: string;
     inicio?: string;
     fim?: string;
-    page: number;
 };
 
 export function FinanceiroAlunoClient({
@@ -16,11 +16,20 @@ export function FinanceiroAlunoClient({
                                           status,
                                           inicio,
                                           fim,
-                                          page,
                                       }: Props) {
     const router = useRouter();
 
     const [isPending, startTransition] = useTransition();
+
+    const [statusAtual, setStatusAtual] = useState(status);
+    const [inicioAtual, setInicioAtual] = useState(inicio ?? "");
+    const [fimAtual, setFimAtual] = useState(fim ?? "");
+
+    useEffect(() => {
+        setStatusAtual(status);
+        setInicioAtual(inicio ?? "");
+        setFimAtual(fim ?? "");
+    }, [status, inicio, fim]);
 
     function montarUrl(params: {
         status?: string;
@@ -53,51 +62,61 @@ export function FinanceiroAlunoClient({
             : "/aluno/financeiro";
     }
 
-    function handleSubmit(formData: FormData) {
-        const novoStatus = String(formData.get("status") || "TODOS");
-
-        const novoInicio = String(formData.get("inicio") || "");
-
-        const novoFim = String(formData.get("fim") || "");
-
+    function aplicarFiltros(params: {
+        status?: string;
+        inicio?: string;
+        fim?: string;
+    }) {
         startTransition(() => {
             router.push(
                 montarUrl({
-                    status: novoStatus,
-                    inicio: novoInicio,
-                    fim: novoFim,
+                    status: params.status ?? statusAtual,
+                    inicio: params.inicio ?? inicioAtual,
+                    fim: params.fim ?? fimAtual,
                     page: 0,
                 })
             );
         });
     }
 
-    function irParaPagina(novaPagina: number) {
-        startTransition(() => {
-            router.push(
-                montarUrl({
-                    status,
-                    inicio,
-                    fim,
-                    page: novaPagina,
-                })
-            );
+    function alterarStatus(novoStatus: string) {
+        setStatusAtual(novoStatus);
+
+        aplicarFiltros({
+            status: novoStatus,
+            inicio: inicioAtual,
+            fim: fimAtual,
+        });
+    }
+
+    function alterarInicio(novoInicio: string) {
+        setInicioAtual(novoInicio);
+
+        aplicarFiltros({
+            status: statusAtual,
+            inicio: novoInicio,
+            fim: fimAtual,
+        });
+    }
+
+    function alterarFim(novoFim: string) {
+        setFimAtual(novoFim);
+
+        aplicarFiltros({
+            status: statusAtual,
+            inicio: inicioAtual,
+            fim: novoFim,
         });
     }
 
     return (
         <div className="relative">
-
             {isPending && (
                 <div className="pointer-events-none absolute inset-0 z-20 rounded-[28px] bg-white/60 backdrop-blur-[2px]" />
             )}
 
-            <form
-                action={handleSubmit}
-                className="mt-5 rounded-[28px] border border-[#dce8e5] bg-white p-4 shadow-sm md:p-6"
-            >
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-
+            <section className="mt-5 rounded-[28px] border border-[#dce8e5] bg-white p-4 shadow-sm md:p-6">
+                <div className="grid gap-4 md:grid-cols-3">
                     <div>
                         <label className="text-[11px] font-bold uppercase tracking-wide text-[#607579]">
                             Status
@@ -105,13 +124,18 @@ export function FinanceiroAlunoClient({
 
                         <select
                             name="status"
-                            defaultValue={status}
-                            className="mt-2 h-12 w-full rounded-2xl border border-[#dce8e5] bg-[#f8fcfb] px-4 text-sm outline-none"
+                            value={statusAtual}
+                            onChange={(event) =>
+                                alterarStatus(event.target.value)
+                            }
+                            disabled={isPending}
+                            className="mt-2 h-12 w-full rounded-2xl border border-[#dce8e5] bg-[#f8fcfb] px-4 text-sm font-semibold text-[#10263d] outline-none transition focus:border-[#0d6666] disabled:cursor-not-allowed disabled:opacity-70"
                         >
                             <option value="TODOS">Todos</option>
                             <option value="PAGO">Pago</option>
                             <option value="PENDENTE">Pendente</option>
                             <option value="ATRASADO">Atrasado</option>
+                            <option value="AUSENTE">Ausente</option>
                             <option value="CANCELADO">Cancelado</option>
                         </select>
                     </div>
@@ -124,8 +148,12 @@ export function FinanceiroAlunoClient({
                         <input
                             name="inicio"
                             type="date"
-                            defaultValue={inicio}
-                            className="mt-2 h-12 w-full rounded-2xl border border-[#dce8e5] bg-[#f8fcfb] px-4 text-sm outline-none"
+                            value={inicioAtual}
+                            onChange={(event) =>
+                                alterarInicio(event.target.value)
+                            }
+                            disabled={isPending}
+                            className="mt-2 h-12 w-full rounded-2xl border border-[#dce8e5] bg-[#f8fcfb] px-4 text-sm font-semibold text-[#10263d] outline-none transition focus:border-[#0d6666] disabled:cursor-not-allowed disabled:opacity-70"
                         />
                     </div>
 
@@ -137,24 +165,22 @@ export function FinanceiroAlunoClient({
                         <input
                             name="fim"
                             type="date"
-                            defaultValue={fim}
-                            className="mt-2 h-12 w-full rounded-2xl border border-[#dce8e5] bg-[#f8fcfb] px-4 text-sm outline-none"
+                            value={fimAtual}
+                            onChange={(event) =>
+                                alterarFim(event.target.value)
+                            }
+                            disabled={isPending}
+                            className="mt-2 h-12 w-full rounded-2xl border border-[#dce8e5] bg-[#f8fcfb] px-4 text-sm font-semibold text-[#10263d] outline-none transition focus:border-[#0d6666] disabled:cursor-not-allowed disabled:opacity-70"
                         />
                     </div>
-
-                    <div className="flex items-end">
-                        <button
-                            type="submit"
-                            disabled={isPending}
-                            className="h-12 w-full rounded-2xl bg-[#ef4b3f] text-sm font-bold text-white transition hover:bg-[#dc3f34] disabled:opacity-60"
-                        >
-                            {isPending
-                                ? "Filtrando..."
-                                : "Filtrar histórico"}
-                        </button>
-                    </div>
                 </div>
-            </form>
+
+                <p className="mt-4 text-xs font-semibold text-[#607579]">
+                    {isPending
+                        ? "Atualizando histórico..."
+                        : "Os filtros são aplicados automaticamente."}
+                </p>
+            </section>
 
             <div className={isPending ? "opacity-60 transition" : "transition"}>
                 {children}
