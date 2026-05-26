@@ -30,8 +30,17 @@ export async function alterarSenhaAluno(data: AlterarSenhaAlunoRequest) {
     );
 
     if (!response.ok) {
-        throw new Error(
-            await extrairErro(response, "Erro ao alterar senha")
-        );
+        throw new Error(await extrairErro(response, "Erro ao alterar senha"));
+    }
+}
+
+export async function logoutAluno() {
+    const response = await fetch("/api/aluno/logout", {
+        method: "POST",
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        throw new Error(await extrairErro(response, "Erro ao encerrar sessão"));
     }
 }
