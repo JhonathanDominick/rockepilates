@@ -193,6 +193,39 @@ public class AlunoController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/admin/paginado")
+    public ResponseEntity<SuccessResponse<Map<String, Object>>> listarAdminPaginado(
+            HttpServletRequest request,
+            @RequestParam(required = false) String busca,
+            @RequestParam(required = false) String plano,
+            @RequestParam(required = false) String statusAssinatura,
+            @RequestParam(required = false) String statusFinanceiro,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        Map<String, Object> data =
+                service.listarAdminPaginado(
+                        request,
+                        busca,
+                        plano,
+                        statusAssinatura,
+                        statusFinanceiro,
+                        page,
+                        size
+                );
+
+        SuccessResponse<Map<String, Object>> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Lista paginada de alunos",
+                        data
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
     @PatchMapping("/assinaturas/{id}/pagar")
     public ResponseEntity<SuccessResponse<Void>> pagar(
             @PathVariable Long id,

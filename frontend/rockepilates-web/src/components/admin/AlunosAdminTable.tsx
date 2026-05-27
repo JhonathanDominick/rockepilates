@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
     listarPagamentosPorAssinatura,
     marcarPagamentoComoAusente,
@@ -27,6 +28,21 @@ export type AlunoAdmin = {
 
 type AlunosAdminTableProps = {
     alunosIniciais: AlunoAdmin[];
+    filtros: {
+        busca: string;
+        plano: string;
+        statusAssinatura: string;
+        statusFinanceiro: string;
+        size: number;
+    };
+    paginacao: {
+        totalElements: number;
+        totalPages: number;
+        currentPage: number;
+        size: number;
+        first: boolean;
+        last: boolean;
+    };
 };
 
 type ConfirmacaoPagamento = {
@@ -248,8 +264,24 @@ function resolverPagamentoAtualLocal(pagamentos: PagamentoHistorico[]) {
     return pagamentosOrdenados[0] ?? null;
 }
 
-export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
+export function AlunosAdminTable({
+                                     alunosIniciais,
+                                     filtros,
+                                     paginacao,
+                                 }: AlunosAdminTableProps) {
     const [alunos, setAlunos] = useState(alunosIniciais);
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const [busca, setBusca] = useState(filtros.busca);
+    const [plano, setPlano] = useState(filtros.plano);
+    const [statusAssinatura, setStatusAssinatura] = useState(
+        filtros.statusAssinatura
+    );
+    const [statusFinanceiro, setStatusFinanceiro] = useState(
+        filtros.statusFinanceiro
+    );
+    const [size, setSize] = useState(String(filtros.size));
     const [processandoId, setProcessandoId] = useState<number | null>(null);
     const [erro, setErro] = useState<string | null>(null);
     const [modalAberto, setModalAberto] = useState(false);
@@ -261,6 +293,10 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
     const [confirmacaoPagamento, setConfirmacaoPagamento] =
         useState<ConfirmacaoPagamento | null>(null);
 
+    useEffect(() => {
+        setAlunos(alunosIniciais);
+    }, [alunosIniciais]);
+
     const pagamentosOrdenados = ordenarPagamentosPorVencimentoDesc(pagamentos);
 
     const totalPago = somarPorStatus(pagamentos, "PAGO");
@@ -268,6 +304,61 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
     const totalAtrasado = somarPorStatus(pagamentos, "ATRASADO");
     const totalAusente = somarPorStatus(pagamentos, "AUSENTE");
     const totalCancelado = somarPorStatus(pagamentos, "CANCELADO");
+
+    function montarQueryParams(
+        overrides: Record<string, string | number | null>
+    ) {
+        const params = new URLSearchParams(searchParams.toString());
+
+        Object.entries(overrides).forEach(([key, value]) => {
+            if (
+                value === null ||
+                value === "" ||
+                value === "TODOS"
+            ) {
+                params.delete(key);
+                return;
+            }
+
+            params.set(key, String(value));
+        });
+
+        return params.toString();
+    }
+
+    function aplicarFiltros(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        const query = montarQueryParams({
+            busca: busca.trim(),
+            plano,
+            statusAssinatura,
+            statusFinanceiro,
+            size,
+            page: 0,
+        });
+
+        router.push(`/admin/alunos${query ? `?${query}` : ""}`);
+    }
+
+    function limparFiltros() {
+        setBusca("");
+        setPlano("TODOS");
+        setStatusAssinatura("TODOS");
+        setStatusFinanceiro("TODOS");
+        setSize("10");
+
+        router.push("/admin/alunos");
+    }
+
+    function irParaPagina(page: number) {
+        const query = montarQueryParams({
+            page: Math.max(page, 0),
+            size,
+        });
+
+        router.push(`/admin/alunos${query ? `?${query}` : ""}`);
+    }
 
     async function handleMarcarComoPago(aluno: AlunoAdmin) {
         if (!aluno.pagamentoAtualId) {
@@ -615,6 +706,124 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
 
     return (
         <>
+            <form
+                onSubmit={aplicarFiltros}
+                className="mb-5 rounded-[28px] border border-[#dce8e5] bg-white p-5 shadow-sm"
+            >
+                <div className="grid gap-4 lg:grid-cols-5">
+                    <div className="lg:col-span-2">
+                        <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#607579]">
+                            Buscar aluno
+                        </label>
+
+                        <input
+                            type="text"
+                            value={busca}
+                            onChange={(event) =>
+                                setBusca(event.target.value)
+                            }
+                            placeholder="Nome, e-mail ou telefone"
+                            className="w-full rounded-2xl border border-[#dce8e5] bg-[#f8fcfb] px-4 py-3 text-sm font-semibold text-[#10263d] outline-none transition focus:border-[#0d6666]"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#607579]">
+                            Plano
+                        </label>
+
+                        <select
+                            value={plano}
+                            onChange={(event) =>
+                                setPlano(event.target.value)
+                            }
+                            className="w-full rounded-2xl border border-[#dce8e5] bg-[#f8fcfb] px-4 py-3 text-sm font-semibold text-[#10263d] outline-none transition focus:border-[#0d6666]"
+                        >
+                            <option value="TODOS">Todos</option>
+                            <option value="MENSAL">Mensal</option>
+                            <option value="SEMESTRAL">Semestral</option>
+                            <option value="ANUAL">Anual</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#607579]">
+                            Assinatura
+                        </label>
+
+                        <select
+                            value={statusAssinatura}
+                            onChange={(event) =>
+                                setStatusAssinatura(event.target.value)
+                            }
+                            className="w-full rounded-2xl border border-[#dce8e5] bg-[#f8fcfb] px-4 py-3 text-sm font-semibold text-[#10263d] outline-none transition focus:border-[#0d6666]"
+                        >
+                            <option value="TODOS">Todas</option>
+                            <option value="ATIVA">Ativa</option>
+                            <option value="CANCELADA">Cancelada</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#607579]">
+                            Financeiro
+                        </label>
+
+                        <select
+                            value={statusFinanceiro}
+                            onChange={(event) =>
+                                setStatusFinanceiro(event.target.value)
+                            }
+                            className="w-full rounded-2xl border border-[#dce8e5] bg-[#f8fcfb] px-4 py-3 text-sm font-semibold text-[#10263d] outline-none transition focus:border-[#0d6666]"
+                        >
+                            <option value="TODOS">Todos</option>
+                            <option value="EM_DIA">Em dia</option>
+                            <option value="PENDENTE">Pendente</option>
+                            <option value="ATRASADO">Atrasado</option>
+                            <option value="AUSENTE">Ausente</option>
+                            <option value="CANCELADO">Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="w-full sm:max-w-[180px]">
+                        <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#607579]">
+                            Por página
+                        </label>
+
+                        <select
+                            value={size}
+                            onChange={(event) =>
+                                setSize(event.target.value)
+                            }
+                            className="w-full rounded-2xl border border-[#dce8e5] bg-[#f8fcfb] px-4 py-3 text-sm font-semibold text-[#10263d] outline-none transition focus:border-[#0d6666]"
+                        >
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                        <button
+                            type="button"
+                            onClick={limparFiltros}
+                            className="rounded-2xl border border-[#dce8e5] bg-white px-5 py-3 text-sm font-bold text-[#255252] transition hover:bg-[#eaf7f5]"
+                        >
+                            Limpar filtros
+                        </button>
+
+                        <button
+                            type="submit"
+                            className="rounded-2xl bg-[#0d6666] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#0d6666]/20 transition hover:-translate-y-[1px] hover:bg-[#095252]"
+                        >
+                            Aplicar filtros
+                        </button>
+                    </div>
+                </div>
+            </form>
+
             <div className="overflow-hidden rounded-[28px] border border-[#dce8e5] bg-gradient-to-br from-white to-[#f3faf8] shadow-sm">
                 <div className="flex flex-col gap-2 border-b border-[#dce8e5] px-5 py-5 md:flex-row md:items-center md:justify-between">
                     <div>
@@ -623,7 +832,7 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                         </h2>
 
                         <p className="mt-1 text-sm text-[#607579]">
-                            {alunos.length} aluno(s) encontrado(s)
+                            {paginacao.totalElements} aluno(s) encontrado(s)
                         </p>
                     </div>
 
@@ -778,6 +987,45 @@ export function AlunosAdminTable({ alunosIniciais }: AlunosAdminTableProps) {
                         )}
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-3 rounded-[24px] border border-[#dce8e5] bg-white px-5 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm font-semibold text-[#607579]">
+                    Página{" "}
+                    <span className="font-black text-[#10263d]">
+                        {paginacao.totalPages === 0
+                            ? 0
+                            : paginacao.currentPage + 1}
+                    </span>{" "}
+                    de{" "}
+                    <span className="font-black text-[#10263d]">
+                        {paginacao.totalPages}
+                    </span>
+                </p>
+
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={() =>
+                            irParaPagina(paginacao.currentPage - 1)
+                        }
+                        disabled={paginacao.first}
+                        className="rounded-2xl border border-[#dce8e5] bg-white px-4 py-2 text-sm font-bold text-[#255252] transition hover:bg-[#eaf7f5] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        Anterior
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() =>
+                            irParaPagina(paginacao.currentPage + 1)
+                        }
+                        disabled={paginacao.last}
+                        className="rounded-2xl border border-[#dce8e5] bg-white px-4 py-2 text-sm font-bold text-[#255252] transition hover:bg-[#eaf7f5] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        Próxima
+                    </button>
                 </div>
             </div>
 
