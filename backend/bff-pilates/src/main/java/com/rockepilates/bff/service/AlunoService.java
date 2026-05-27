@@ -163,6 +163,29 @@ public class AlunoService {
         return client.listarAdmin();
     }
 
+    public Map<String, Object> listarAdminPaginado(
+            HttpServletRequest request,
+            String busca,
+            String plano,
+            String statusAssinatura,
+            String statusFinanceiro,
+            int page,
+            int size
+    ) {
+        String authorization = extrairAuthorization(request);
+
+        usuariosService.validarAdmin(authorization);
+
+        return client.listarAdminPaginado(
+                busca,
+                plano,
+                statusAssinatura,
+                statusFinanceiro,
+                page,
+                size
+        );
+    }
+
     public void marcarComoPago(Long id, HttpServletRequest request) {
         String authorization = extrairAuthorization(request);
 

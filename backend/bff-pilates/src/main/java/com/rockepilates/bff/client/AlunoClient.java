@@ -35,6 +35,16 @@ public interface AlunoClient {
     @GetMapping("/alunos/admin")
     List<Map<String, Object>> listarAdmin();
 
+    @GetMapping("/alunos/admin/paginado")
+    Map<String, Object> listarAdminPaginado(
+            @RequestParam(required = false) String busca,
+            @RequestParam(required = false) String plano,
+            @RequestParam(required = false) String statusAssinatura,
+            @RequestParam(required = false) String statusFinanceiro,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    );
+
     @PatchMapping("/alunos/assinaturas/{id}/pagar")
     void marcarComoPago(@PathVariable Long id);
 

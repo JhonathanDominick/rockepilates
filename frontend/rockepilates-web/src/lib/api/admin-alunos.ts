@@ -3,6 +3,24 @@ import { cookies } from "next/headers";
 function getBffUrl() {
     return process.env.BFF_INTERNAL_URL || process.env.NEXT_PUBLIC_BFF_URL;
 }
+export type ListarAlunosAdminParams = {
+    busca?: string;
+    plano?: string;
+    statusAssinatura?: string;
+    statusFinanceiro?: string;
+    page?: number;
+    size?: number;
+};
+
+export type AlunosAdminPaginadoResponse<T> = {
+    content: T[];
+    totalElements: number;
+    totalPages: number;
+    number: number;
+    size: number;
+    first: boolean;
+    last: boolean;
+};
 
 async function extrairErro(res: Response, fallback: string) {
     try {
@@ -180,4 +198,59 @@ export async function atualizarMensagemProfessoraAdmin(
             await extrairErro(res, "Erro ao atualizar mensagem da professora")
         );
     }
+}
+
+export async function listarAlunosAdminPaginado<T = any>(
+    params: ListarAlunosAdminParams
+): Promise<AlunosAdminPaginadoResponse<T>> {
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore.toString();
+
+    const searchParams = new URLSearchParams();
+
+    if (params.busca) {
+        searchParams.set("busca", params.busca);
+    }
+
+    if (params.plano && params.plano !== "TODOS") {
+        searchParams.set("plano", params.plano);
+    }
+
+    if (
+        params.statusAssinatura &&
+        params.statusAssinatura !== "TODOS"
+    ) {
+        searchParams.set("statusAssinatura", params.statusAssinatura);
+    }
+
+    if (
+        params.statusFinanceiro &&
+        params.statusFinanceiro !== "TODOS"
+    ) {
+        searchParams.set("statusFinanceiro", params.statusFinanceiro);
+    }
+
+    searchParams.set("page", String(params.page ?? 0));
+    searchParams.set("size", String(params.size ?? 10));
+
+    const res = await fetch(
+        `${getBffUrl()}/bff/alunos/admin/paginado?${searchParams.toString()}`,
+        {
+            headers: {
+                Cookie: cookieHeader,
+            },
+            cache: "no-store",
+        }
+    );
+
+    if (!res.ok) {
+        throw new Error(
+            await extrairErro(
+                res,
+                "Erro ao listar alunos paginados"
+            )
+        );
+    }
+
+    return extrairData(res);
 }

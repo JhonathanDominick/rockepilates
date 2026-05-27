@@ -74,6 +74,25 @@ public class AlunoController {
         return service.listarAdmin();
     }
 
+    @GetMapping("/admin/paginado")
+    public AlunoAdminPaginadoResponse listarAdminPaginado(
+            @RequestParam(required = false) String busca,
+            @RequestParam(required = false) String plano,
+            @RequestParam(required = false) String statusAssinatura,
+            @RequestParam(required = false) String statusFinanceiro,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return service.listarAdminPaginado(
+                busca,
+                plano,
+                statusAssinatura,
+                statusFinanceiro,
+                page,
+                size
+        );
+    }
+
     @PostMapping("/admin/importar-retroativo")
     @ResponseStatus(HttpStatus.CREATED)
     public void importarAlunoRetroativo(

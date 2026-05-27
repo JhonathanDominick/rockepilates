@@ -21,11 +21,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -317,49 +316,153 @@ public class AlunoService {
         return assinaturaRepository.findAll()
                 .stream()
                 .sorted(Comparator.comparing(Assinatura::getCriadoEm).reversed())
-                .map(assinatura -> {
-                    String statusPagamento = resolverStatusFinanceiroAdmin(assinatura);
-
-                    Pagamento pagamentoAtual = pagamentoRepository
-                            .findFirstByAssinaturaOrderByDataVencimentoDesc(assinatura)
-                            .orElse(null);
-
-                    Long pagamentoAtualId =
-                            pagamentoAtual != null
-                                    ? pagamentoAtual.getId()
-                                    : null;
-
-                    String statusPagamentoAtual =
-                            pagamentoAtual != null
-                                    ? pagamentoAtual.getStatus().name()
-                                    : "SEM_PAGAMENTO";
-
-                    LocalDate dataVencimentoAtual =
-                            pagamentoAtual != null
-                                    ? pagamentoAtual.getDataVencimento()
-                                    : assinatura.getDataVencimento();
-
-                    return new AlunoAdminResponse(
-                            assinatura.getId(),
-                            assinatura.getAluno().getId(),
-                            assinatura.getAluno().getNome(),
-                            assinatura.getAluno().getEmail(),
-                            assinatura.getAluno().getTelefone(),
-                            assinatura.getAluno().getDataNascimento(),
-                            assinatura.getAluno().getObjetivo(),
-                            assinatura.getAluno().getObservacoesSaude(),
-                            assinatura.getPlano().getTipo().name(),
-                            assinatura.getStatus().name(),
-                            statusPagamento,
-                            pagamentoAtualId,
-                            statusPagamentoAtual,
-                            dataVencimentoAtual,
-                            assinatura.getDataCancelamento(),
-                            assinatura.getAluno().getObservacoesInternas(),
-                            assinatura.getAluno().getMensagemProfessora()
-                    );
-                })
+                .map(this::montarAlunoAdminResponse)
                 .toList();
+    }
+
+    public AlunoAdminPaginadoResponse listarAdminPaginado(
+            String busca,
+            String plano,
+            String statusAssinatura,
+            String statusFinanceiro,
+            int page,
+            int size
+    ) {
+        int paginaSegura = Math.max(page, 0);
+        int tamanhoSeguro = Math.min(Math.max(size, 1), 50);
+
+        List<AlunoAdminResponse> alunos = listarAdmin();
+
+        if (busca != null && !busca.isBlank()) {
+            String termo = busca.trim().toLowerCase();
+
+            alunos = alunos
+                    .stream()
+                    .filter(aluno ->
+                            aluno.nome().toLowerCase().contains(termo)
+                                    || aluno.email().toLowerCase().contains(termo)
+                                    || aluno.telefone().toLowerCase().contains(termo)
+                    )
+                    .toList();
+        }
+
+        if (plano != null && !plano.isBlank() && !"TODOS".equalsIgnoreCase(plano)) {
+            String planoNormalizado = plano.trim().toUpperCase();
+
+            alunos = alunos
+                    .stream()
+                    .filter(aluno -> planoNormalizado.equalsIgnoreCase(aluno.plano()))
+                    .toList();
+        }
+
+        if (
+                statusAssinatura != null &&
+                        !statusAssinatura.isBlank() &&
+                        !"TODOS".equalsIgnoreCase(statusAssinatura)
+        ) {
+            String statusAssinaturaNormalizado =
+                    statusAssinatura.trim().toUpperCase();
+
+            alunos = alunos
+                    .stream()
+                    .filter(aluno ->
+                            statusAssinaturaNormalizado.equalsIgnoreCase(
+                                    aluno.status()
+                            )
+                    )
+                    .toList();
+        }
+
+        if (
+                statusFinanceiro != null &&
+                        !statusFinanceiro.isBlank() &&
+                        !"TODOS".equalsIgnoreCase(statusFinanceiro)
+        ) {
+            String statusFinanceiroNormalizado =
+                    statusFinanceiro.trim().toUpperCase();
+
+            alunos = alunos
+                    .stream()
+                    .filter(aluno ->
+                            statusFinanceiroNormalizado.equalsIgnoreCase(
+                                    aluno.statusPagamento()
+                            )
+                    )
+                    .toList();
+        }
+
+        int totalElements = alunos.size();
+        int totalPages =
+                totalElements == 0
+                        ? 0
+                        : (int) Math.ceil((double) totalElements / tamanhoSeguro);
+
+        int fromIndex = paginaSegura * tamanhoSeguro;
+
+        List<AlunoAdminResponse> content;
+
+        if (fromIndex >= totalElements) {
+            content = List.of();
+        } else {
+            int toIndex = Math.min(fromIndex + tamanhoSeguro, totalElements);
+            content = alunos.subList(fromIndex, toIndex);
+        }
+
+        boolean first = paginaSegura == 0;
+        boolean last = totalPages == 0 || paginaSegura >= totalPages - 1;
+
+        return new AlunoAdminPaginadoResponse(
+                content,
+                totalElements,
+                totalPages,
+                paginaSegura,
+                tamanhoSeguro,
+                first,
+                last
+        );
+    }
+
+    private AlunoAdminResponse montarAlunoAdminResponse(Assinatura assinatura) {
+        String statusPagamento = resolverStatusFinanceiroAdmin(assinatura);
+
+        Pagamento pagamentoAtual = pagamentoRepository
+                .findFirstByAssinaturaOrderByDataVencimentoDesc(assinatura)
+                .orElse(null);
+
+        Long pagamentoAtualId =
+                pagamentoAtual != null
+                        ? pagamentoAtual.getId()
+                        : null;
+
+        String statusPagamentoAtual =
+                pagamentoAtual != null
+                        ? pagamentoAtual.getStatus().name()
+                        : "SEM_PAGAMENTO";
+
+        LocalDate dataVencimentoAtual =
+                pagamentoAtual != null
+                        ? pagamentoAtual.getDataVencimento()
+                        : assinatura.getDataVencimento();
+
+        return new AlunoAdminResponse(
+                assinatura.getId(),
+                assinatura.getAluno().getId(),
+                assinatura.getAluno().getNome(),
+                assinatura.getAluno().getEmail(),
+                assinatura.getAluno().getTelefone(),
+                assinatura.getAluno().getDataNascimento(),
+                assinatura.getAluno().getObjetivo(),
+                assinatura.getAluno().getObservacoesSaude(),
+                assinatura.getPlano().getTipo().name(),
+                assinatura.getStatus().name(),
+                statusPagamento,
+                pagamentoAtualId,
+                statusPagamentoAtual,
+                dataVencimentoAtual,
+                assinatura.getDataCancelamento(),
+                assinatura.getAluno().getObservacoesInternas(),
+                assinatura.getAluno().getMensagemProfessora()
+        );
     }
 
     @Transactional
@@ -1186,4 +1289,6 @@ public class AlunoService {
             }
         }
     }
+
+
 }

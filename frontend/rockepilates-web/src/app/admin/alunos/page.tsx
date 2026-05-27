@@ -4,15 +4,76 @@ import {
     AlunosAdminTable,
     type AlunoAdmin,
 } from "@/components/admin/AlunosAdminTable";
-import { listarAlunosAdmin } from "@/lib/api/admin-alunos";
+import { listarAlunosAdminPaginado } from "@/lib/api/admin-alunos";
 
-export default async function AdminAlunosPage() {
+type AdminAlunosPageProps = {
+    searchParams?: Promise<{
+        busca?: string;
+        plano?: string;
+        statusAssinatura?: string;
+        statusFinanceiro?: string;
+        page?: string;
+        size?: string;
+    }>;
+};
+
+function normalizarNumeroPagina(valor: string | undefined) {
+    const numero = Number(valor);
+
+    if (Number.isNaN(numero) || numero < 0) {
+        return 0;
+    }
+
+    return numero;
+}
+
+function normalizarTamanhoPagina(valor: string | undefined) {
+    const numero = Number(valor);
+
+    if (Number.isNaN(numero) || numero < 1) {
+        return 10;
+    }
+
+    return Math.min(numero, 50);
+}
+
+export default async function AdminAlunosPage({
+                                                  searchParams,
+                                              }: AdminAlunosPageProps) {
+    const params = await searchParams;
+
+    const busca = params?.busca ?? "";
+    const plano = params?.plano ?? "TODOS";
+    const statusAssinatura = params?.statusAssinatura ?? "TODOS";
+    const statusFinanceiro = params?.statusFinanceiro ?? "TODOS";
+    const page = normalizarNumeroPagina(params?.page);
+    const size = normalizarTamanhoPagina(params?.size);
+
     let alunos: AlunoAdmin[] = [];
+    let totalElements = 0;
+    let totalPages = 0;
+    let currentPage = page;
+    let first = true;
+    let last = true;
 
     try {
-        alunos = await listarAlunosAdmin();
+        const data = await listarAlunosAdminPaginado<AlunoAdmin>({
+            busca,
+            plano,
+            statusAssinatura,
+            statusFinanceiro,
+            page,
+            size,
+        });
+
+        alunos = data.content;
+        totalElements = data.totalElements;
+        totalPages = data.totalPages;
+        currentPage = data.number;
+        first = data.first;
+        last = data.last;
     } catch (error) {
-        console.error("Erro ao listar alunos:", error);
+        console.error("Erro ao listar alunos paginados:", error);
     }
 
     return (
@@ -36,7 +97,24 @@ export default async function AdminAlunosPage() {
                 </Link>
             </div>
 
-            <AlunosAdminTable alunosIniciais={alunos} />
+            <AlunosAdminTable
+                alunosIniciais={alunos}
+                filtros={{
+                    busca,
+                    plano,
+                    statusAssinatura,
+                    statusFinanceiro,
+                    size,
+                }}
+                paginacao={{
+                    totalElements,
+                    totalPages,
+                    currentPage,
+                    size,
+                    first,
+                    last,
+                }}
+            />
         </AdminLayout>
     );
 }
