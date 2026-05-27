@@ -854,6 +854,23 @@ public class AlunoService {
         aluno.setSenhaHash(passwordEncoder.encode(request.novaSenha()));
     }
 
+    @Transactional
+    public void redefinirSenhaAlunoAdmin(
+            Long alunoId,
+            RedefinirSenhaAlunoAdminRequest request
+    ) {
+        Aluno aluno = alunoRepository.findById(alunoId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Aluno não encontrado")
+                );
+
+        if (!request.novaSenha().equals(request.confirmarSenha())) {
+            throw new IllegalArgumentException("As senhas não conferem");
+        }
+
+        aluno.setSenhaHash(passwordEncoder.encode(request.novaSenha()));
+    }
+
     private void validarDataInicioNovoAluno(LocalDate dataInicio) {
         LocalDate primeiroDiaMesAtual = LocalDate.now().withDayOfMonth(1);
 

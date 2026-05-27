@@ -388,6 +388,26 @@ public class AlunoController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/admin/{id}/senha")
+    public ResponseEntity<SuccessResponse<Void>> redefinirSenhaAlunoAdmin(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body,
+            HttpServletRequest request
+    ) {
+
+        service.redefinirSenhaAlunoAdmin(id, body, request);
+
+        SuccessResponse<Void> response =
+                new SuccessResponse<>(
+                        LocalDateTime.now(),
+                        200,
+                        "Senha do aluno redefinida com sucesso",
+                        null
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
     @PatchMapping("/assinaturas/{id}/cancelar")
     public ResponseEntity<SuccessResponse<Void>> cancelarAssinatura(
             @PathVariable Long id,

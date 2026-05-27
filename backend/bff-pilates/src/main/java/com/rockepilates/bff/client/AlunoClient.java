@@ -92,4 +92,10 @@ public interface AlunoClient {
 
     @PatchMapping("/alunos/pagamentos/{id}/reverter-ausente")
     void reverterPagamentoAusenteParaPendente(@PathVariable Long id);
+
+    @PatchMapping("/alunos/admin/{id}/senha")
+    void redefinirSenhaAlunoAdmin(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body
+    );
 }
