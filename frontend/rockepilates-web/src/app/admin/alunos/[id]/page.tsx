@@ -5,6 +5,7 @@ import { ObservacoesInternasAlunoForm } from "@/components/admin/ObservacoesInte
 import { EditarAlunoAdminForm } from "@/components/admin/EditarAlunoAdminForm";
 import { CancelarAssinaturaButton } from "@/components/admin/CancelarAssinaturaButton";
 import { MensagemProfessoraAlunoForm } from "@/components/admin/MensagemProfessoraAlunoForm";
+import { RedefinirSenhaAlunoAdminForm } from "@/components/admin/RedefinirSenhaAlunoAdminForm";
 import {
     buscarAlunoAdminPorId,
     listarPagamentosPorAssinaturaAdmin,
@@ -224,6 +225,8 @@ export default async function AdminAlunoDetalhePage({ params }: PageProps) {
                 objetivo={aluno.objetivo ?? ""}
                 observacoesSaude={aluno.observacoesSaude ?? ""}
             />
+
+            <RedefinirSenhaAlunoAdminForm alunoId={aluno.alunoId} />
 
             <ObservacoesInternasAlunoForm
                 alunoId={aluno.alunoId}

@@ -202,3 +202,34 @@ export async function marcarPagamentoComoPago(pagamentoId: number) {
         );
     }
 }
+
+export type RedefinirSenhaAlunoAdminRequest = {
+    novaSenha: string;
+    confirmarSenha: string;
+};
+
+export async function redefinirSenhaAlunoAdmin(
+    alunoId: number,
+    data: RedefinirSenhaAlunoAdminRequest
+) {
+    const res = await fetch(
+        `${getPublicBffUrl()}/bff/alunos/admin/${alunoId}/senha`,
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(data),
+        }
+    );
+
+    if (!res.ok) {
+        throw new Error(
+            await extrairErro(
+                res,
+                "Erro ao redefinir senha do aluno"
+            )
+        );
+    }
+}

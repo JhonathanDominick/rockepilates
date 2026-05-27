@@ -156,6 +156,15 @@ public class AlunoController {
         service.atualizarAdmin(id, request);
     }
 
+    @PatchMapping("/admin/{id}/senha")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void redefinirSenhaAlunoAdmin(
+            @PathVariable Long id,
+            @Valid @RequestBody RedefinirSenhaAlunoAdminRequest request
+    ) {
+        service.redefinirSenhaAlunoAdmin(id, request);
+    }
+
     @PatchMapping("/assinaturas/{id}/cancelar")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void cancelarAssinatura(@PathVariable Long id) {
