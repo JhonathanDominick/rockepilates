@@ -51,7 +51,6 @@ public class FinanceiroService {
                 pagamentos.stream()
                         .filter(pagamento ->
                                 pagamento.getStatus() == StatusPagamento.ATRASADO
-                                        && vencimentoNoMesAtual(pagamento, inicioMes, fimMes)
                         )
                         .map(Pagamento::getValor)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
