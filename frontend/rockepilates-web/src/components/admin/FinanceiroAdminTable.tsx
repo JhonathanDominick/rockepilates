@@ -14,7 +14,8 @@ type StatusFiltro =
     | "PENDENTE"
     | "ATRASADO"
     | "PAGO"
-    | "AUSENTE";
+    | "AUSENTE"
+    | "CANCELADO";
 
 type PeriodoFiltro =
     | "TODOS"
@@ -70,6 +71,8 @@ function getStatusStyle(status: string) {
         case "ATRASADO":
             return "bg-[#ffe2de] text-[#b42318]";
         case "AUSENTE":
+            return "bg-[#eef1f1] text-[#5f6f72]";
+        case "CANCELADO":
             return "bg-[#eef1f1] text-[#5f6f72]";
         default:
             return "bg-[#fff4d6] text-[#9a6700]";
@@ -285,6 +288,7 @@ export function FinanceiroAdminTable({
                             <option value="PENDENTE">Pendente</option>
                             <option value="ATRASADO">Atrasado</option>
                             <option value="AUSENTE">Ausente</option>
+                            <option value="CANCELADO">Cancelado</option>
                             <option value="PAGO">Pago</option>
                         </select>
                     </div>

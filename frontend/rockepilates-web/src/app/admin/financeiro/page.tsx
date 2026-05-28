@@ -33,7 +33,7 @@ export default async function FinanceiroPage() {
     const resumo = [
         ["Recebido no mês", resumoFinanceiro.recebidoMes],
         ["Pendente no mês", resumoFinanceiro.pendenteMes],
-        ["Atrasado no mês", resumoFinanceiro.atrasadoMes],
+        ["Atrasado em aberto", resumoFinanceiro.atrasadoMes],
     ];
 
     return (
