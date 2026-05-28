@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { AlterarSenhaForm } from "@/components/aluno/AlterarSenhaForm";
@@ -5,6 +6,8 @@ import { AlterarSenhaForm } from "@/components/aluno/AlterarSenhaForm";
 import {
     buscarPagamentosAlunoPaginado,
     buscarPerfilAluno,
+    buscarResumoFinanceiroAluno,
+    type PagamentoAluno,
 } from "@/lib/api/aluno-perfil";
 
 function formatarData(data: string | null) {
@@ -22,23 +25,28 @@ function formatarMoeda(valor: number) {
     }).format(valor);
 }
 
-function getStatusClass(status: string) {
-    const statusNormalizado = status?.toUpperCase();
+function getStatusClass(status: string | null | undefined) {
+    const statusNormalizado = status?.toUpperCase() ?? "";
 
     if (statusNormalizado.includes("ATRASADO")) {
         return "bg-[#ffe3dc] text-[#b33127] border-[#ffc8bd]";
     }
 
+    if (statusNormalizado.includes("PENDENTE")) {
+        return "bg-[#fff1d6] text-[#9a5b00] border-[#ffd98c]";
+    }
+
+    if (statusNormalizado.includes("AUSENTE")) {
+        return "bg-[#eef1f1] text-[#5f6f72] border-[#d8dddd]";
+    }
+
     if (
         statusNormalizado.includes("ATIVA") ||
         statusNormalizado.includes("PAGO") ||
-        statusNormalizado.includes("EM_DIA")
+        statusNormalizado.includes("EM_DIA") ||
+        statusNormalizado.includes("EM DIA")
     ) {
         return "bg-[#dff4f2] text-[#0d6666] border-[#b8e5df]";
-    }
-
-    if (statusNormalizado.includes("PENDENTE")) {
-        return "bg-[#fff1d6] text-[#9a5b00] border-[#ffd98c]";
     }
 
     if (
@@ -51,6 +59,14 @@ function getStatusClass(status: string) {
     return "bg-[#eef7f6] text-[#255252] border-[#cfe7e4]";
 }
 
+function formatarStatus(status: string | null | undefined) {
+    if (!status) {
+        return "-";
+    }
+
+    return status === "EM_DIA" ? "EM DIA" : status;
+}
+
 export default async function PerfilAlunoPage() {
     const cookieStore = await cookies();
 
@@ -60,46 +76,35 @@ export default async function PerfilAlunoPage() {
         redirect("/login");
     }
 
-    const [aluno, pagamentosResponse] = await Promise.all([
+    const [aluno, pagamentosResponse, resumoFinanceiro] = await Promise.all([
         buscarPerfilAluno(),
         buscarPagamentosAlunoPaginado({
             page: 0,
             size: 3,
         }),
+        buscarResumoFinanceiroAluno(),
     ]);
 
-    const pagamentos = pagamentosResponse.content ?? [];
+    const pagamentos: PagamentoAluno[] = pagamentosResponse.content ?? [];
 
-    const pagamentosPagos = pagamentos.filter(
-        (pagamento: any) => pagamento.status === "PAGO"
-    );
+    const statusAssinatura =
+        resumoFinanceiro.statusAssinatura ?? aluno.status;
 
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
+    const statusFinanceiro =
+        resumoFinanceiro.statusFinanceiro ?? aluno.statusPagamento;
 
-    const pagamentosAtrasados = pagamentos.filter((pagamento: any) => {
-        if (pagamento.status === "ATRASADO") {
-            return true;
-        }
-
-        if (pagamento.status !== "PENDENTE") {
-            return false;
-        }
-
-        const dataVencimento = new Date(`${pagamento.dataVencimento}T00:00:00`);
-
-        return dataVencimento < hoje;
-    });
+    const proximoVencimento =
+        resumoFinanceiro.proximoVencimento ?? aluno.dataVencimento;
 
     return (
         <main className="min-h-screen bg-[#f6fbfa] px-6 py-10">
             <div className="mx-auto max-w-6xl">
-                <a
+                <Link
                     href="/"
                     className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#b8e5df] bg-white px-5 py-2 text-sm font-bold text-[#0d6666] transition hover:bg-[#eaf7f5]"
                 >
                     ← Voltar ao site
-                </a>
+                </Link>
 
                 <div className="rounded-[32px] border border-[#dce8e5] bg-gradient-to-br from-white to-[#f3faf8] p-8 shadow-sm">
                     <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#0d6666]">
@@ -118,20 +123,18 @@ export default async function PerfilAlunoPage() {
                     <div className="mt-6 flex flex-wrap gap-2">
                         <span
                             className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-wide ${getStatusClass(
-                                aluno.status
+                                statusAssinatura
                             )}`}
                         >
-                            Assinatura {aluno.status}
+                            Assinatura {formatarStatus(statusAssinatura)}
                         </span>
 
                         <span
                             className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-wide ${getStatusClass(
-                                aluno.statusPagamento
+                                statusFinanceiro
                             )}`}
                         >
-                            Financeiro {aluno.statusPagamento === "EM_DIA"
-                            ? "EM DIA"
-                            : aluno.statusPagamento}
+                            Financeiro {formatarStatus(statusFinanceiro)}
                         </span>
 
                         <span className="rounded-full border border-[#b8e5df] bg-[#dff4f2] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#0d6666]">
@@ -143,11 +146,11 @@ export default async function PerfilAlunoPage() {
                 <div className="mt-6 grid gap-4 md:grid-cols-3">
                     <div className="rounded-[24px] border border-[#dce8e5] bg-white p-5 shadow-sm">
                         <p className="text-xs font-bold uppercase tracking-wide text-[#607579]">
-                            Pagamentos realizados
+                            Pagamentos pendentes
                         </p>
 
                         <p className="mt-3 text-3xl font-black text-[#10263d]">
-                            {pagamentosPagos.length}
+                            {resumoFinanceiro.pagamentosPendentes}
                         </p>
                     </div>
 
@@ -157,7 +160,7 @@ export default async function PerfilAlunoPage() {
                         </p>
 
                         <p className="mt-3 text-3xl font-black text-[#10263d]">
-                            {pagamentosAtrasados.length}
+                            {resumoFinanceiro.pagamentosAtrasados}
                         </p>
                     </div>
 
@@ -167,7 +170,7 @@ export default async function PerfilAlunoPage() {
                         </p>
 
                         <p className="mt-3 text-3xl font-black text-[#10263d]">
-                            {formatarData(aluno.dataVencimento)}
+                            {formatarData(proximoVencimento)}
                         </p>
                     </div>
                 </div>
@@ -243,7 +246,7 @@ export default async function PerfilAlunoPage() {
                                 </p>
 
                                 <p className="mt-2 text-lg font-black text-[#10263d]">
-                                    {formatarData(aluno.dataVencimento)}
+                                    {formatarData(proximoVencimento)}
                                 </p>
                             </div>
 
@@ -300,7 +303,8 @@ export default async function PerfilAlunoPage() {
                             </p>
 
                             <p className="mt-2 text-sm text-[#607579]">
-                                Quando houver algum recado da professora, ele aparecerá aqui.
+                                Quando houver algum recado da professora, ele
+                                aparecerá aqui.
                             </p>
                         </div>
                     )}
@@ -321,7 +325,8 @@ export default async function PerfilAlunoPage() {
                         </div>
 
                         <div className="rounded-2xl border border-[#b8e5df] bg-[#f3faf8] px-4 py-3 text-xs text-[#4b6666]">
-                            Os pagamentos são registrados manualmente pela professora.
+                            Os pagamentos são registrados manualmente pela
+                            professora.
                         </div>
                     </div>
 
@@ -338,7 +343,7 @@ export default async function PerfilAlunoPage() {
                         </div>
                     ) : (
                         <div className="mt-8 space-y-4">
-                            {pagamentos.map((pagamento: any) => (
+                            {pagamentos.map((pagamento) => (
                                 <div
                                     key={pagamento.id}
                                     className="rounded-[24px] border border-[#e2ece9] bg-[#fcfefe] p-5"
@@ -383,7 +388,9 @@ export default async function PerfilAlunoPage() {
                                                         Confirmação:
                                                     </span>{" "}
                                                     {pagamento.dataPagamento
-                                                        ? formatarData(pagamento.dataPagamento)
+                                                        ? formatarData(
+                                                            pagamento.dataPagamento
+                                                        )
                                                         : "Aguardando confirmação da professora"}
                                                 </div>
                                             </div>
@@ -391,13 +398,14 @@ export default async function PerfilAlunoPage() {
                                     </div>
                                 </div>
                             ))}
+
                             <div className="pt-2">
-                                <a
+                                <Link
                                     href="/aluno/financeiro"
                                     className="inline-flex items-center gap-2 rounded-2xl border border-[#b8e5df] bg-[#f3faf8] px-5 py-3 text-sm font-bold text-[#0d6666] transition hover:bg-[#e4f5f2]"
                                 >
                                     Ver histórico financeiro completo →
-                                </a>
+                                </Link>
                             </div>
                         </div>
                     )}
