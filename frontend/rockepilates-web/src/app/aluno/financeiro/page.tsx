@@ -127,7 +127,8 @@ export default async function FinanceiroAlunoPage({
     const status = params.status ?? "TODOS";
     const inicio = params.inicio?.trim() || undefined;
     const fim = params.fim?.trim() || undefined;
-    const page = Number(params.page ?? "0");
+    const pageParam = Number(params.page ?? "0");
+    const page = Number.isNaN(pageParam) || pageParam < 0 ? 0 : pageParam;
 
     const [historico, resumo] = await Promise.all([
         buscarPagamentosAlunoPaginado({
@@ -196,7 +197,7 @@ export default async function FinanceiroAlunoPage({
                         )}`}
                     >
                         <p className="text-[11px] font-bold uppercase tracking-wide text-[#607579]">
-                            Pagamentos futuros
+                            Pagamentos pendentes
                         </p>
 
                         <h2 className="mt-3 text-2xl font-black text-[#10263d]">
