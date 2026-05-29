@@ -47,7 +47,7 @@ public class DepoimentoService {
     }
 
     public List<Depoimento> listarTodos() {
-        return repository.findAll();
+        return repository.findAllByOrderByCriadoEmDesc();
     }
 
     public Depoimento aprovar(Long id) {
