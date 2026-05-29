@@ -57,6 +57,7 @@ services:
     environment:
       USUARIOS_URL: http://usuarios-service:8081
       GERENCIADOR_URL: http://gerenciador-service:8082
+      APP_COOKIE_SECURE: "false"
     ports:
       - "8080:8080"
     volumes:
