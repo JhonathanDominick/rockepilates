@@ -69,7 +69,7 @@ export async function salvarConfigSite(config: {
     tipo: ConfigTipo;
 }) {
     const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BFF_URL}/bff/configs`,
+        `${getBaseUrl()}/bff/configs`,
         {
             method: "POST",
             headers: {
