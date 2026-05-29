@@ -2,6 +2,7 @@ package com.rockepilates.bff.controller;
 
 import com.rockepilates.bff.dto.SuccessResponse;
 import com.rockepilates.bff.service.AlunoService;
+import com.rockepilates.bff.util.CookieSecurityUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -56,7 +57,7 @@ public class AlunoController {
         ResponseCookie cookie = ResponseCookie
                 .from("aluno_token", String.valueOf(token))
                 .httpOnly(true)
-                .secure(false)
+                .secure(CookieSecurityUtil.isSecureCookieEnabled())
                 .path("/")
                 .maxAge(60 * 60 * 24)
                 .sameSite("Lax")
@@ -81,7 +82,7 @@ public class AlunoController {
         ResponseCookie cookie = ResponseCookie
                 .from("aluno_token", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(CookieSecurityUtil.isSecureCookieEnabled())
                 .path("/")
                 .maxAge(0)
                 .sameSite("Lax")

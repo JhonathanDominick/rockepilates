@@ -1,10 +1,16 @@
 package com.rockepilates.bff.controller;
 
-import com.rockepilates.bff.dto.*;
+import com.rockepilates.bff.dto.CreateUsuarioRequest;
+import com.rockepilates.bff.dto.LoginRequest;
+import com.rockepilates.bff.dto.LoginResponse;
+import com.rockepilates.bff.dto.PagedResponse;
+import com.rockepilates.bff.dto.UpdateSenhaRequest;
+import com.rockepilates.bff.dto.UsuarioResponse;
 import com.rockepilates.bff.service.UsuariosService;
+import com.rockepilates.bff.util.CookieSecurityUtil;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -51,9 +57,9 @@ public class UsuariosController {
 
         ResponseCookie cookie = ResponseCookie.from("admin_token", token)
                 .httpOnly(true)
-                .secure(false) // depois vamos ajustar para true em produção
+                .secure(CookieSecurityUtil.isSecureCookieEnabled())
                 .path("/")
-                .maxAge(60 * 60) // 1 hora
+                .maxAge(60 * 60)
                 .sameSite("Lax")
                 .build();
 
@@ -68,9 +74,9 @@ public class UsuariosController {
 
         ResponseCookie cookie = ResponseCookie.from("admin_token", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(CookieSecurityUtil.isSecureCookieEnabled())
                 .path("/")
-                .maxAge(0) // remove cookie
+                .maxAge(0)
                 .sameSite("Lax")
                 .build();
 
