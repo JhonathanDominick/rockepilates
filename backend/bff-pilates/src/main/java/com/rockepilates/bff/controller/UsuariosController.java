@@ -11,15 +11,22 @@ import com.rockepilates.bff.util.CookieSecurityUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import com.rockepilates.bff.service.LoginRateLimitService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class UsuariosController {
 
     private final UsuariosService service;
+    private final LoginRateLimitService loginRateLimitService;
 
-    public UsuariosController(UsuariosService service) {
+    public UsuariosController(
+            UsuariosService service,
+            LoginRateLimitService loginRateLimitService
+    ) {
         this.service = service;
+        this.loginRateLimitService = loginRateLimitService;
     }
 
     @GetMapping("/bff/usuarios")
@@ -49,7 +56,16 @@ public class UsuariosController {
     }
 
     @PostMapping("/bff/usuarios/login")
-    public ResponseEntity<Void> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<Void> login(
+            @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest
+    ) {
+
+        if (!loginRateLimitService.permitirTentativa("admin", httpRequest)) {
+            return ResponseEntity
+                    .status(HttpStatus.TOO_MANY_REQUESTS)
+                    .build();
+        }
 
         LoginResponse response = service.login(request);
 
