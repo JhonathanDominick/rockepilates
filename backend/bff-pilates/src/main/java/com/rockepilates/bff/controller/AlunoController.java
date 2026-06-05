@@ -8,6 +8,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+import com.rockepilates.bff.service.LoginRateLimitService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -17,9 +18,14 @@ import java.util.Map;
 public class AlunoController {
 
     private final AlunoService service;
+    private final LoginRateLimitService loginRateLimitService;
 
-    public AlunoController(AlunoService service) {
+    public AlunoController(
+            AlunoService service,
+            LoginRateLimitService loginRateLimitService
+    ) {
         this.service = service;
+        this.loginRateLimitService = loginRateLimitService;
     }
 
     @PostMapping
@@ -41,8 +47,22 @@ public class AlunoController {
 
     @PostMapping("/login")
     public ResponseEntity<SuccessResponse<Void>> login(
-            @RequestBody Map<String, Object> body
+            @RequestBody Map<String, Object> body,
+            HttpServletRequest request
     ) {
+
+        if (!loginRateLimitService.permitirTentativa("aluno", request)) {
+            SuccessResponse<Void> response = new SuccessResponse<>(
+                    LocalDateTime.now(),
+                    429,
+                    "Muitas tentativas de login. Tente novamente em instantes.",
+                    null
+            );
+
+            return ResponseEntity
+                    .status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(response);
+        }
 
         Map<String, Object> aluno = service.login(body);
 
@@ -50,7 +70,7 @@ public class AlunoController {
 
         if (token == null) {
             throw new IllegalStateException(
-                    "Resposta de login inválida"
+                    "Resposta de login invalida"
             );
         }
 
