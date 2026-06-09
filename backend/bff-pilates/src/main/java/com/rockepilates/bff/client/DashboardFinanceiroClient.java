@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.Map;
 
-@FeignClient(name = "dashboardFinanceiroClient", url = "${gerenciador.url}")
+@FeignClient(name = "dashboardFinanceiroClient", url = "${gerenciador.url}", fallback = DashboardFinanceiroClientFallback.class)
 public interface DashboardFinanceiroClient {
 
     @GetMapping("/dashboard/financeiro")
