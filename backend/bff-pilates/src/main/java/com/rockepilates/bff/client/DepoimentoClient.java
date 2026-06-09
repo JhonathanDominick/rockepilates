@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(name = "depoimento-client", url = "${gerenciador.url}")
+@FeignClient(name = "depoimento-client", url = "${gerenciador.url}", fallback = DepoimentoClientFallback.class)
 public interface DepoimentoClient {
 
     @PostMapping("/depoimentos")

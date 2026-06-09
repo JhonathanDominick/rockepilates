@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(
         name = "usuarios-service",
         url = "${usuarios.url}",
-        configuration = FeignConfig.class
+        configuration = FeignConfig.class,
+        fallback = UsuariosClientFallback.class
 )
 public interface UsuariosClient {
 

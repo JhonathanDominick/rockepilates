@@ -16,7 +16,8 @@ import java.util.List;
 @FeignClient(
         name = "gerenciador-service",
         url = "${gerenciador.url}",
-        configuration = FeignMultipartConfig.class
+        configuration = FeignMultipartConfig.class,
+        fallback = GerenciadorClientFallback.class
 )
 public interface GerenciadorClient {
 
