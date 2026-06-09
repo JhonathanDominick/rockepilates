@@ -1,6 +1,7 @@
 package com.rockepilates.bff.service;
 
 import com.rockepilates.bff.client.AlunoClient;
+import com.rockepilates.bff.exception.AlunoNaoAutenticadoException;
 import com.rockepilates.bff.security.JwtAlunoService;
 import feign.FeignException;
 import jakarta.servlet.http.Cookie;
@@ -288,7 +289,7 @@ public class AlunoService {
     private Long extrairAlunoId(HttpServletRequest request) {
 
         if (request.getCookies() == null) {
-            throw new RuntimeException("Aluno não autenticado");
+            throw new AlunoNaoAutenticadoException("Aluno não autenticado");
         }
 
         String token = Arrays.stream(request.getCookies())
@@ -296,22 +297,47 @@ public class AlunoService {
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElseThrow(() ->
-                        new RuntimeException("Aluno não autenticado")
+                        new AlunoNaoAutenticadoException("Aluno não autenticado")
                 );
 
         boolean tokenValido = jwtAlunoService.isTokenValid(token);
 
         if (!tokenValido) {
-            throw new RuntimeException("Sessão do aluno inválida");
+            throw new AlunoNaoAutenticadoException("Sessão do aluno inválida");
         }
 
         Long alunoId = jwtAlunoService.extractAlunoId(token);
 
         if (alunoId == null) {
-            throw new RuntimeException("Sessão do aluno inválida");
+            throw new AlunoNaoAutenticadoException("Sessão do aluno inválida");
         }
 
+        Long sessionVersion = jwtAlunoService.extractSessionVersion(token);
+
+        if (sessionVersion == null) {
+            throw new AlunoNaoAutenticadoException("Sessão do aluno inválida");
+        }
+
+        validarSessaoAluno(alunoId, sessionVersion);
+
         return alunoId;
+    }
+
+    private void validarSessaoAluno(Long alunoId, Long sessionVersion) {
+        try {
+            Map<String, Object> response = client.validarSessaoAluno(
+                    alunoId,
+                    Map.of("sessionVersion", sessionVersion)
+            );
+
+            Object valida = response.get("valida");
+
+            if (!Boolean.TRUE.equals(valida)) {
+                throw new AlunoNaoAutenticadoException("Sessão do aluno inválida");
+            }
+        } catch (FeignException ex) {
+            throw new IllegalStateException("Sessão do aluno indisponível");
+        }
     }
 
     private String extrairAuthorization(HttpServletRequest request) {

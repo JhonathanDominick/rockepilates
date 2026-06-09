@@ -21,13 +21,14 @@ public class JwtAlunoService {
     @Value("${jwt.aluno.expiration}")
     private Long expiration;
 
-    public String generateToken(Long alunoId, String email) {
+    public String generateToken(Long alunoId, String email, Long sessionVersion) {
         Date now = new Date();
         Date expirationDate = new Date(now.getTime() + expiration);
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("alunoId", alunoId);
         claims.put("tipo", "ALUNO");
+        claims.put("sessionVersion", sessionVersion);
 
         return Jwts.builder()
                 .setClaims(claims)

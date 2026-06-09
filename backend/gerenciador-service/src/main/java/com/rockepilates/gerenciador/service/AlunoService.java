@@ -264,7 +264,8 @@ public class AlunoService {
 
         String token = jwtAlunoService.generateToken(
                 aluno.getId(),
-                aluno.getEmail()
+                aluno.getEmail(),
+                aluno.getSessionVersion()
         );
 
         return new LoginAlunoResponse(
@@ -955,6 +956,7 @@ public class AlunoService {
         }
 
         aluno.setSenhaHash(passwordEncoder.encode(request.novaSenha()));
+        incrementarSessionVersion(aluno);
     }
 
     @Transactional
@@ -972,6 +974,27 @@ public class AlunoService {
         }
 
         aluno.setSenhaHash(passwordEncoder.encode(request.novaSenha()));
+        incrementarSessionVersion(aluno);
+    }
+
+    public ValidarSessaoAlunoResponse validarSessaoAluno(
+            Long alunoId,
+            ValidarSessaoAlunoRequest request
+    ) {
+        boolean sessaoValida = alunoRepository.findById(alunoId)
+                .filter(aluno -> Boolean.TRUE.equals(aluno.getAtivo()))
+                .map(aluno -> aluno.getSessionVersion().equals(request.sessionVersion()))
+                .orElse(false);
+
+        return new ValidarSessaoAlunoResponse(sessaoValida);
+    }
+
+    private void incrementarSessionVersion(Aluno aluno) {
+        Long sessionVersionAtual = aluno.getSessionVersion() == null
+                ? 0L
+                : aluno.getSessionVersion();
+
+        aluno.setSessionVersion(sessionVersionAtual + 1);
     }
 
     private void validarDataInicioNovoAluno(LocalDate dataInicio) {

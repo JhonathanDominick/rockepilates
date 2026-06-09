@@ -49,6 +49,9 @@ public class Aluno {
     @Column(nullable = false)
     private Boolean ativo;
 
+    @Column(name = "session_version", nullable = false)
+    private Long sessionVersion;
+
     @Column(name = "criado_em", nullable = false)
     private LocalDateTime criadoEm;
 
@@ -60,6 +63,10 @@ public class Aluno {
     public void prePersist() {
         if (ativo == null) {
             ativo = true;
+        }
+
+        if (sessionVersion == null) {
+            sessionVersion = 0L;
         }
 
         criadoEm = LocalDateTime.now();

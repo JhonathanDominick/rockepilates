@@ -198,4 +198,12 @@ public class AlunoController {
     ) {
         service.alterarSenhaAluno(id, request);
     }
+
+    @PostMapping("/{id}/validar-sessao")
+    public ValidarSessaoAlunoResponse validarSessaoAluno(
+            @PathVariable Long id,
+            @Valid @RequestBody ValidarSessaoAlunoRequest request
+    ) {
+        return service.validarSessaoAluno(id, request);
+    }
 }
