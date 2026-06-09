@@ -84,6 +84,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    @ExceptionHandler(AlunoNaoAutenticadoException.class)
+    public ResponseEntity<ErrorResponse> handleAlunoNaoAutenticadoException(
+            AlunoNaoAutenticadoException ex,
+            HttpServletRequest request
+    ) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponse> handleIllegalStateException(
             IllegalStateException ex,

@@ -141,6 +141,11 @@ public class AlunoClientFallback implements AlunoClient {
         throw serviceUnavailable("redefinição administrativa de senha do aluno id=" + id);
     }
 
+    @Override
+    public Map<String, Object> validarSessaoAluno(Long id, Map<String, Object> body) {
+        throw serviceUnavailable("validação de sessão do aluno id=" + id);
+    }
+
     private IllegalStateException serviceUnavailable(String operation) {
         log.error("Fallback acionado para {}", operation);
         return new IllegalStateException("gerenciador-service indisponível");

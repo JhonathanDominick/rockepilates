@@ -19,19 +19,13 @@ public class JwtAlunoService {
     public Long extractAlunoId(String token) {
         Object alunoId = extractAllClaims(token).get("alunoId");
 
-        if (alunoId instanceof Integer integerValue) {
-            return integerValue.longValue();
-        }
+        return claimToLong(alunoId);
+    }
 
-        if (alunoId instanceof Long longValue) {
-            return longValue;
-        }
+    public Long extractSessionVersion(String token) {
+        Object sessionVersion = extractAllClaims(token).get("sessionVersion");
 
-        if (alunoId instanceof String stringValue) {
-            return Long.parseLong(stringValue);
-        }
-
-        return null;
+        return claimToLong(sessionVersion);
     }
 
     public boolean isTokenValid(String token) {
@@ -58,5 +52,21 @@ public class JwtAlunoService {
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private Long claimToLong(Object value) {
+        if (value instanceof Integer integerValue) {
+            return integerValue.longValue();
+        }
+
+        if (value instanceof Long longValue) {
+            return longValue;
+        }
+
+        if (value instanceof String stringValue) {
+            return Long.parseLong(stringValue);
+        }
+
+        return null;
     }
 }

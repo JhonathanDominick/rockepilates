@@ -108,4 +108,10 @@ public interface AlunoClient {
             @PathVariable Long id,
             @RequestBody Map<String, Object> body
     );
+
+    @PostMapping("/alunos/{id}/validar-sessao")
+    Map<String, Object> validarSessaoAluno(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body
+    );
 }
