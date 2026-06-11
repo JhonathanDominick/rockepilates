@@ -1,12 +1,18 @@
 package com.rockepilates.bff.client;
 
+import com.rockepilates.bff.config.FeignInternalAuthConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(name = "alunoClient", url = "${gerenciador.url}", fallback = AlunoClientFallback.class)
+@FeignClient(
+        name = "alunoClient",
+        url = "${gerenciador.url}",
+        configuration = FeignInternalAuthConfig.class,
+        fallback = AlunoClientFallback.class
+)
 public interface AlunoClient {
 
     @PostMapping("/alunos")

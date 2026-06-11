@@ -26,6 +26,10 @@ gerenciador:
 usuarios:
   url: ${USUARIOS_URL:http://localhost:8081}
 
+internal:
+  service:
+    token: ${INTERNAL_SERVICE_TOKEN:rockepilates-internal-token-local}
+
 jwt:
   aluno:
     secret: ${JWT_ALUNO_SECRET:rockepilates-aluno-secret-key-dev-precisa-ter-mais-de-32-caracteres}

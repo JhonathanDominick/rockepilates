@@ -4,6 +4,7 @@ import com.rockepilates.bff.dto.MediaUploadResponse;
 import com.rockepilates.bff.dto.SiteConfigRequest;
 import com.rockepilates.bff.dto.SiteConfigResponse;
 import com.rockepilates.bff.dto.SuccessResponse;
+import com.rockepilates.bff.config.FeignInternalAuthConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -16,7 +17,10 @@ import java.util.List;
 @FeignClient(
         name = "gerenciador-service",
         url = "${gerenciador.url}",
-        configuration = FeignMultipartConfig.class,
+        configuration = {
+                FeignMultipartConfig.class,
+                FeignInternalAuthConfig.class
+        },
         fallbackFactory = GerenciadorClientFallback.class
 )
 public interface GerenciadorClient {
