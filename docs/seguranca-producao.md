@@ -185,6 +185,16 @@ Também existe um `.env.example` documentando as principais variáveis.
 
 Os fallbacks locais são aceitáveis apenas para desenvolvimento. Produção deve usar um arquivo `.env` real, externo ao repositório, com senhas e secrets fortes.
 
+Separação de Compose por ambiente:
+
+* `docker-compose.yml` é o arquivo base para desenvolvimento local e pode publicar portas úteis para debug;
+* `docker-compose.prod.yml` é o override mínimo para produção;
+* em produção, `postgres`, `usuarios-service`, `gerenciador-service` e `bff-pilates` não devem publicar portas diretamente no host;
+* o frontend e o BFF devem ser acessados por domínio real e reverse proxy;
+* a exposição pública em produção deve ficar restrita a `80` e `443`.
+
+No `docker-compose.prod.yml` atual, o `frontend` ainda pode aparecer publicado em `3000` como etapa intermediária. Isso é temporário até configurar Nginx/reverse proxy. No deploy final, o frontend também deve ficar atrás do reverse proxy, e publicamente devem responder apenas `80` e `443`.
+
 ---
 
 ### 3.5 Banco de dados
@@ -405,6 +415,14 @@ Critérios de aceite:
 * banco não aparece como serviço aberto publicamente;
 * credenciais reais de produção não ficam no repositório.
 
+Ao usar Docker Compose em produção, subir com:
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+O override de produção remove a publicação direta da porta `5432`.
+
 ---
 
 ### 5.5 Configurar firewall da VPS
@@ -420,6 +438,17 @@ Portas públicas esperadas:
 ```
 
 A porta `22` deve ser protegida, preferencialmente com acesso por chave SSH.
+
+Com `docker-compose.prod.yml`, as portas abaixo não devem responder publicamente:
+
+```text
+5432
+8080
+8081
+8082
+```
+
+O BFF deve ficar acessível apenas pela rede interna/reverse proxy. O frontend também deve ser servido pelo domínio real por meio do reverse proxy.
 
 Portas que não devem ficar abertas publicamente:
 
