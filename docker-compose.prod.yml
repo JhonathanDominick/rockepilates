@@ -1,0 +1,12 @@
+services:
+  postgres:
+    ports: !reset []
+
+  usuarios-service:
+    ports: !reset []
+
+  gerenciador-service:
+    ports: !reset []
+
+  bff-pilates:
+    ports: !reset []
