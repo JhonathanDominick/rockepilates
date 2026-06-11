@@ -195,6 +195,8 @@ Separação de Compose por ambiente:
 
 No `docker-compose.prod.yml` atual, o `frontend` ainda pode aparecer publicado em `3000` como etapa intermediária. Isso é temporário até configurar Nginx/reverse proxy. No deploy final, o frontend também deve ficar atrás do reverse proxy, e publicamente devem responder apenas `80` e `443`.
 
+Além da restrição de portas, o `gerenciador-service` deve aceitar chamadas internas somente quando a requisição trouxer o header `X-Internal-Service-Token` com o valor configurado por `INTERNAL_SERVICE_TOKEN`. O valor local é apenas exemplo; em produção, deve ser forte, ficar fora do Git e ser compartilhado somente entre BFF e `gerenciador-service`.
+
 ---
 
 ### 3.5 Banco de dados
@@ -725,6 +727,8 @@ Objetivo:
 * admin só acessa dados administrativos autenticado como admin;
 * serviços internos não aceitam chamadas críticas sem validação adequada;
 * alteração manual de ID não vaza dados.
+
+Como reforço mínimo contra chamadas diretas indevidas ao `gerenciador-service`, o serviço deve validar o header `X-Internal-Service-Token`. Chamadas sem esse header, ou com token incorreto, devem ser negadas antes de chegar aos controllers internos. Esse controle não substitui firewall, reverse proxy e portas fechadas, mas reduz o risco caso o serviço interno seja exposto por erro de infraestrutura.
 
 Pontos a revisar:
 

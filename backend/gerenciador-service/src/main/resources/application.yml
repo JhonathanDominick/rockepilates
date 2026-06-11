@@ -40,6 +40,10 @@ storage:
     secret-key:
     public-url-prefix:
 
+internal:
+  service:
+    token: ${INTERNAL_SERVICE_TOKEN:rockepilates-internal-token-local}
+
 management:
   endpoints:
     web:
