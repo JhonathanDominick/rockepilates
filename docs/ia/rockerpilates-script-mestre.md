@@ -63,6 +63,8 @@ feature/revisao-seguranca-producao-final
 feature/seguranca-politica-senha
 feature/seguranca-rate-limit-login
 feature/seguranca-headers-http
+feature/resilience4j-bff
+feature/aluno-session-version
 ```
 
 A feature `feature/seguranca-headers-http` foi commitada com:
@@ -74,32 +76,27 @@ Mensagem: feat(seguranca): adiciona headers de seguranca no BFF
 
 Após o PR dessa feature, o usuário confirmou `feito`, e em seguida o `develop` local foi confirmado limpo e sincronizado.
 
-### Atenção sobre trabalho iniciado depois disso
+### Atualizações concluídas depois disso
 
-Após o `develop` limpo, foi iniciada uma discussão sobre Resilience4j/Circuit Breaker. O usuário colou um `application.yml` atualizado no BFF com:
-
-```yaml
-spring:
-  cloud:
-    openfeign:
-      circuitbreaker:
-        enabled: true
-```
-
-e bloco `resilience4j`.
-
-Porém, nesta conversa ainda NÃO foi confirmado:
+Também foram concluídos e mergeados em `develop`:
 
 ```txt
-- git status após essa alteração
-- build do BFF após essa alteração
-- commit
-- push
-- PR
-- merge
+PR #123 — Resilience4j / Circuit Breaker no BFF
+- Resilience4j configurado.
+- Circuit Breakers habilitados.
+- Fallbacks Feign configurados em todos os clients do BFF.
+- Testes manuais dos fallbacks realizados.
+- Indisponibilidade de serviços tratada com HTTP 503.
+
+PR #124 — sessionVersion do aluno
+- Invalidação real de sessão do aluno implementada.
+- Tokens antigos são invalidados após troca de senha pelo aluno.
+- Tokens antigos são invalidados após redefinição de senha pelo admin.
+- Autenticação inválida retorna HTTP 401.
+- Testes manuais completos da feature realizados.
 ```
 
-Portanto, no estado documentado aqui, essa alteração de `application.yml` deve ser tratada como **trabalho em andamento não validado**, não como feature concluída.
+Portanto, Resilience4j/Circuit Breaker e `sessionVersion` do aluno devem ser tratados como features concluídas, validadas e mergeadas.
 
 ---
 
@@ -164,16 +161,16 @@ Estado confirmado por teste manual:
 
 ```txt
 Aluno troca a própria senha pelo perfil → logout automático já acontece.
-Admin redefine a senha do aluno → aluno que já estava logado continua com sessão válida.
+Admin redefine a senha do aluno → tokens antigos do aluno são invalidados por sessionVersion.
 ```
 
 Conclusão técnica:
 
 ```txt
-O logout no fluxo do aluno existe, mas a invalidação real de sessões antigas após redefinição de senha pelo admin ainda NÃO existe.
+O logout no fluxo do aluno existe e a invalidação real de sessões antigas foi implementada com sessionVersion.
 ```
 
-Isso exige uma solução mais robusta, como `tokenVersion`, `sessionVersion` ou tabela de sessões. Não deve ser tratado como simples remoção de cookie, porque isso só remove a sessão do navegador atual e não invalida tokens já emitidos.
+Tokens antigos passam a ser rejeitados na validação da sessão do aluno. Autenticação inválida retorna HTTP 401.
 
 ---
 
@@ -213,6 +210,9 @@ Motivo:
 - política mínima de senha foi aplicada no backend de usuários
 - rate limit no login foi implementado no BFF
 - headers HTTP de segurança foram implementados no BFF
+- Resilience4j/Circuit Breakers foram implementados no BFF
+- fallbacks Feign foram configurados em todos os clients do BFF
+- sessionVersion do aluno foi implementado e validado
 - CORS/cookies/secrets já estão parametrizados para produção
 - banco/init/backup já têm documentação inicial
 ```
@@ -227,7 +227,6 @@ Ainda não está pronto para produção porque faltam:
 - backup/restauração testados
 - revisão segura de upload
 - logs mínimos de segurança mais completos
-- invalidação real de sessão após redefinição de senha pelo admin
 - revisão de duplicidade financeira
 - política mínima de privacidade/LGPD
 - deploy final e testes finais com cliente
@@ -713,7 +712,6 @@ HSTS deve ficar false/local e só ser ativado em produção com HTTPS real.
 - Backup e restauração testados.
 - Upload de mídia revisado com segurança.
 - Logs mínimos de segurança mais completos.
-- Invalidação real de sessão após redefinição de senha pelo admin.
 - Revisão de IDOR/acesso por ID.
 - Revisão de duplicidade financeira.
 - Política mínima de privacidade/LGPD.
@@ -730,58 +728,60 @@ HSTS deve ficar false/local e só ser ativado em produção com HTTPS real.
 ```txt
 Aluno troca senha pelo próprio perfil:
 - logout automático acontece.
+- sessionVersion incrementa.
+- token antigo passa a retornar HTTP 401.
 ```
 
 ### Teste manual confirmado
 
 ```txt
 Admin redefine senha de aluno:
-- aluno que já estava logado continua com sessão ativa.
+- sessionVersion incrementa.
+- token antigo do aluno passa a retornar HTTP 401.
 ```
 
 ### Diagnóstico técnico
 
-O logout no fluxo do aluno provavelmente remove o cookie do navegador atual.
-
-Isso não invalida JWTs já emitidos.
-
-O JWT do aluno é gerado atualmente no `gerenciador-service` por:
+O JWT do aluno é gerado no `gerenciador-service` por:
 
 ```txt
 backend/gerenciador-service/src/main/java/com/rockepilates/gerenciador/security/JwtAlunoService.java
 ```
 
-Com claims conhecidas:
+Com claims:
 
 ```java
 claims.put("alunoId", alunoId);
 claims.put("tipo", "ALUNO");
+claims.put("sessionVersion", sessionVersion);
 ```
 
-Não foi confirmado tokenVersion/sessionVersion no JWT.
+O BFF valida a `sessionVersion` do token contra o `gerenciador-service` nas rotas protegidas do aluno.
 
-Portanto, tokens antigos continuam válidos até expirar.
+Se a sessão estiver inválida, o BFF retorna HTTP 401.
 
-### Solução correta recomendada
+Se o `gerenciador-service` estiver indisponível durante a validação, o BFF nega a sessão e retorna HTTP 503.
 
-Implementar `tokenVersion` ou `sessionVersion` para aluno.
+### Solução implementada
 
-Fluxo esperado:
+Foi implementado `sessionVersion` para aluno no PR #124.
+
+Fluxo atual:
 
 ```txt
-1. Aluno tem tokenVersion no banco.
-2. Login gera JWT com tokenVersion atual.
-3. Toda validação do JWT compara tokenVersion do token com tokenVersion do banco.
-4. Quando aluno troca senha, tokenVersion incrementa.
-5. Quando admin redefine senha do aluno, tokenVersion incrementa.
+1. Aluno tem sessionVersion no banco.
+2. Login gera JWT com sessionVersion atual.
+3. BFF compara sessionVersion do token com sessionVersion do banco via gerenciador-service.
+4. Quando aluno troca senha, sessionVersion incrementa.
+5. Quando admin redefine senha do aluno, sessionVersion incrementa.
 6. JWT antigo passa a ser inválido na próxima requisição.
 ```
 
 ### Atenção
 
-Essa feature ainda NÃO foi implementada.
+Essa feature está implementada, validada manualmente e mergeada.
 
-Não abrir como "logout visual"; deve ser feita como invalidação real de sessão/JWT.
+Não tratar mais como pendência de logout visual. A validação real de sessão do aluno já existe.
 
 ---
 
@@ -789,23 +789,13 @@ Não abrir como "logout visual"; deve ser feita como invalidação real de sess�
 
 ### O que existe de fato
 
-No `backend/bff-pilates/build.gradle.kts` já existe:
+No `backend/bff-pilates/build.gradle.kts` existe:
 
 ```kotlin
 implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j")
 ```
 
-No `application.yml` original do BFF existia:
-
-```yaml
-spring:
-  cloud:
-    openfeign:
-      circuitbreaker:
-        enabled: false
-```
-
-Depois, em trabalho iniciado na conversa, foi colado um `application.yml` com:
+No `backend/bff-pilates/src/main/resources/application.yml`, o Feign Circuit Breaker foi habilitado:
 
 ```yaml
 spring:
@@ -817,24 +807,22 @@ spring:
 
 e bloco `resilience4j` com instâncias para clients Feign.
 
-### Atenção
+### Estado final
 
-Até o momento deste script, NÃO foi confirmado:
+PR #123 concluído e mergeado.
 
 ```txt
-- criação de branch para essa feature
-- build após alteração do application.yml
-- git status após alteração
-- commit
-- push
-- PR
-- merge
+- Resilience4j configurado.
+- Circuit Breakers habilitados.
+- Fallbacks Feign configurados em todos os clients do BFF.
+- Testes manuais dos fallbacks realizados.
+- Indisponibilidade de serviços tratada com HTTP 503.
 ```
 
 Portanto, a feature de Resilience4j/Circuit Breaker deve ser considerada:
 
 ```txt
-TRABALHO EM ANDAMENTO / NÃO VALIDADO
+CONCLUÍDA / VALIDADA / MERGEADA
 ```
 
 ### Clients Feign conhecidos no BFF
@@ -848,27 +836,24 @@ DepoimentoClient
 DashboardFinanceiroClient
 ```
 
-`UsuariosClient` já possuía `UsuariosClientFallback`, mas o `@FeignClient` mostrado ainda não tinha `fallback = UsuariosClientFallback.class`.
+Todos possuem fallback configurado.
 
-`AlunoClient`, `GerenciadorClient`, `FinanceiroClient`, `DepoimentoClient` e `DashboardFinanceiroClient` foram mostrados sem fallback.
-
-Para concluir Resilience4j de forma real, ainda precisa:
+Fallbacks conhecidos:
 
 ```txt
-1. Confirmar branch correta.
-2. Confirmar application.yml final.
-3. Adicionar fallback aos @FeignClient.
-4. Criar fallbacks ausentes.
-5. Rodar build do BFF.
-6. Testar comportamento com serviço fora do ar.
-7. Commitar, pushar, abrir PR e mergear.
+UsuariosClientFallback
+AlunoClientFallback
+GerenciadorClientFallback
+FinanceiroClientFallback
+DepoimentoClientFallback
+DashboardFinanceiroClientFallback
 ```
 
-Não afirmar que Circuit Breaker está pronto enquanto esses passos não forem concluídos.
+Operações críticas não retornam sucesso falso. Fallbacks sensíveis lançam erro de serviço indisponível.
 
 ---
 
-## 13. `application.yml` sugerido para o BFF no trabalho de Resilience4j
+## 13. Resilience4j / Circuit Breaker — configuração final validada
 
 Arquivo:
 
@@ -876,198 +861,44 @@ Arquivo:
 backend/bff-pilates/src/main/resources/application.yml
 ```
 
-Conteúdo colado pelo usuário a partir da orientação:
+Estado final validado no PR #123:
 
-```yaml
-server:
-  port: 8080
-
-spring:
-  application:
-    name: bff-pilates
-
-  servlet:
-    multipart:
-      max-file-size: 200MB
-      max-request-size: 200MB
-
-  cloud:
-    openfeign:
-      circuitbreaker:
-        enabled: true
-      client:
-        config:
-          default:
-            connectTimeout: 10000
-            readTimeout: 300000
-
-gerenciador:
-  url: ${GERENCIADOR_URL:http://localhost:8082}
-
-usuarios:
-  url: ${USUARIOS_URL:http://localhost:8081}
-
-jwt:
-  aluno:
-    secret: ${JWT_ALUNO_SECRET:rockepilates-aluno-secret-key-dev-precisa-ter-mais-de-32-caracteres}
-
-resilience4j:
-
-  circuitbreaker:
-    instances:
-
-      usuarios-service:
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 50
-        waitDurationInOpenState: 30s
-        permittedNumberOfCallsInHalfOpenState: 3
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-
-      alunoClient:
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 50
-        waitDurationInOpenState: 30s
-        permittedNumberOfCallsInHalfOpenState: 3
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-
-      gerenciador-service:
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 50
-        waitDurationInOpenState: 30s
-        permittedNumberOfCallsInHalfOpenState: 3
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-
-      financeiroClient:
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 50
-        waitDurationInOpenState: 30s
-        permittedNumberOfCallsInHalfOpenState: 3
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-
-      dashboardFinanceiroClient:
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 50
-        waitDurationInOpenState: 30s
-        permittedNumberOfCallsInHalfOpenState: true
-
-      depoimento-client:
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 50
-        waitDurationInOpenState: 30s
-        permittedNumberOfCallsInHalfOpenState: 3
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-
-  retry:
-    instances:
-
-      usuarios-service:
-        maxAttempts: 3
-        waitDuration: 1s
-
-      alunoClient:
-        maxAttempts: 3
-        waitDuration: 1s
-
-      gerenciador-service:
-        maxAttempts: 3
-        waitDuration: 1s
-
-      financeiroClient:
-        maxAttempts: 3
-        waitDuration: 1s
-
-      dashboardFinanceiroClient:
-        maxAttempts: 3
-        waitDuration: 1s
-
-      depoimento-client:
-        maxAttempts: 3
-        waitDuration: 1s
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,circuitbreakers,circuitbreakerevents
-
-  endpoint:
-    health:
-      show-details: always
-
-  health:
-    circuitbreakers:
-      enabled: true
+```txt
+- Feign Circuit Breaker habilitado.
+- Instâncias Resilience4j configuradas para os clients do BFF.
+- dashboardFinanceiroClient corrigido com permittedNumberOfCallsInHalfOpenState numérico.
+- Build do BFF passou.
+- Testes manuais confirmaram fallback acionado.
+- Indisponibilidade de serviços retorna HTTP 503.
 ```
-
-### Atenção: revisar antes de buildar
-
-Na versão acima existe um ponto que precisa ser revisado antes de considerar pronto:
-
-```yaml
-dashboardFinanceiroClient:
-  permittedNumberOfCallsInHalfOpenState: true
-```
-
-Esse valor deveria ser número, por exemplo:
-
-```yaml
-permittedNumberOfCallsInHalfOpenState: 3
-```
-
-Se estiver `true`, pode quebrar bind de configuração.
-
-Corrigir antes de buildar.
 
 ---
 
 ## 14. Próximo passo recomendado agora
 
-Como o usuário pediu para atualizar o script no meio da feature de Resilience4j, o próximo passo correto é:
+Resilience4j/Circuit Breaker e `sessionVersion` do aluno já foram concluídos.
+
+Antes de qualquer nova feature, o próximo passo correto é:
 
 ```txt
-1. Confirmar estado do Git.
-2. Corrigir application.yml se ainda estiver com erro em dashboardFinanceiroClient.
-3. Rodar build do BFF.
-4. Se build passar, seguir para fallbacks dos Feign Clients.
+1. Ler docs/ia/rockerpilates-script-mestre.md.
+2. Ler docs/seguranca-producao.md.
+3. Rodar git status.
+4. Confirmar estado atual do projeto.
+5. Verificar se a funcionalidade já existe.
+6. Confirmar que a alteração não conflita com regras de negócio documentadas.
 ```
 
-Comandos:
+Próximas prioridades possíveis, sem iniciar agora:
 
-```powershell
-git status
+```txt
+- revisar upload de mídia
+- testar backup/restauração
+- revisar duplicidade financeira
+- revisar IDOR/acesso por ID
+- criar política mínima de privacidade/LGPD
+- preparar deploy real com HTTPS/domínio/firewall
 ```
-
-Se estiver em branch errada, decidir antes de continuar.
-
-Se ainda não houver branch de Resilience4j, criar:
-
-```powershell
-git checkout develop
-git pull origin develop
-git checkout -b feature/resilience4j-bff
-```
-
-Mas se o `application.yml` já foi alterado no `develop`, NÃO trocar de branch sem antes avaliar `git status`.
-
-Primeiro comando obrigatório:
-
-```powershell
-git status
-```
-
-Depois:
-
-```powershell
-.\gradlew.bat :backend:bff-pilates:bootJar --no-daemon
-```
-
-Se der erro de YAML, corrigir `permittedNumberOfCallsInHalfOpenState`.
 
 ---
 
@@ -1118,31 +949,29 @@ docker compose logs -f frontend
 
 ## 16. Próximas prioridades do projeto
 
-### Prioridade imediata — dependendo do estado do Git
+### Prioridade imediata
 
-Se a feature Resilience4j já foi iniciada no workspace:
+Resilience4j/Circuit Breaker e `sessionVersion` do aluno não são mais próximas prioridades; ambos já foram concluídos, validados e mergeados.
+
+Antes de iniciar qualquer nova feature:
 
 ```txt
 1. Confirmar git status.
-2. Corrigir application.yml.
-3. Buildar BFF.
-4. Criar fallbacks dos Feign Clients.
-5. Validar comportamento.
-6. Commit/PR/merge.
+2. Confirmar branch atual.
+3. Verificar se o develop local está atualizado.
+4. Relacionar a nova feature com docs/seguranca-producao.md.
+5. Evitar refatorações oportunistas.
 ```
 
 ### Próxima prioridade de segurança real
 
 ```txt
-Implementar tokenVersion/sessionVersion para aluno.
-```
-
-Objetivo:
-
-```txt
-- invalidar JWT antigo após aluno trocar senha
-- invalidar JWT antigo após admin redefinir senha do aluno
-- forçar novo login em sessões antigas
+- revisar upload de mídia
+- testar backup/restauração
+- revisar duplicidade financeira em marcar pagamento como pago
+- revisar IDOR/acesso por ID
+- criar política mínima de privacidade/LGPD
+- preparar deploy real com HTTPS/domínio/firewall
 ```
 
 ### Depois
@@ -1164,9 +993,6 @@ Não afirmar:
 
 ```txt
 - projeto pronto para produção
-- Circuit Breaker concluído
-- Resilience4j validado
-- invalidação real de sessão concluída
 - backup restaurado com sucesso
 - upload 100% seguro
 - LGPD completa
@@ -1206,7 +1032,7 @@ Antes de produção real:
 [ ] rate limit validado em ambiente real
 [ ] headers HTTP validados em ambiente real
 [ ] senha forte backend validada
-[ ] tokenVersion/sessionVersion para aluno ou decisão formal documentada
+[x] sessionVersion para aluno implementado e testado
 [ ] revisão de acesso por ID
 [ ] revisão de duplicidade financeira
 [ ] política mínima de privacidade
@@ -1224,34 +1050,42 @@ O projeto está avançado e com várias melhorias reais de segurança já mergea
 O ponto exato agora é:
 
 ```txt
-Verificar o estado do Git depois da alteração manual do application.yml feita para Resilience4j.
+develop atualizado após os PRs #123 e #124.
 ```
 
-Primeiro comando:
+Features concluídas neste ponto:
+
+```txt
+PR #123:
+- Resilience4j
+- Circuit Breakers
+- Fallbacks Feign em todos os clients
+- Testes manuais dos fallbacks
+- HTTP 503 para indisponibilidade dos serviços
+
+PR #124:
+- sessionVersion
+- invalidação real de sessão do aluno
+- invalidação após troca de senha
+- invalidação após redefinição de senha pelo admin
+- HTTP 401 para autenticação inválida
+- testes manuais completos da feature
+```
+
+Primeiro comando antes de qualquer nova feature:
 
 ```powershell
 git status
 ```
 
-Se houver alteração pendente em:
+Depois, escolher a próxima feature com base nos bloqueadores reais de produção:
 
 ```txt
-backend/bff-pilates/src/main/resources/application.yml
+- upload seguro
+- backup/restauração testados
+- duplicidade financeira
+- IDOR/acesso por ID
+- política mínima de privacidade/LGPD
+- deploy com HTTPS/domínio/firewall
 ```
-
-corrigir o YAML, principalmente:
-
-```yaml
-permittedNumberOfCallsInHalfOpenState: 3
-```
-
-Depois buildar:
-
-```powershell
-.\gradlew.bat :backend:bff-pilates:bootJar --no-daemon
-```
-
-Se build passar, seguir criando fallbacks dos Feign Clients.
-
-Se não quiser continuar Resilience4j agora, reverter a alteração não validada antes de seguir para outra feature.
 
