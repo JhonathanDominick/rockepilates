@@ -12,7 +12,8 @@ import java.util.List;
 @Configuration
 public class WebConfig {
 
-    private static final String DEFAULT_ALLOWED_ORIGINS = "http://localhost:3000";
+    private static final String DEFAULT_ALLOWED_ORIGINS =
+            "http://localhost:3000,http://127.0.0.1:3000";
 
     @Bean
     public CorsFilter corsFilter() {

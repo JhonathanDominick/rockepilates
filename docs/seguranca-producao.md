@@ -133,7 +133,13 @@ APP_CORS_ALLOWED_ORIGINS
 No ambiente local, o valor usado é:
 
 ```env
-APP_CORS_ALLOWED_ORIGINS=http://localhost:3000
+APP_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+```
+
+Em desenvolvimento local no Windows, o frontend pode precisar usar:
+
+```env
+NEXT_PUBLIC_BFF_URL=http://127.0.0.1:8080
 ```
 
 Em produção, o valor deve apontar somente para o domínio real do frontend.
