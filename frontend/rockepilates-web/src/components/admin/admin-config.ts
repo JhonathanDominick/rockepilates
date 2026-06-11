@@ -1,7 +1,7 @@
 import type { SecaoAdmin } from "./admin-types";
 
-export const MAX_IMAGE_SIZE_MB = 100;
-export const MAX_VIDEO_SIZE_MB = 200;
+export const MAX_IMAGE_SIZE_MB = 10;
+export const ALLOWED_IMAGE_EXTENSIONS = ".jpg,.jpeg,.png,.webp";
 
 export const secoesAdmin: SecaoAdmin[] = [
     {

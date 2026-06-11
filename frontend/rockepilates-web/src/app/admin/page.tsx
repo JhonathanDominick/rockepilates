@@ -10,8 +10,8 @@ import { ConfigField } from "@/components/admin/ConfigField";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminSection } from "@/components/admin/AdminSection";
 import {
+    ALLOWED_IMAGE_EXTENSIONS,
     MAX_IMAGE_SIZE_MB,
-    MAX_VIDEO_SIZE_MB,
     secoesAdmin,
 } from "@/components/admin/admin-config";
 import type {
@@ -33,8 +33,18 @@ function validarArquivo(file: File, tipo: ConfigTipo): string | null {
     const tamanhoMb = file.size / 1024 / 1024;
 
     if (tipo === "IMAGE") {
-        if (!file.type.startsWith("image/")) {
-            return "Selecione um arquivo de imagem válido.";
+        const indiceExtensao = file.name.lastIndexOf(".");
+        const extensao = indiceExtensao >= 0
+            ? file.name.slice(indiceExtensao).toLowerCase()
+            : "";
+        const extensoesPermitidas = ALLOWED_IMAGE_EXTENSIONS.split(",");
+
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+            return "Selecione uma imagem JPG, PNG ou WEBP.";
+        }
+
+        if (!extensoesPermitidas.includes(extensao)) {
+            return "A imagem deve ter extensão .jpg, .jpeg, .png ou .webp.";
         }
 
         if (tamanhoMb > MAX_IMAGE_SIZE_MB) {
@@ -43,13 +53,7 @@ function validarArquivo(file: File, tipo: ConfigTipo): string | null {
     }
 
     if (tipo === "VIDEO") {
-        if (!file.type.startsWith("video/")) {
-            return "Selecione um arquivo de vídeo válido.";
-        }
-
-        if (tamanhoMb > MAX_VIDEO_SIZE_MB) {
-            return `O vídeo deve ter no máximo ${MAX_VIDEO_SIZE_MB}MB.`;
-        }
+        return "Upload local de vídeo foi desativado. Use imagem neste campo por enquanto.";
     }
 
     return null;
@@ -166,7 +170,10 @@ export default function AdminPage() {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        const tipo = normalizarTipo(config.tipo);
+        const tipoOriginal = normalizarTipo(config.tipo);
+        const tipo = tipoOriginal === "VIDEO"
+            ? "IMAGE"
+            : tipoOriginal;
         const erroValidacao = validarArquivo(file, tipo);
 
         if (erroValidacao) {

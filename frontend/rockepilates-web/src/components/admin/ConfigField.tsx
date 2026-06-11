@@ -1,8 +1,8 @@
 import type { ChangeEvent } from "react";
 import type { CampoAdmin, ConfigTipo, SiteConfig } from "./admin-types";
 import {
+    ALLOWED_IMAGE_EXTENSIONS,
     MAX_IMAGE_SIZE_MB,
-    MAX_VIDEO_SIZE_MB,
 } from "./admin-config";
 
 type ConfigFieldProps = {
@@ -95,18 +95,17 @@ export function ConfigField({
                     </p>
 
                     <p className="mt-1 text-xs leading-5 text-[#607579]">
-                        Escolha se este campo será usado como imagem ou vídeo.
+                        Upload local aceita somente imagens. Vídeos por URL serão tratados em etapa futura.
                     </p>
 
                     <select
-                        value={tipo === "TEXT" ? "IMAGE" : tipo}
+                        value="IMAGE"
                         onChange={(event) =>
                             onChangeType(config.chave, event.target.value as ConfigTipo)
                         }
                         className="mt-3 rounded-xl border border-[#b8cfcc] bg-white px-4 py-2 text-sm font-medium text-[#10263d] outline-none transition focus:border-[#0d6666] focus:ring-4 focus:ring-[#0d6666]/10"
                     >
                         <option value="IMAGE">Imagem</option>
-                        <option value="VIDEO">Vídeo</option>
                     </select>
                 </div>
             )}
@@ -132,7 +131,7 @@ export function ConfigField({
                 </>
             )}
 
-            {podeSerMidia && tipo === "IMAGE" && (
+            {podeSerMidia && (tipo === "IMAGE" || tipo === "VIDEO") && (
                 <div className="mt-4">
                     <div className="rounded-2xl border border-dashed border-[#8bcac4] bg-[#f3faf8] p-4">
                         <p className="text-sm font-bold text-[#10263d]">
@@ -140,13 +139,12 @@ export function ConfigField({
                         </p>
 
                         <p className="mt-1 text-xs leading-5 text-[#607579]">
-                            Aceita imagens em alta resolução. Tamanho máximo:{" "}
-                            {MAX_IMAGE_SIZE_MB}MB.
+                            Aceita JPG, PNG ou WEBP. Tamanho máximo: {MAX_IMAGE_SIZE_MB}MB.
                         </p>
 
                         <input
                             type="file"
-                            accept="image/*"
+                            accept={ALLOWED_IMAGE_EXTENSIONS}
                             onChange={(event) => onUpload(event, config)}
                             disabled={enviando}
                             className="mt-3 block w-full cursor-pointer rounded-xl border border-[#cbd9d7] bg-white text-sm text-[#10263d] file:mr-4 file:border-0 file:bg-[#0d6666] file:px-4 file:py-3 file:text-sm file:font-bold file:text-white hover:file:bg-[#0a5555] disabled:cursor-not-allowed disabled:opacity-60"
@@ -159,7 +157,7 @@ export function ConfigField({
                         )}
                     </div>
 
-                    {previewUrl ? (
+                    {previewUrl && tipo === "IMAGE" ? (
                         <div className="mt-4">
                             <p className="mb-2 text-sm font-bold text-[#10263d]">
                                 Prévia atual
@@ -174,62 +172,6 @@ export function ConfigField({
                     ) : (
                         <p className="mt-3 text-sm text-[#607579]">
                             Nenhuma imagem enviada ainda.
-                        </p>
-                    )}
-
-                    <button
-                        type="button"
-                        onClick={() => onSave(config)}
-                        disabled={salvando}
-                        className="mt-3 rounded-2xl bg-[#ef4b3f] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#ef4b3f]/20 transition hover:-translate-y-[1px] hover:bg-[#dc3f34] hover:shadow-[#ef4b3f]/30 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                        {salvando ? "Salvando..." : "Salvar tipo selecionado"}
-                    </button>
-                </div>
-            )}
-
-            {podeSerMidia && tipo === "VIDEO" && (
-                <div className="mt-4">
-                    <div className="rounded-2xl border border-dashed border-[#8bcac4] bg-[#f3faf8] p-4">
-                        <p className="text-sm font-bold text-[#10263d]">
-                            Enviar novo vídeo
-                        </p>
-
-                        <p className="mt-1 text-xs leading-5 text-[#607579]">
-                            Aceita arquivos de vídeo. Tamanho máximo:{" "}
-                            {MAX_VIDEO_SIZE_MB}MB.
-                        </p>
-
-                        <input
-                            type="file"
-                            accept="video/*"
-                            onChange={(event) => onUpload(event, config)}
-                            disabled={enviando}
-                            className="mt-3 block w-full cursor-pointer rounded-xl border border-[#cbd9d7] bg-white text-sm text-[#10263d] file:mr-4 file:border-0 file:bg-[#0d6666] file:px-4 file:py-3 file:text-sm file:font-bold file:text-white hover:file:bg-[#0a5555] disabled:cursor-not-allowed disabled:opacity-60"
-                        />
-
-                        {enviando && (
-                            <p className="mt-2 text-sm font-medium text-[#0d6666]">
-                                Enviando vídeo...
-                            </p>
-                        )}
-                    </div>
-
-                    {previewUrl ? (
-                        <div className="mt-4">
-                            <p className="mb-2 text-sm font-bold text-[#10263d]">
-                                Prévia atual
-                            </p>
-
-                            <video
-                                src={previewUrl}
-                                controls
-                                className="max-h-72 w-full max-w-xl rounded-2xl border border-[#dce8e5] shadow-sm"
-                            />
-                        </div>
-                    ) : (
-                        <p className="mt-3 text-sm text-[#607579]">
-                            Nenhum vídeo enviado ainda.
                         </p>
                     )}
 
