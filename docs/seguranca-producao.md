@@ -41,11 +41,19 @@ Atualmente, o RockerPilates possui:
 * controle financeiro manual;
 * histórico financeiro do aluno;
 * CMS básico;
-* upload local de mídia;
+* upload local seguro de imagens;
 * variáveis de ambiente parametrizadas;
 * documentação inicial de backup;
 * init script para criação do banco `gerenciador_db`;
-* separação de rotas admin/aluno no frontend.
+* separação de rotas admin/aluno no frontend;
+* rate limit de login com Bucket4j no BFF;
+* headers HTTP de segurança no BFF;
+* Resilience4j, Circuit Breakers e fallbacks Feign no BFF;
+* `sessionVersion` e invalidação real do JWT do aluno;
+* upload restrito a JPG/JPEG/PNG/WebP, com limite de 10 MB;
+* `docker-compose.prod.yml` com serviços internos sem portas publicadas;
+* token interno obrigatório entre BFF e `gerenciador-service`;
+* logout e redirecionamento após sessão do aluno ser invalidada.
 
 O projeto está adequado para desenvolvimento local e homologação interna, mas ainda não deve ser liberado para produção real antes da conclusão dos bloqueadores descritos neste documento.
 
@@ -189,13 +197,13 @@ Separação de Compose por ambiente:
 
 * `docker-compose.yml` é o arquivo base para desenvolvimento local e pode publicar portas úteis para debug;
 * `docker-compose.prod.yml` é o override mínimo para produção;
-* em produção, `postgres`, `usuarios-service`, `gerenciador-service` e `bff-pilates` não devem publicar portas diretamente no host;
+* no override de produção, `postgres`, `usuarios-service`, `gerenciador-service` e `bff-pilates` não publicam portas diretamente no host;
 * o frontend e o BFF devem ser acessados por domínio real e reverse proxy;
 * a exposição pública em produção deve ficar restrita a `80` e `443`.
 
 No `docker-compose.prod.yml` atual, o `frontend` ainda pode aparecer publicado em `3000` como etapa intermediária. Isso é temporário até configurar Nginx/reverse proxy. No deploy final, o frontend também deve ficar atrás do reverse proxy, e publicamente devem responder apenas `80` e `443`.
 
-Além da restrição de portas, o `gerenciador-service` deve aceitar chamadas internas somente quando a requisição trouxer o header `X-Internal-Service-Token` com o valor configurado por `INTERNAL_SERVICE_TOKEN`. O valor local é apenas exemplo; em produção, deve ser forte, ficar fora do Git e ser compartilhado somente entre BFF e `gerenciador-service`.
+Além da restrição de portas, o `gerenciador-service` já exige o header `X-Internal-Service-Token` com o valor configurado por `INTERNAL_SERVICE_TOKEN`. Os Feign clients do BFF enviam esse header, e chamadas sem token ou com token incorreto são negadas. O valor local é apenas exemplo; em produção, deve ser forte, ficar fora do Git e ser compartilhado somente entre BFF e `gerenciador-service`.
 
 ---
 
@@ -272,7 +280,7 @@ Como evolução futura, o projeto pode migrar para S3, CloudFront ou solução e
 
 ---
 
-### 3.8 Logout após troca de senha do aluno
+### 3.8 Logout e redirecionamento após invalidação da sessão
 
 O fluxo de troca de senha do aluno já encerra a sessão atual.
 
@@ -283,6 +291,8 @@ Após a troca de senha:
 * o cookie `aluno_token` é removido;
 * o aluno é redirecionado para `/login`;
 * o aluno precisa entrar novamente usando a nova senha.
+
+Quando o admin redefine a senha, a `sessionVersion` do aluno também é incrementada. Na próxima requisição protegida, o token antigo é rejeitado com HTTP 401; o frontend expira o cookie `aluno_token` e redireciona o aluno para `/login` sem tela de erro ou loop de redirecionamento.
 
 Arquivos envolvidos:
 
@@ -333,7 +343,7 @@ O RockerPilates ainda não está liberado para produção real.
 
 Motivo:
 
-Ainda faltam controles mínimos de segurança de produção relacionados a HTTPS, firewall, banco de dados, rate limit, headers HTTP, validação de upload, logs de segurança, backup testado e revisão de fluxos financeiros críticos.
+Ainda faltam controles de produção relacionados a HTTPS e domínio reais, Nginx/reverse proxy, firewall/VPS, configuração segura de cookies, HSTS e CORS no ambiente real, backup e restauração testados, política de senha uniforme no `gerenciador-service`, auditoria da redefinição de senha pelo admin, idempotência/concorrência financeira, logs estruturados com `correlationId`, política mínima de privacidade/LGPD e homologação final com a cliente.
 
 ---
 
@@ -523,20 +533,25 @@ Critérios de aceite:
 
 ---
 
-### 5.8 Implementar rate limit no login
+### 5.8 Validar rate limit no ambiente real
 
-O login precisa ter proteção contra muitas tentativas em sequência.
+O rate limit de login já foi implementado no BFF com Bucket4j.
 
-Rotas sensíveis:
+Estado atual:
+
+* limite de 5 tentativas por minuto por IP;
+* separação entre login admin e login aluno;
+* resposta HTTP 429 quando o limite é excedido;
+* armazenamento em memória, adequado ao cenário inicial de uma única instância do BFF.
+
+Rotas atualmente protegidas pelo rate limit:
 
 ```text
-login admin
-login aluno
-troca de senha
-redefinição de senha
+POST /bff/usuarios/login
+POST /bff/alunos/login
 ```
 
-A primeira implementação pode ser feita no Nginx com `limit_req`.
+Em produção, o comportamento deve ser validado no ambiente real. Se houver múltiplas instâncias no futuro, o armazenamento deverá evoluir para uma solução distribuída. O Nginx pode adicionar uma camada complementar de proteção.
 
 Critérios de aceite:
 
@@ -547,20 +562,21 @@ Critérios de aceite:
 
 ---
 
-### 5.9 Configurar headers de segurança
+### 5.9 Validar headers de segurança no ambiente real
 
-Produção deve retornar headers HTTP mínimos.
+Os headers HTTP de segurança já foram implementados no BFF.
 
-Headers recomendados:
+Headers implementados:
 
 ```text
-Strict-Transport-Security
 X-Content-Type-Options
 X-Frame-Options
 Referrer-Policy
 Content-Security-Policy
 Permissions-Policy
 ```
+
+O `Strict-Transport-Security` é controlado por `APP_SECURITY_HSTS_ENABLED` e deve ser ativado somente após HTTPS real estar configurado e validado.
 
 CSP inicial sugerida:
 
@@ -584,20 +600,20 @@ Critérios de aceite:
 
 ---
 
-### 5.10 Revisar segurança do upload de mídia
+### 5.10 Upload seguro de imagens
 
-O upload de mídia precisa validar os arquivos enviados.
+O upload local seguro de imagens foi implementado e validado.
 
-Regras mínimas:
+Estado atual:
 
-* permitir apenas imagens;
-* limitar tamanho;
-* validar extensão;
-* validar tipo MIME;
-* gerar nome seguro para o arquivo;
-* impedir path traversal;
-* não executar arquivo enviado;
-* não aceitar arquivos `.html`, `.js`, `.php`, `.sh`, `.bat`, `.cmd`, `.jar`, `.exe`.
+* permite somente JPG/JPEG/PNG/WebP;
+* limita cada arquivo a 10 MB no frontend, BFF e `gerenciador-service`;
+* rejeita arquivo vazio;
+* valida extensão, MIME, compatibilidade e magic bytes;
+* gera o nome final com UUID e extensão normalizada;
+* protege o path final com `normalize().startsWith(uploadPath)`;
+* rejeita SVG, GIF, AVIF, vídeos e arquivos executáveis;
+* removeu o upload local de vídeos do CMS; vídeos futuros devem usar URL de YouTube não listado.
 
 Extensões permitidas inicialmente:
 
@@ -608,10 +624,10 @@ Extensões permitidas inicialmente:
 .webp
 ```
 
-Tamanho recomendado inicialmente:
+Limite implementado:
 
 ```text
-5MB por arquivo
+10MB por arquivo
 ```
 
 Critérios de aceite:
@@ -728,7 +744,7 @@ Objetivo:
 * serviços internos não aceitam chamadas críticas sem validação adequada;
 * alteração manual de ID não vaza dados.
 
-Como reforço mínimo contra chamadas diretas indevidas ao `gerenciador-service`, o serviço deve validar o header `X-Internal-Service-Token`. Chamadas sem esse header, ou com token incorreto, devem ser negadas antes de chegar aos controllers internos. Esse controle não substitui firewall, reverse proxy e portas fechadas, mas reduz o risco caso o serviço interno seja exposto por erro de infraestrutura.
+Como reforço mínimo contra chamadas diretas indevidas ao `gerenciador-service`, o serviço já valida o header `X-Internal-Service-Token`. Chamadas sem esse header, ou com token incorreto, são negadas antes de chegar aos controllers internos. Esse controle não substitui firewall, reverse proxy e portas fechadas, mas reduz o risco caso o serviço interno seja exposto por erro de infraestrutura.
 
 Pontos a revisar:
 
@@ -834,19 +850,20 @@ Objetivo:
 
 ---
 
-### 6.2 Invalidar tokens antigos após troca ou redefinição de senha
+### 6.2 Invalidação de tokens antigos após troca ou redefinição de senha
 
-Como o JWT é stateless, um token já emitido pode continuar válido até expirar.
+Essa proteção foi implementada no PR #124 por meio de `sessionVersion`.
 
-Melhoria futura:
+Estado atual:
 
-* adicionar `tokenVersion`;
-* adicionar `sessionVersion`;
-* ou criar tabela de sessões;
-* incrementar versão após troca/redefinição de senha;
-* rejeitar tokens antigos.
+* o JWT do aluno contém a `sessionVersion` atual;
+* o BFF compara a versão do token com a versão armazenada no `gerenciador-service`;
+* a troca de senha pelo aluno incrementa a versão;
+* a redefinição de senha pelo admin incrementa a versão;
+* tokens antigos são rejeitados com HTTP 401;
+* o frontend expira o cookie `aluno_token` e redireciona o aluno para `/login` sem exibir tela de erro.
 
-Essa melhoria é importante principalmente para:
+Essa proteção cobre:
 
 * redefinição de senha feita pelo admin;
 * troca de senha feita pelo aluno;
@@ -1061,18 +1078,19 @@ Antes disso, o projeto deve passar por:
 A ordem recomendada a partir deste documento é:
 
 ```text
-1. Criar ou atualizar docs/seguranca-producao.md
-2. Commitar a documentação
-3. Verificar BCrypt no usuarios-service
-4. Validar política mínima de senha no backend
-5. Implementar rate limit no login
-6. Configurar headers de segurança
-7. Revisar upload de mídia
-8. Planejar firewall e exposição do banco para produção
-9. Testar backup e restauração
-10. Revisar duplicidade na marcação de pagamento
-11. Criar política mínima de privacidade
-12. Preparar deploy real
+1. Definir domínio real e ambiente de hospedagem.
+2. Configurar Nginx/reverse proxy e HTTPS real.
+3. Configurar firewall/VPS e validar as portas expostas.
+4. Ativar `APP_COOKIE_SECURE=true` em produção.
+5. Ativar `APP_SECURITY_HSTS_ENABLED=true` somente após validar HTTPS.
+6. Restringir CORS ao domínio real.
+7. Testar backup e restauração em ambiente separado.
+8. Uniformizar a política de senha no `gerenciador-service`.
+9. Auditar a redefinição de senha pelo admin.
+10. Reforçar idempotência e concorrência financeira.
+11. Implementar logs estruturados e `correlationId`.
+12. Criar política mínima de privacidade/LGPD.
+13. Executar homologação final com a cliente.
 ```
 
 ---
@@ -1089,11 +1107,11 @@ PostgreSQL não exposto publicamente
 Firewall configurado
 BCrypt confirmado
 Validação mínima de senha no backend
-Rate limit no login
-Headers de segurança configurados
-Upload de mídia validado
+Rate limit no login validado no ambiente real
+Headers de segurança validados no ambiente real
+Upload seguro de imagens validado no ambiente real
 Stack trace oculto em produção
-Logs mínimos de segurança
+Logs estruturados com `correlationId`
 Backup e restauração testados
 Revisão de acesso por ID concluída
 Revisão de duplicidade financeira concluída
@@ -1119,16 +1137,17 @@ O trabalho atual não é recomeçar a segurança do zero.
 O trabalho atual é fechar a camada final necessária para produção:
 
 ```text
-HTTPS
-firewall
-banco protegido
-rate limit
-headers
-upload seguro
-logs mínimos
-backup testado
-revisão financeira
-privacidade mínima
+domínio e HTTPS reais
+Nginx/reverse proxy
+firewall/VPS e banco protegido
+cookies Secure, HSTS e CORS configurados para produção
+backup e restauração testados
+política de senha uniforme no gerenciador-service
+auditoria da redefinição de senha pelo admin
+idempotência e concorrência financeira
+logs estruturados com correlationId
+política mínima de privacidade/LGPD
+homologação final com a cliente
 ```
 
 Após isso, o projeto pode seguir para deploy com muito mais segurança e profissionalismo.

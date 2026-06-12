@@ -42,6 +42,8 @@ Esse script e executado automaticamente pelo Postgres apenas quando o volume do 
 
 ## Backup manual do banco
 
+Os comandos abaixo usam o usuário `rocker` porque são exemplos do ambiente local atual. Em produção, substitua esse usuário e os demais dados de conexão pelas credenciais reais configuradas fora do Git.
+
 ### Backup do usuarios_db
 
 No PowerShell:
@@ -110,7 +112,7 @@ A pasta de uploads fica montada no host em:
 ./uploads
 ```
 
-Essa pasta precisa ser copiada junto com os backups do banco, porque ela armazena arquivos enviados pelo CMS, imagens e outras midias do sistema.
+Essa pasta precisa ser copiada junto com os backups do banco, porque ela armazena o upload local seguro de imagens usado pelo CMS e pelo site.
 
 ### Backup manual dos uploads
 
