@@ -329,13 +329,19 @@ docs/ia/rockerpilates-script-mestre.md
 docs/seguranca-producao.md
 ```
 
-3. Verificar git status.
+3. Ler:
 
-4. Confirmar estado atual do projeto.
+```txt
+docs/backup.md
+```
 
-5. Verificar se a funcionalidade já existe.
+4. Verificar git status.
 
-6. Confirmar que a alteração não conflita com regras de negócio documentadas.
+5. Confirmar estado atual do projeto.
+
+6. Verificar se a funcionalidade já existe.
+
+7. Confirmar que a alteração não conflita com regras de negócio documentadas.
 
 ---
 
