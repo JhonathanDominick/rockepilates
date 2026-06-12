@@ -1,6 +1,7 @@
 package com.rockepilates.gerenciador.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record AlterarSenhaAlunoRequest(
@@ -9,7 +10,11 @@ public record AlterarSenhaAlunoRequest(
         String senhaAtual,
 
         @NotBlank
-        @Size(min = 6, message = "A nova senha deve ter pelo menos 6 caracteres")
+        @Size(min = 8, message = "Nova senha deve ter no minimo 8 caracteres")
+        @Pattern(
+                regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$",
+                message = "Nova senha deve conter pelo menos uma letra e um numero"
+        )
         String novaSenha
 ) {
 }

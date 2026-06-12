@@ -1,7 +1,10 @@
 package com.rockepilates.bff.service;
 
 import com.rockepilates.bff.client.AlunoClient;
+import com.rockepilates.bff.dto.AdminIdentity;
+import com.rockepilates.bff.dto.RedefinirSenhaAlunoAdminRequest;
 import com.rockepilates.bff.exception.AlunoNaoAutenticadoException;
+import com.rockepilates.bff.security.JwtAdminService;
 import com.rockepilates.bff.security.JwtAlunoService;
 import feign.FeignException;
 import jakarta.servlet.http.Cookie;
@@ -18,15 +21,18 @@ public class AlunoService {
     private final AlunoClient client;
     private final UsuariosService usuariosService;
     private final JwtAlunoService jwtAlunoService;
+    private final JwtAdminService jwtAdminService;
 
     public AlunoService(
             AlunoClient client,
             UsuariosService usuariosService,
-            JwtAlunoService jwtAlunoService
+            JwtAlunoService jwtAlunoService,
+            JwtAdminService jwtAdminService
     ) {
         this.client = client;
         this.usuariosService = usuariosService;
         this.jwtAlunoService = jwtAlunoService;
+        this.jwtAdminService = jwtAdminService;
     }
 
     public void cadastrar(Map<String, Object> body) {
@@ -108,8 +114,18 @@ public class AlunoService {
 
         usuariosService.validarAdmin(authorization);
 
+        AdminIdentity admin = jwtAdminService.extractAdminIdentity(authorization);
+        RedefinirSenhaAlunoAdminRequest redefinirSenhaRequest =
+                new RedefinirSenhaAlunoAdminRequest(
+                        stringValue(body, "novaSenha"),
+                        stringValue(body, "confirmarSenha"),
+                        admin.id(),
+                        admin.email(),
+                        admin.role()
+                );
+
         try {
-            client.redefinirSenhaAlunoAdmin(alunoId, body);
+            client.redefinirSenhaAlunoAdmin(alunoId, redefinirSenhaRequest);
         } catch (FeignException ex) {
             throw new IllegalArgumentException(extractMessage(ex));
         }
@@ -384,5 +400,10 @@ public class AlunoService {
         } catch (Exception e) {
             return body;
         }
+    }
+
+    private String stringValue(Map<String, Object> body, String field) {
+        Object value = body.get(field);
+        return value == null ? null : value.toString();
     }
 }

@@ -3,6 +3,7 @@ package com.rockepilates.gerenciador.service;
 import com.rockepilates.gerenciador.dto.*;
 import com.rockepilates.gerenciador.entity.Aluno;
 import com.rockepilates.gerenciador.entity.Assinatura;
+import com.rockepilates.gerenciador.entity.AuditoriaRedefinicaoSenhaAluno;
 import com.rockepilates.gerenciador.entity.Pagamento;
 import com.rockepilates.gerenciador.entity.Plano;
 import com.rockepilates.gerenciador.enums.StatusAssinatura;
@@ -10,6 +11,7 @@ import com.rockepilates.gerenciador.enums.StatusPagamento;
 import com.rockepilates.gerenciador.exception.ResourceNotFoundException;
 import com.rockepilates.gerenciador.repository.AlunoRepository;
 import com.rockepilates.gerenciador.repository.AssinaturaRepository;
+import com.rockepilates.gerenciador.repository.AuditoriaRedefinicaoSenhaAlunoRepository;
 import com.rockepilates.gerenciador.repository.PagamentoRepository;
 import com.rockepilates.gerenciador.repository.PlanoRepository;
 import com.rockepilates.gerenciador.security.JwtAlunoService;
@@ -38,6 +40,7 @@ public class AlunoService {
     private final PagamentoRepository pagamentoRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtAlunoService jwtAlunoService;
+    private final AuditoriaRedefinicaoSenhaAlunoRepository auditoriaRedefinicaoSenhaAlunoRepository;
 
     @Transactional
     public void cadastrar(CadastroAlunoRequest request) {
@@ -973,8 +976,21 @@ public class AlunoService {
             throw new IllegalArgumentException("As senhas não conferem");
         }
 
+        if (!"ADMIN".equals(request.adminRole())) {
+            throw new IllegalArgumentException("Perfil administrativo inválido");
+        }
+
         aluno.setSenhaHash(passwordEncoder.encode(request.novaSenha()));
         incrementarSessionVersion(aluno);
+
+        auditoriaRedefinicaoSenhaAlunoRepository.save(
+                AuditoriaRedefinicaoSenhaAluno.builder()
+                        .alunoId(aluno.getId())
+                        .adminId(request.adminId())
+                        .adminEmail(request.adminEmail())
+                        .adminRole(request.adminRole())
+                        .build()
+        );
     }
 
     public ValidarSessaoAlunoResponse validarSessaoAluno(

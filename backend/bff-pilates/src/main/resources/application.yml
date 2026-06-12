@@ -31,6 +31,8 @@ internal:
     token: ${INTERNAL_SERVICE_TOKEN:rockepilates-internal-token-local}
 
 jwt:
+  admin:
+    secret: ${JWT_SECRET:NPQV4SOF9JGL7gUwFFUXy_68nLyjj9kMOPckZl2gZF6XbFE9NI0xKJOwl3bey-LB}
   aluno:
     secret: ${JWT_ALUNO_SECRET:rockepilates-aluno-secret-key-dev-precisa-ter-mais-de-32-caracteres}
 

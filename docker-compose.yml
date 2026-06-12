@@ -25,7 +25,7 @@ services:
       DB_URL: ${USUARIOS_DB_URL:-jdbc:postgresql://postgres:5432/usuarios_db}
       DB_USERNAME: ${DB_USERNAME:-rocker}
       DB_PASSWORD: ${DB_PASSWORD:-rocker123}
-      JWT_SECRET: ${JWT_SECRET:-NPOV4SQF9JGL7qUwFFUXy_68nLyjj9KMOPckZl2qZF6XbFE9NI0XKJ0wL3bev-LB}
+      JWT_SECRET: ${JWT_SECRET:-NPQV4SOF9JGL7gUwFFUXy_68nLyjj9kMOPckZl2gZF6XbFE9NI0xKJOwl3bey-LB}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
     ports:
@@ -64,6 +64,7 @@ services:
     environment:
       USUARIOS_URL: ${USUARIOS_URL:-http://usuarios-service:8081}
       GERENCIADOR_URL: ${GERENCIADOR_URL:-http://gerenciador-service:8082}
+      JWT_SECRET: ${JWT_SECRET:-NPQV4SOF9JGL7gUwFFUXy_68nLyjj9kMOPckZl2gZF6XbFE9NI0xKJOwl3bey-LB}
       JWT_ALUNO_SECRET: ${JWT_ALUNO_SECRET:-rockepilates-aluno-secret-key-dev-precisa-ter-mais-de-32-caracteres}
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-rockepilates-internal-token-local}
       APP_COOKIE_SECURE: ${APP_COOKIE_SECURE:-false}

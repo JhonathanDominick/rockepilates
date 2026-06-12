@@ -1,5 +1,6 @@
 package com.rockepilates.bff.client;
 
+import com.rockepilates.bff.dto.RedefinirSenhaAlunoAdminRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -137,7 +138,7 @@ public class AlunoClientFallback implements AlunoClient {
     }
 
     @Override
-    public void redefinirSenhaAlunoAdmin(Long id, Map<String, Object> body) {
+    public void redefinirSenhaAlunoAdmin(Long id, RedefinirSenhaAlunoAdminRequest request) {
         throw serviceUnavailable("redefinição administrativa de senha do aluno id=" + id);
     }
 
