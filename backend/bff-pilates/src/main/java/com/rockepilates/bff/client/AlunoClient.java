@@ -1,6 +1,7 @@
 package com.rockepilates.bff.client;
 
 import com.rockepilates.bff.config.FeignInternalAuthConfig;
+import com.rockepilates.bff.dto.RedefinirSenhaAlunoAdminRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -112,7 +113,7 @@ public interface AlunoClient {
     @PatchMapping("/alunos/admin/{id}/senha")
     void redefinirSenhaAlunoAdmin(
             @PathVariable Long id,
-            @RequestBody Map<String, Object> body
+            @RequestBody RedefinirSenhaAlunoAdminRequest request
     );
 
     @PostMapping("/alunos/{id}/validar-sessao")
