@@ -39,6 +39,7 @@ Estado mais recente confirmado após as últimas features de segurança:
 Branch: develop
 Status: up to date with origin/develop
 Working tree: clean
+HEAD: 933743c
 ```
 
 Comando confirmado pelo usuário:
@@ -69,6 +70,7 @@ feature/seguranca-upload-midia
 feature/seguranca-exposicao-servicos
 feature/seguranca-autorizacao-idor
 feature/seguranca-logout-admin-redefine-senha
+feature/seguranca-auditoria-redefinicao-senha
 ```
 
 A feature `feature/seguranca-headers-http` foi commitada com:
@@ -122,9 +124,22 @@ PR #128 — logout após sessão invalidada
 - Cookie aluno_token antigo é expirado.
 - Aluno é redirecionado para /login sem tela de erro.
 - Fluxo validado no frontend Docker real na porta 3000.
+
+PR #129 - alinhamento da documentacao de seguranca
+- AGENTS.md passou a exigir a leitura de docs/backup.md.
+- docs/backup.md e docs/seguranca-producao.md foram alinhados ao estado real.
+- Documentacao mergeada em develop no commit 731e66d.
+
+PR #130 - auditoria da redefinicao de senha do aluno
+- BFF extrai adminId, adminEmail e adminRole do JWT administrativo validado.
+- gerenciador-service persiste auditoria sem senha, hash, JWT, cookie ou secret.
+- Auditoria participa da mesma transacao da senha e da sessionVersion.
+- Politica de senha do aluno alinhada para 8 caracteres, uma letra e um numero.
+- Migration V3 aplicada e fluxo validado localmente em Docker.
+- Feature mergeada em develop no commit 933743c.
 ```
 
-Portanto, Resilience4j/Circuit Breaker, `sessionVersion`, upload seguro, restrição de serviços internos, token interno e logout após sessão invalidada devem ser tratados como concluídos, validados e mergeados.
+Portanto, os PRs #123 a #130 devem ser tratados como concluidos e mergeados. As validacoes manuais e Docker registradas para cada feature permanecem validas.
 
 ---
 
@@ -208,9 +223,9 @@ Tokens antigos passam a ser rejeitados na validação da sessão do aluno. Auten
 Avaliação atual baseada no código, na documentação e nas features validadas e mergeadas:
 
 ```txt
-Projeto completo: 76%
+Projeto completo: 79%
 Software funcional: aproximadamente 90%
-Restante para conclusão total: 24%
+Restante para conclusão total: 21%
 ```
 
 Leitura correta desses números:
@@ -218,8 +233,8 @@ Leitura correta desses números:
 ```txt
 - Os fluxos centrais de site, CMS, admin, aluno e financeiro estão implementados em grande parte.
 - O software funcional está próximo de 90%, considerando telas e regras de negócio existentes.
-- O projeto completo está em 76% porque produção exige infraestrutura, operação, segurança final e homologação.
-- Os 24% restantes concentram-se principalmente fora das funcionalidades visíveis.
+- O projeto completo está em 79% porque produção exige infraestrutura, operação, segurança final e homologação.
+- Os 21% restantes concentram-se principalmente fora das funcionalidades visíveis.
 ```
 
 Itens já incorporados nessa avaliação:
@@ -231,6 +246,9 @@ Itens já incorporados nessa avaliação:
 - docker-compose.prod.yml com serviços internos sem portas publicadas.
 - token interno obrigatório entre BFF e gerenciador-service.
 - logout e redirecionamento após sessão antiga invalidada.
+- documentacao de seguranca alinhada ao estado real.
+- auditoria persistida da redefinicao administrativa de senha.
+- politica de senha uniforme no gerenciador-service.
 ```
 
 Ainda não está pronto para produção porque faltam:
@@ -243,8 +261,6 @@ Ainda não está pronto para produção porque faltam:
 - confirmação prática das portas fechadas no deploy real
 - secrets reais fora do Git
 - backup/restauração testados
-- política uniforme de senha no gerenciador-service
-- auditoria da redefinição de senha pelo admin
 - idempotência/concorrência financeira
 - logs estruturados e observabilidade
 - política mínima de privacidade/LGPD
@@ -783,6 +799,46 @@ Estado final:
 - Login com a nova senha continua funcionando.
 ```
 
+### 9.9 PR #129 - alinhamento da documentacao de seguranca
+
+Status:
+
+```txt
+Documentacao atualizada, commitada e mergeada em develop.
+```
+
+Estado final:
+
+```txt
+- AGENTS.md inclui docs/backup.md na documentacao obrigatoria.
+- docs/backup.md esclarece credenciais locais e upload seguro de imagens.
+- docs/seguranca-producao.md distingue controles concluidos de bloqueadores reais.
+- Merge commit: 731e66d.
+```
+
+### 9.10 PR #130 - auditoria da redefinicao de senha do aluno
+
+Status:
+
+```txt
+Implementada, build validado, testada localmente em Docker e mergeada em develop.
+```
+
+Estado final:
+
+```txt
+- JwtAdminService valida e extrai adminId, adminEmail e adminRole no BFF.
+- usuariosService.validarAdmin(authorization) foi preservado.
+- AuditoriaRedefinicaoSenhaAluno persiste aluno, admin e data da operacao.
+- Senha, hash, JWT, cookie e secret nao sao persistidos na auditoria.
+- Auditoria, alteracao da senha e incremento de sessionVersion usam a mesma transacao.
+- Migration V3 criou a tabela auditoria_redefinicao_senha_aluno e seus indices.
+- Politica de senha do aluno exige 8 caracteres, uma letra e um numero.
+- Migration, tabela, indices, login do aluno e registro de auditoria foram validados em Docker/local.
+- Commit da feature: af535ed.
+- Merge commit: 933743c.
+```
+
 ---
 
 ## 10. Estado atual de segurança
@@ -810,6 +866,9 @@ Estado final:
 - docker-compose.prod.yml criado para remover portas dos serviços internos.
 - Token interno obrigatório entre BFF e gerenciador-service.
 - Logout e redirecionamento do aluno após sessão invalidada.
+- Politica de senha uniforme no gerenciador-service.
+- Auditoria persistida da redefinicao de senha pelo admin.
+- Migration V3 e fluxo de auditoria validados em Docker/local.
 ```
 
 ### Pendente antes de produção
@@ -823,8 +882,6 @@ Estado final:
 - Aplicação prática do docker-compose.prod.yml no servidor real.
 - Backup e restauração testados.
 - Logs mínimos de segurança mais completos.
-- Auditoria da redefinição de senha pelo admin.
-- Política de senha uniforme no gerenciador-service.
 - Revisão de duplicidade financeira.
 - Política mínima de privacidade/LGPD.
 - Deploy real.
@@ -1004,8 +1061,6 @@ Antes de qualquer nova feature, o próximo passo correto é:
 Próximas prioridades, sem iniciar agora:
 
 ```txt
-- auditar a redefinição de senha do aluno pelo admin
-- unificar a política de senha no gerenciador-service
 - reforçar idempotência e concorrência financeira
 - preparar Nginx, HTTPS, VPS e firewall
 - testar backup/restauração
@@ -1065,7 +1120,7 @@ docker compose logs -f frontend
 
 ### Prioridade imediata
 
-Resilience4j/Circuit Breaker, `sessionVersion`, upload seguro, compose de produção, token interno e logout após sessão invalidada não são mais próximas prioridades; todos já foram concluídos, validados e mergeados.
+Resilience4j/Circuit Breaker, `sessionVersion`, upload seguro, compose de producao, token interno, logout apos sessao invalidada, politica de senha do gerenciador-service e auditoria da redefinicao de senha nao sao mais proximas prioridades; todos ja foram concluidos e mergeados.
 
 Antes de iniciar qualquer nova feature:
 
@@ -1080,8 +1135,6 @@ Antes de iniciar qualquer nova feature:
 ### Próxima prioridade de segurança real
 
 ```txt
-- auditar a redefinição de senha pelo admin
-- unificar a política de senha no gerenciador-service
 - reforçar idempotência/concorrência financeira
 - preparar Nginx/HTTPS/VPS/firewall
 - testar backup/restauração
@@ -1148,12 +1201,12 @@ Antes de produção real:
 [ ] logs mínimos de segurança
 [ ] rate limit validado em ambiente real
 [ ] headers HTTP validados em ambiente real
-[ ] política de senha uniforme no gerenciador-service
+[x] política de senha uniforme no gerenciador-service
 [x] sessionVersion para aluno implementado e testado
 [x] docker-compose.prod.yml remove portas dos serviços internos
 [x] token interno obrigatório no gerenciador-service
 [x] logout após sessão antiga invalidada
-[ ] auditoria da redefinição de senha pelo admin
+[x] auditoria da redefinição de senha pelo admin validada em Docker/local
 [ ] revisão de duplicidade financeira
 [ ] política mínima de privacidade
 [ ] variáveis reais fora do repositório
@@ -1170,7 +1223,7 @@ O projeto está avançado e com várias melhorias reais de segurança já mergea
 O ponto exato agora é:
 
 ```txt
-develop atualizado após os PRs #123, #124, #125, #126, #127 e #128.
+develop atualizado no merge commit 933743c apos os PRs #123 a #130.
 ```
 
 Features concluídas neste ponto:
@@ -1209,6 +1262,18 @@ PR #128:
 - logout após sessão invalidada
 - cookie aluno_token removido
 - redirecionamento para /login validado no Docker real
+
+PR #129:
+- documentacao de seguranca alinhada ao estado atual
+- AGENTS.md, docs/backup.md e docs/seguranca-producao.md atualizados
+
+PR #130:
+- auditoria persistida da redefinicao de senha do aluno pelo admin
+- adminId, adminEmail e adminRole extraidos do JWT administrativo no BFF
+- migration V3 com tabela e indices de auditoria
+- mesma transacao para auditoria, senha e sessionVersion
+- politica de senha uniforme no gerenciador-service
+- fluxo, migration e persistencia validados em Docker/local
 ```
 
 Primeiro comando antes de qualquer nova feature:
@@ -1220,8 +1285,6 @@ git status
 Depois, escolher a próxima feature com base nos bloqueadores reais de produção:
 
 ```txt
-- auditoria de redefinição de senha pelo admin
-- política de senha no gerenciador-service
 - backup/restauração testados
 - idempotência/concorrência financeira
 - Nginx/HTTPS/VPS/firewall
@@ -1237,9 +1300,9 @@ Depois, escolher a próxima feature com base nos bloqueadores reais de produçã
 Percentual atual registrado:
 
 ```txt
-Projeto completo: 76%
+Projeto completo: 79%
 Software funcional: aproximadamente 90%
-Restante: 24%
+Restante: 21%
 ```
 
 Riscos que ainda precisam ser tratados antes da produção real:
@@ -1253,8 +1316,8 @@ Riscos que ainda precisam ser tratados antes da produção real:
 - Logs insuficientes e ainda sem estrutura/correlationId abrangente.
 - Ausência de suíte de testes automatizados para os fluxos críticos.
 - CORS, cookies Secure e HSTS dependem da configuração correta do domínio real.
-- Política de senha do gerenciador-service ainda não está uniforme com o usuarios-service.
-- Redefinição de senha pelo admin ainda precisa de auditoria final de segurança.
+- Testes finais e homologacao com a cliente ainda nao foram realizados.
+- Politica minima de privacidade/LGPD ainda nao foi concluida.
 ```
 
 O projeto não deve ser classificado como pronto para produção enquanto esses bloqueadores não forem tratados e testados no ambiente real.
