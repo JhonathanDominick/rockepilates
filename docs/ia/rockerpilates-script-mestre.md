@@ -65,6 +65,10 @@ feature/seguranca-rate-limit-login
 feature/seguranca-headers-http
 feature/resilience4j-bff
 feature/aluno-session-version
+feature/seguranca-upload-midia
+feature/seguranca-exposicao-servicos
+feature/seguranca-autorizacao-idor
+feature/seguranca-logout-admin-redefine-senha
 ```
 
 A feature `feature/seguranca-headers-http` foi commitada com:
@@ -94,9 +98,33 @@ PR #124 — sessionVersion do aluno
 - Tokens antigos são invalidados após redefinição de senha pelo admin.
 - Autenticação inválida retorna HTTP 401.
 - Testes manuais completos da feature realizados.
+
+PR #125 — upload seguro de mídia
+- Upload local restrito a JPG/JPEG/PNG/WebP.
+- Limite máximo de 10MB aplicado no frontend, BFF e gerenciador-service.
+- MIME, extensão, compatibilidade e magic bytes validados.
+- Nome final gerado com UUID e extensão normalizada.
+- Path final protegido com normalize().startsWith(uploadPath).
+- Upload local de vídeos removido; vídeo futuro será por URL de YouTube não listado.
+
+PR #126 — produção com exposição restrita
+- docker-compose.prod.yml criado.
+- Portas de postgres, usuarios-service, gerenciador-service e BFF removidas no override de produção.
+- Frontend em 3000 permanece apenas como etapa intermediária até Nginx/reverse proxy.
+
+PR #127 — autorização interna do gerenciador-service
+- Header X-Internal-Service-Token enviado pelos Feign clients do BFF que chamam o gerenciador-service.
+- Chamadas sem token ou com token incorreto são negadas pelo gerenciador-service.
+- Token configurado por INTERNAL_SERVICE_TOKEN.
+
+PR #128 — logout após sessão invalidada
+- Frontend trata HTTP 401 nas páginas protegidas do aluno.
+- Cookie aluno_token antigo é expirado.
+- Aluno é redirecionado para /login sem tela de erro.
+- Fluxo validado no frontend Docker real na porta 3000.
 ```
 
-Portanto, Resilience4j/Circuit Breaker e `sessionVersion` do aluno devem ser tratados como features concluídas, validadas e mergeadas.
+Portanto, Resilience4j/Circuit Breaker, `sessionVersion`, upload seguro, restrição de serviços internos, token interno e logout após sessão invalidada devem ser tratados como concluídos, validados e mergeados.
 
 ---
 
@@ -123,7 +151,8 @@ O sistema deve conter:
 ```txt
 - site institucional público
 - CMS próprio para editar conteúdo do site
-- upload de imagem/vídeo
+- upload local seguro de imagens
+- vídeos futuros por URL de YouTube não listado
 - painel administrativo
 - gestão de alunos
 - cadastro de novos alunos
@@ -176,45 +205,32 @@ Tokens antigos passam a ser rejeitados na validação da sessão do aluno. Auten
 
 ## 3. Percentual atual estimado
 
-Antes da sequência de segurança/produção, o projeto estava estimado em:
+Avaliação atual baseada no código, na documentação e nas features validadas e mergeadas:
 
 ```txt
-60% a 65%
+Projeto completo: 76%
+Software funcional: aproximadamente 90%
+Restante para conclusão total: 24%
 ```
 
-Depois das features concluídas até agora:
+Leitura correta desses números:
 
 ```txt
-feature/seguranca-rotas-admin-aluno
-feature/revisao-cors-env-producao
-feature/revisao-secrets-env-producao
-feature/revisao-banco-init-backup
-feature/revisao-seguranca-producao-final
-feature/seguranca-politica-senha
-feature/seguranca-rate-limit-login
-feature/seguranca-headers-http
+- Os fluxos centrais de site, CMS, admin, aluno e financeiro estão implementados em grande parte.
+- O software funcional está próximo de 90%, considerando telas e regras de negócio existentes.
+- O projeto completo está em 76% porque produção exige infraestrutura, operação, segurança final e homologação.
+- Os 24% restantes concentram-se principalmente fora das funcionalidades visíveis.
 ```
 
-Estimativa atual realista:
+Itens já incorporados nessa avaliação:
 
 ```txt
-74% a 78%
-```
-
-Motivo:
-
-```txt
-- experiência aluno/admin já está funcional em boa parte
-- financeiro manual já está implementado em fluxo principal
-- documentação de segurança de produção foi criada
-- política mínima de senha foi aplicada no backend de usuários
-- rate limit no login foi implementado no BFF
-- headers HTTP de segurança foram implementados no BFF
-- Resilience4j/Circuit Breakers foram implementados no BFF
-- fallbacks Feign foram configurados em todos os clients do BFF
-- sessionVersion do aluno foi implementado e validado
-- CORS/cookies/secrets já estão parametrizados para produção
-- banco/init/backup já têm documentação inicial
+- Resilience4j, Circuit Breakers e fallbacks Feign.
+- sessionVersion e invalidação real da sessão do aluno.
+- upload local seguro de imagens.
+- docker-compose.prod.yml com serviços internos sem portas publicadas.
+- token interno obrigatório entre BFF e gerenciador-service.
+- logout e redirecionamento após sessão antiga invalidada.
 ```
 
 Ainda não está pronto para produção porque faltam:
@@ -222,12 +238,15 @@ Ainda não está pronto para produção porque faltam:
 ```txt
 - HTTPS real
 - domínio real
-- firewall/VPS
-- banco não exposto
+- Nginx/reverse proxy
+- VPS e firewall
+- confirmação prática das portas fechadas no deploy real
+- secrets reais fora do Git
 - backup/restauração testados
-- revisão segura de upload
-- logs mínimos de segurança mais completos
-- revisão de duplicidade financeira
+- política uniforme de senha no gerenciador-service
+- auditoria da redefinição de senha pelo admin
+- idempotência/concorrência financeira
+- logs estruturados e observabilidade
 - política mínima de privacidade/LGPD
 - deploy final e testes finais com cliente
 ```
@@ -498,6 +517,15 @@ Já existe:
 - política mínima de senha no usuarios-service
 - rate limit no login com Bucket4j
 - headers HTTP de segurança no BFF
+- Resilience4j e Circuit Breakers no BFF
+- fallbacks configurados em todos os Feign clients
+- sessionVersion e invalidação real da sessão do aluno
+- upload local restrito a JPG/JPEG/PNG/WebP com limite de 10MB
+- validação de MIME, extensão, magic bytes, UUID e path seguro no upload
+- upload local de vídeos removido; vídeos futuros serão URLs de YouTube não listado
+- docker-compose.prod.yml sem portas publicadas para os serviços internos
+- X-Internal-Service-Token obrigatório no gerenciador-service
+- logout automático e redirecionamento após sessão antiga invalidada
 ```
 
 ---
@@ -679,6 +707,82 @@ Observação:
 HSTS deve ficar false/local e só ser ativado em produção com HTTPS real.
 ```
 
+### 9.5 PR #125 — upload seguro de mídia
+
+Status:
+
+```txt
+Implementada, validada manualmente, commitada e mergeada em develop.
+```
+
+Estado final:
+
+```txt
+- Upload local aceita somente JPG/JPEG/PNG/WebP.
+- Limite máximo de 10MB.
+- Arquivo vazio é recusado.
+- MIME e extensão precisam ser permitidos e compatíveis.
+- Magic bytes de JPEG, PNG e WebP são validados.
+- SVG, GIF, AVIF, vídeos e executáveis são recusados.
+- Nome final usa UUID e extensão normalizada.
+- Path final usa normalize().startsWith(uploadPath).
+- Upload local de vídeo foi removido do CMS.
+- Vídeos futuros serão integrados por URL de YouTube não listado.
+```
+
+### 9.6 PR #126 — docker-compose de produção restrito
+
+Status:
+
+```txt
+Implementada, validada, commitada e mergeada em develop.
+```
+
+Estado final:
+
+```txt
+- docker-compose.yml continua sendo a base de desenvolvimento.
+- docker-compose.prod.yml remove ports de postgres, usuarios-service, gerenciador-service e bff-pilates.
+- Frontend em 3000 ainda é etapa intermediária até Nginx/reverse proxy.
+- Deploy final deve expor publicamente somente 80/443.
+```
+
+### 9.7 PR #127 — token interno do gerenciador-service
+
+Status:
+
+```txt
+Implementada, testada manualmente, commitada e mergeada em develop.
+```
+
+Estado final:
+
+```txt
+- Feign clients do BFF que chamam o gerenciador-service enviam X-Internal-Service-Token.
+- gerenciador-service nega chamadas sem token ou com token incorreto.
+- INTERNAL_SERVICE_TOKEN é parametrizado por ambiente.
+- O controle complementa, mas não substitui, firewall e portas fechadas.
+```
+
+### 9.8 PR #128 — logout após sessão invalidada
+
+Status:
+
+```txt
+Implementada, validada no Docker real da porta 3000, commitada e mergeada em develop.
+```
+
+Estado final:
+
+```txt
+- Token antigo do aluno retorna HTTP 401 no BFF.
+- /aluno/perfil e /aluno/financeiro tratam sessão inválida.
+- Rota server-side expira aluno_token.
+- Aluno é redirecionado para /login.
+- Não há tela de erro nem loop de redirecionamento.
+- Login com a nova senha continua funcionando.
+```
+
 ---
 
 ## 10. Estado atual de segurança
@@ -698,6 +802,14 @@ HSTS deve ficar false/local e só ser ativado em produção com HTTPS real.
 - Política mínima de senha implementada no usuarios-service.
 - Rate limit no login implementado no BFF.
 - Headers HTTP de segurança implementados no BFF.
+- Resilience4j/Circuit Breakers implementados e validados.
+- Fallbacks Feign configurados em todos os clients do BFF.
+- sessionVersion implementado e validado para o aluno.
+- Upload local seguro de imagens implementado e validado.
+- Upload local de vídeos removido do CMS.
+- docker-compose.prod.yml criado para remover portas dos serviços internos.
+- Token interno obrigatório entre BFF e gerenciador-service.
+- Logout e redirecionamento do aluno após sessão invalidada.
 ```
 
 ### Pendente antes de produção
@@ -708,11 +820,11 @@ HSTS deve ficar false/local e só ser ativado em produção com HTTPS real.
 - APP_SECURITY_HSTS_ENABLED=true apenas com HTTPS.
 - CORS restrito ao domínio real.
 - Firewall/VPS.
-- PostgreSQL não exposto publicamente.
+- Aplicação prática do docker-compose.prod.yml no servidor real.
 - Backup e restauração testados.
-- Upload de mídia revisado com segurança.
 - Logs mínimos de segurança mais completos.
-- Revisão de IDOR/acesso por ID.
+- Auditoria da redefinição de senha pelo admin.
+- Política de senha uniforme no gerenciador-service.
 - Revisão de duplicidade financeira.
 - Política mínima de privacidade/LGPD.
 - Deploy real.
@@ -876,7 +988,7 @@ Estado final validado no PR #123:
 
 ## 14. Próximo passo recomendado agora
 
-Resilience4j/Circuit Breaker e `sessionVersion` do aluno já foram concluídos.
+Resilience4j/Circuit Breaker, `sessionVersion`, upload seguro, compose restrito, token interno e logout após sessão invalidada já foram concluídos.
 
 Antes de qualquer nova feature, o próximo passo correto é:
 
@@ -889,15 +1001,17 @@ Antes de qualquer nova feature, o próximo passo correto é:
 6. Confirmar que a alteração não conflita com regras de negócio documentadas.
 ```
 
-Próximas prioridades possíveis, sem iniciar agora:
+Próximas prioridades, sem iniciar agora:
 
 ```txt
-- revisar upload de mídia
+- auditar a redefinição de senha do aluno pelo admin
+- unificar a política de senha no gerenciador-service
+- reforçar idempotência e concorrência financeira
+- preparar Nginx, HTTPS, VPS e firewall
 - testar backup/restauração
-- revisar duplicidade financeira
-- revisar IDOR/acesso por ID
+- implementar observabilidade e logs estruturados
 - criar política mínima de privacidade/LGPD
-- preparar deploy real com HTTPS/domínio/firewall
+- finalizar documentação e homologação com a cliente
 ```
 
 ---
@@ -951,7 +1065,7 @@ docker compose logs -f frontend
 
 ### Prioridade imediata
 
-Resilience4j/Circuit Breaker e `sessionVersion` do aluno não são mais próximas prioridades; ambos já foram concluídos, validados e mergeados.
+Resilience4j/Circuit Breaker, `sessionVersion`, upload seguro, compose de produção, token interno e logout após sessão invalidada não são mais próximas prioridades; todos já foram concluídos, validados e mergeados.
 
 Antes de iniciar qualquer nova feature:
 
@@ -966,23 +1080,24 @@ Antes de iniciar qualquer nova feature:
 ### Próxima prioridade de segurança real
 
 ```txt
-- revisar upload de mídia
+- auditar a redefinição de senha pelo admin
+- unificar a política de senha no gerenciador-service
+- reforçar idempotência/concorrência financeira
+- preparar Nginx/HTTPS/VPS/firewall
 - testar backup/restauração
-- revisar duplicidade financeira em marcar pagamento como pago
-- revisar IDOR/acesso por ID
+- implementar observabilidade/logs estruturados
 - criar política mínima de privacidade/LGPD
-- preparar deploy real com HTTPS/domínio/firewall
+- finalizar documentação e testes com a cliente
 ```
 
 ### Depois
 
 ```txt
-- revisar upload de mídia
-- testar backup/restauração
-- revisar duplicidade financeira em marcar pagamento como pago
-- revisar IDOR/acesso por ID
-- criar política mínima de privacidade/LGPD
-- preparar deploy real com HTTPS/domínio/firewall
+- testes automatizados dos fluxos críticos
+- healthcheck consolidado
+- correlationId entre BFF e serviços
+- análise de dependências e imagens Docker
+- evolução futura do storage local de mídia
 ```
 
 ---
@@ -994,7 +1109,7 @@ Não afirmar:
 ```txt
 - projeto pronto para produção
 - backup restaurado com sucesso
-- upload 100% seguro
+- upload elimina todos os riscos possíveis
 - LGPD completa
 - testes automatizados completos
 ```
@@ -1027,13 +1142,18 @@ Antes de produção real:
 [ ] backups testados
 [ ] restauração testada
 [ ] uploads com volume persistente
-[ ] upload revisado quanto a tipo/tamanho/nome seguro
+[x] upload revisado quanto a tipo/tamanho/nome seguro
+[x] upload local restrito a JPG/JPEG/PNG/WebP e 10MB
+[x] vídeos locais removidos do upload
 [ ] logs mínimos de segurança
 [ ] rate limit validado em ambiente real
 [ ] headers HTTP validados em ambiente real
-[ ] senha forte backend validada
+[ ] política de senha uniforme no gerenciador-service
 [x] sessionVersion para aluno implementado e testado
-[ ] revisão de acesso por ID
+[x] docker-compose.prod.yml remove portas dos serviços internos
+[x] token interno obrigatório no gerenciador-service
+[x] logout após sessão antiga invalidada
+[ ] auditoria da redefinição de senha pelo admin
 [ ] revisão de duplicidade financeira
 [ ] política mínima de privacidade
 [ ] variáveis reais fora do repositório
@@ -1050,7 +1170,7 @@ O projeto está avançado e com várias melhorias reais de segurança já mergea
 O ponto exato agora é:
 
 ```txt
-develop atualizado após os PRs #123 e #124.
+develop atualizado após os PRs #123, #124, #125, #126, #127 e #128.
 ```
 
 Features concluídas neste ponto:
@@ -1070,6 +1190,25 @@ PR #124:
 - invalidação após redefinição de senha pelo admin
 - HTTP 401 para autenticação inválida
 - testes manuais completos da feature
+
+PR #125:
+- upload seguro de imagens
+- limite de 10MB
+- MIME, extensão, magic bytes, UUID e path seguro
+- upload local de vídeo removido
+
+PR #126:
+- docker-compose.prod.yml
+- portas dos serviços internos removidas no override de produção
+
+PR #127:
+- X-Internal-Service-Token entre BFF e gerenciador-service
+- chamadas internas sem token são negadas
+
+PR #128:
+- logout após sessão invalidada
+- cookie aluno_token removido
+- redirecionamento para /login validado no Docker real
 ```
 
 Primeiro comando antes de qualquer nova feature:
@@ -1081,11 +1220,42 @@ git status
 Depois, escolher a próxima feature com base nos bloqueadores reais de produção:
 
 ```txt
-- upload seguro
+- auditoria de redefinição de senha pelo admin
+- política de senha no gerenciador-service
 - backup/restauração testados
-- duplicidade financeira
-- IDOR/acesso por ID
+- idempotência/concorrência financeira
+- Nginx/HTTPS/VPS/firewall
+- observabilidade/logs estruturados
 - política mínima de privacidade/LGPD
-- deploy com HTTPS/domínio/firewall
+- documentação final e testes com a cliente
 ```
+
+---
+
+## 20. Percentual consolidado e riscos atuais
+
+Percentual atual registrado:
+
+```txt
+Projeto completo: 76%
+Software funcional: aproximadamente 90%
+Restante: 24%
+```
+
+Riscos que ainda precisam ser tratados antes da produção real:
+
+```txt
+- Produção iniciada sem secrets reais e fortes fora do Git.
+- Portas internas expostas caso o override de produção ou o firewall sejam aplicados incorretamente.
+- Tráfego e cookies inseguros enquanto não houver HTTPS real.
+- Backup existente apenas como procedimento documentado, sem restauração validada.
+- Possível concorrência ou duplicidade em operações financeiras simultâneas.
+- Logs insuficientes e ainda sem estrutura/correlationId abrangente.
+- Ausência de suíte de testes automatizados para os fluxos críticos.
+- CORS, cookies Secure e HSTS dependem da configuração correta do domínio real.
+- Política de senha do gerenciador-service ainda não está uniforme com o usuarios-service.
+- Redefinição de senha pelo admin ainda precisa de auditoria final de segurança.
+```
+
+O projeto não deve ser classificado como pronto para produção enquanto esses bloqueadores não forem tratados e testados no ambiente real.
 
