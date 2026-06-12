@@ -7,6 +7,7 @@ import {
     buscarPagamentosAlunoPaginado,
     buscarPerfilAluno,
     buscarResumoFinanceiroAluno,
+    isAlunoSessaoInvalidaError,
     type PagamentoAluno,
 } from "@/lib/api/aluno-perfil";
 
@@ -76,14 +77,47 @@ export default async function PerfilAlunoPage() {
         redirect("/login");
     }
 
-    const [aluno, pagamentosResponse, resumoFinanceiro] = await Promise.all([
-        buscarPerfilAluno(),
-        buscarPagamentosAlunoPaginado({
-            page: 0,
-            size: 3,
-        }),
-        buscarResumoFinanceiroAluno(),
-    ]);
+    let resultado:
+        | Awaited<
+        ReturnType<
+            typeof Promise.all<
+                [
+                    ReturnType<typeof buscarPerfilAluno>,
+                    ReturnType<typeof buscarPagamentosAlunoPaginado>,
+                    ReturnType<typeof buscarResumoFinanceiroAluno>
+                ]
+            >
+        >
+    >
+        | null = null;
+    let sessaoInvalida = false;
+
+    try {
+        resultado = await Promise.all([
+            buscarPerfilAluno(),
+            buscarPagamentosAlunoPaginado({
+                page: 0,
+                size: 3,
+            }),
+            buscarResumoFinanceiroAluno(),
+        ]);
+    } catch (error) {
+        if (isAlunoSessaoInvalidaError(error)) {
+            sessaoInvalida = true;
+        } else {
+            throw error;
+        }
+    }
+
+    if (sessaoInvalida) {
+        redirect("/api/aluno/logout?redirect=/login");
+    }
+
+    if (!resultado) {
+        throw new Error("Erro ao carregar dados do aluno");
+    }
+
+    const [aluno, pagamentosResponse, resumoFinanceiro] = resultado;
 
     const pagamentos: PagamentoAluno[] = pagamentosResponse.content ?? [];
 
