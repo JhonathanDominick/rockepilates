@@ -8,6 +8,23 @@ function getBffUrl() {
     );
 }
 
+export class AlunoSessaoInvalidaError extends Error {
+    constructor(message = "Sessão do aluno inválida") {
+        super(message);
+        this.name = "AlunoSessaoInvalidaError";
+        Object.setPrototypeOf(this, AlunoSessaoInvalidaError.prototype);
+    }
+}
+
+export function isAlunoSessaoInvalidaError(
+    error: unknown
+): error is AlunoSessaoInvalidaError {
+    return (
+        error instanceof AlunoSessaoInvalidaError ||
+        (error instanceof Error && error.name === "AlunoSessaoInvalidaError")
+    );
+}
+
 async function extrairErro(response: Response, fallback: string) {
     try {
         const data = await response.json();
@@ -69,6 +86,10 @@ export async function buscarPerfilAluno() {
     });
 
     if (!response.ok) {
+        if (response.status === 401) {
+            throw new AlunoSessaoInvalidaError();
+        }
+
         throw new Error(
             await extrairErro(response, "Erro ao carregar perfil do aluno")
         );
@@ -93,6 +114,10 @@ export async function buscarPagamentosAluno(): Promise<PagamentoAluno[]> {
     );
 
     if (!response.ok) {
+        if (response.status === 401) {
+            throw new AlunoSessaoInvalidaError();
+        }
+
         throw new Error(
             await extrairErro(
                 response,
@@ -143,6 +168,10 @@ export async function buscarPagamentosAlunoPaginado({
     );
 
     if (!response.ok) {
+        if (response.status === 401) {
+            throw new AlunoSessaoInvalidaError();
+        }
+
         throw new Error(
             await extrairErro(
                 response,
@@ -170,6 +199,10 @@ export async function buscarResumoFinanceiroAluno(): Promise<ResumoFinanceiroAlu
     );
 
     if (!response.ok) {
+        if (response.status === 401) {
+            throw new AlunoSessaoInvalidaError();
+        }
+
         throw new Error(
             await extrairErro(
                 response,

@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import {
     buscarPagamentosAlunoPaginado,
     buscarResumoFinanceiroAluno,
+    isAlunoSessaoInvalidaError,
     type PagamentoAluno,
 } from "@/lib/api/aluno-perfil";
 import { FinanceiroAlunoClient } from "./FinanceiroAlunoClient";
@@ -130,16 +131,48 @@ export default async function FinanceiroAlunoPage({
     const pageParam = Number(params.page ?? "0");
     const page = Number.isNaN(pageParam) || pageParam < 0 ? 0 : pageParam;
 
-    const [historico, resumo] = await Promise.all([
-        buscarPagamentosAlunoPaginado({
-            status,
-            inicio,
-            fim,
-            page,
-            size: 6,
-        }),
-        buscarResumoFinanceiroAluno(),
-    ]);
+    let resultado:
+        | Awaited<
+        ReturnType<
+            typeof Promise.all<
+                [
+                    ReturnType<typeof buscarPagamentosAlunoPaginado>,
+                    ReturnType<typeof buscarResumoFinanceiroAluno>
+                ]
+            >
+        >
+    >
+        | null = null;
+    let sessaoInvalida = false;
+
+    try {
+        resultado = await Promise.all([
+            buscarPagamentosAlunoPaginado({
+                status,
+                inicio,
+                fim,
+                page,
+                size: 6,
+            }),
+            buscarResumoFinanceiroAluno(),
+        ]);
+    } catch (error) {
+        if (isAlunoSessaoInvalidaError(error)) {
+            sessaoInvalida = true;
+        } else {
+            throw error;
+        }
+    }
+
+    if (sessaoInvalida) {
+        redirect("/api/aluno/logout?redirect=/login");
+    }
+
+    if (!resultado) {
+        throw new Error("Erro ao carregar financeiro do aluno");
+    }
+
+    const [historico, resumo] = resultado;
 
     const pagamentos = historico.content ?? [];
 
