@@ -32,6 +32,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
       - name: Test and verify coverage
         run: ./gradlew clean test jacocoTestReport jacocoTestCoverageVerification --no-daemon
 
@@ -74,4 +77,3 @@ jobs:
           NEXT_PUBLIC_BFF_URL: http://localhost:8080
           BFF_INTERNAL_URL: http://localhost:8080
         run: npm run build
-
