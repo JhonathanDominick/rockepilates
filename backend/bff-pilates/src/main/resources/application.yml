@@ -5,7 +5,127 @@ spring:
   application:
     name: bff-pilates
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
   cloud:
     openfeign:
       circuitbreaker:
         enabled: true
+      client:
+        config:
+          default:
+            connectTimeout: 10000
+            readTimeout: 300000
+
+gerenciador:
+  url: ${GERENCIADOR_URL:http://localhost:8082}
+
+usuarios:
+  url: ${USUARIOS_URL:http://localhost:8081}
+
+internal:
+  service:
+    token: ${INTERNAL_SERVICE_TOKEN}
+
+jwt:
+  admin:
+    secret: ${JWT_SECRET}
+  aluno:
+    secret: ${JWT_ALUNO_SECRET}
+
+resilience4j:
+
+  circuitbreaker:
+    instances:
+
+      usuarios-service:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+      alunoClient:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+      gerenciador-service:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+      financeiroClient:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+      dashboardFinanceiroClient:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+      depoimento-client:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+  retry:
+    instances:
+
+      usuarios-service:
+        maxAttempts: 3
+        waitDuration: 1s
+
+      alunoClient:
+        maxAttempts: 3
+        waitDuration: 1s
+
+      gerenciador-service:
+        maxAttempts: 3
+        waitDuration: 1s
+
+      financeiroClient:
+        maxAttempts: 3
+        waitDuration: 1s
+
+      dashboardFinanceiroClient:
+        maxAttempts: 3
+        waitDuration: 1s
+
+      depoimento-client:
+        maxAttempts: 3
+        waitDuration: 1s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,circuitbreakers,circuitbreakerevents
+
+  endpoint:
+    health:
+      show-details: always
+
+  health:
+    circuitbreakers:
+      enabled: true

@@ -18,7 +18,7 @@ public class UsuariosClientFallback implements UsuariosClient {
             Long id
     ) {
         log.error("Fallback acionado para buscar usuario por id={}", id);
-        return null;
+        throw new IllegalStateException("usuarios-service indisponível");
     }
 
     @Override
@@ -27,7 +27,7 @@ public class UsuariosClientFallback implements UsuariosClient {
             int page,
             int size
     ) {
-        log.error("Fallback acionado para usuarios-service. page={}, size={}", page, size);
+        log.error("Fallback acionado para listar usuários");
 
         return new PagedResponse<>(
                 Collections.emptyList(),
@@ -43,9 +43,18 @@ public class UsuariosClientFallback implements UsuariosClient {
             String authorizationHeader,
             CreateUsuarioRequest request
     ) {
-        log.error("Fallback acionado para criação de usuário. email={}", request.email());
+        log.error("Fallback acionado para criação de usuário");
+        throw new IllegalStateException("usuarios-service indisponível");
+    }
 
-        throw new RuntimeException("Erro ao criar usuário no usuarios-service");
+    @Override
+    public void atualizarSenha(
+            String authorizationHeader,
+            Long id,
+            UpdateSenhaRequest request
+    ) {
+        log.error("Fallback acionado para atualização de senha id={}", id);
+        throw new IllegalStateException("usuarios-service indisponível");
     }
 
     @Override
@@ -55,15 +64,21 @@ public class UsuariosClientFallback implements UsuariosClient {
             UpdateUsuarioRequest request
     ) {
         log.error("Fallback acionado para atualização de usuário. id={}", id);
-
-        throw new RuntimeException("Erro ao atualizar usuário no usuarios-service");
+        throw new IllegalStateException("usuarios-service indisponível");
     }
 
     @Override
-    public LoginResponse login(LoginRequest request) {
-        log.error("Fallback acionado para login. email={}", request.email());
+    public SuccessResponse<LoginResponse> login(
+            LoginRequest request
+    ) {
+        log.error("Fallback acionado para login email={}", request.email());
+        throw new IllegalStateException("usuarios-service indisponível");
+    }
 
-        throw new RuntimeException("Erro ao realizar login no usuarios-service");
+    @Override
+    public Object health() {
+        log.error("Fallback acionado para health check do usuarios-service");
+        throw new IllegalStateException("usuarios-service indisponível");
     }
 
 }
