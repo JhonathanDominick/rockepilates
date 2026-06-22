@@ -19,7 +19,7 @@ export function normalizarId(value: number): string {
         throw new Error("Identificador inválido");
     }
 
-    return String(value);
+    return encodeURIComponent(String(value));
 }
 
 export function criarUrlBff(pathname: string): URL {
