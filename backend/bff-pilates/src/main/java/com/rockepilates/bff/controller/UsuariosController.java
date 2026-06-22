@@ -5,6 +5,7 @@ import com.rockepilates.bff.dto.LoginRequest;
 import com.rockepilates.bff.dto.LoginResponse;
 import com.rockepilates.bff.dto.PagedResponse;
 import com.rockepilates.bff.dto.UpdateSenhaRequest;
+import com.rockepilates.bff.dto.UpdateUsuarioRequest;
 import com.rockepilates.bff.dto.UsuarioResponse;
 import com.rockepilates.bff.service.UsuariosService;
 import com.rockepilates.bff.util.CookieSecurityUtil;
@@ -110,5 +111,14 @@ public class UsuariosController {
     ) {
         service.atualizarSenha(authorizationHeader, id, request);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/bff/usuarios/{id}")
+    public UsuarioResponse atualizarUsuario(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long id,
+            @RequestBody UpdateUsuarioRequest request
+    ) {
+        return service.atualizarUsuario(authorizationHeader, id, request);
     }
 }

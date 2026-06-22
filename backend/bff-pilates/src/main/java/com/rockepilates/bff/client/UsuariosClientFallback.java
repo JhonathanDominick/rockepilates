@@ -58,6 +58,16 @@ public class UsuariosClientFallback implements UsuariosClient {
     }
 
     @Override
+    public SuccessResponse<UsuarioResponse> atualizarUsuario(
+            String authorizationHeader,
+            Long id,
+            UpdateUsuarioRequest request
+    ) {
+        log.error("Fallback acionado para atualização de usuário. id={}", id);
+        throw new IllegalStateException("usuarios-service indisponível");
+    }
+
+    @Override
     public SuccessResponse<LoginResponse> login(
             LoginRequest request
     ) {
@@ -70,4 +80,5 @@ public class UsuariosClientFallback implements UsuariosClient {
         log.error("Fallback acionado para health check do usuarios-service");
         throw new IllegalStateException("usuarios-service indisponível");
     }
+
 }

@@ -6,8 +6,9 @@ import com.rockepilates.bff.dto.LoginRequest;
 import com.rockepilates.bff.dto.LoginResponse;
 import com.rockepilates.bff.dto.PagedResponse;
 import com.rockepilates.bff.dto.SuccessResponse;
-import com.rockepilates.bff.dto.UsuarioResponse;
 import com.rockepilates.bff.dto.UpdateSenhaRequest;
+import com.rockepilates.bff.dto.UpdateUsuarioRequest;
+import com.rockepilates.bff.dto.UsuarioResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,6 +49,13 @@ public interface UsuariosClient {
     @PostMapping("/usuarios/login")
     SuccessResponse<LoginResponse> login(
             @RequestBody LoginRequest request
+    );
+
+    @PutMapping("/usuarios/{id}")
+    SuccessResponse<UsuarioResponse> atualizarUsuario(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long id,
+            @RequestBody UpdateUsuarioRequest request
     );
 
     @GetMapping("/actuator/health")
