@@ -2,22 +2,16 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-
-function getBaseUrl(): string {
-    return (
-        process.env.BFF_INTERNAL_URL ||
-        process.env.NEXT_PUBLIC_BFF_URL ||
-        "http://localhost:8080"
-    );
-}
+import { criarUrlBff, normalizarId } from "@/lib/server/bff-url";
 
 export async function marcarPagamentoComoPago(
     assinaturaId: number
 ) {
     const cookieStore = await cookies();
+    const id = normalizarId(assinaturaId);
 
     const response = await fetch(
-        `${getBaseUrl()}/bff/alunos/assinaturas/${assinaturaId}/pagar`,
+        criarUrlBff(`/bff/alunos/assinaturas/${id}/pagar`),
         {
             method: "PATCH",
             headers: {
