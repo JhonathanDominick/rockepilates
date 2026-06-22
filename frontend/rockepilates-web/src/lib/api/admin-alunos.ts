@@ -1,10 +1,7 @@
 import { cookies } from "next/headers";
 import type { AlunoAdmin } from "@/components/admin/AlunosAdminTable";
 import type { PagamentoHistorico } from "@/lib/api/admin-alunos-client";
-
-function getBffUrl() {
-    return process.env.BFF_INTERNAL_URL || process.env.NEXT_PUBLIC_BFF_URL;
-}
+import { criarUrlBff, normalizarId } from "@/lib/server/bff-url";
 export type ListarAlunosAdminParams = {
     busca?: string;
     plano?: string;
@@ -42,7 +39,7 @@ export async function listarAlunosAdmin(): Promise<AlunoAdmin[]> {
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
 
-    const res = await fetch(`${getBffUrl()}/bff/alunos/admin`, {
+    const res = await fetch(criarUrlBff("/bff/alunos/admin"), {
         headers: {
             Cookie: cookieHeader,
         },
@@ -67,9 +64,10 @@ export async function listarPagamentosPorAssinaturaAdmin(
 ): Promise<PagamentoHistorico[]> {
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
+    const id = normalizarId(assinaturaId);
 
     const res = await fetch(
-        `${getBffUrl()}/bff/alunos/assinaturas/${assinaturaId}/pagamentos`,
+        criarUrlBff(`/bff/alunos/assinaturas/${id}/pagamentos`),
         {
             headers: {
                 Cookie: cookieHeader,
@@ -93,9 +91,10 @@ export async function atualizarObservacoesInternasAdmin(
 ) {
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
+    const id = normalizarId(alunoId);
 
     const res = await fetch(
-        `${getBffUrl()}/bff/alunos/admin/${alunoId}/observacoes-internas`,
+        criarUrlBff(`/bff/alunos/admin/${id}/observacoes-internas`),
         {
             method: "PATCH",
             headers: {
@@ -130,9 +129,10 @@ export async function atualizarAlunoAdmin(
 ) {
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
+    const id = normalizarId(alunoId);
 
     const res = await fetch(
-        `${getBffUrl()}/bff/alunos/admin/${alunoId}`,
+        criarUrlBff(`/bff/alunos/admin/${id}`),
         {
             method: "PATCH",
             headers: {
@@ -156,9 +156,10 @@ export async function cancelarAssinaturaAdmin(
 ) {
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
+    const id = normalizarId(assinaturaId);
 
     const res = await fetch(
-        `${getBffUrl()}/bff/alunos/assinaturas/${assinaturaId}/cancelar`,
+        criarUrlBff(`/bff/alunos/assinaturas/${id}/cancelar`),
         {
             method: "PATCH",
             headers: {
@@ -181,9 +182,10 @@ export async function atualizarMensagemProfessoraAdmin(
 ) {
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
+    const id = normalizarId(alunoId);
 
     const res = await fetch(
-        `${getBffUrl()}/bff/alunos/admin/${alunoId}/mensagem-professora`,
+        criarUrlBff(`/bff/alunos/admin/${id}/mensagem-professora`),
         {
             method: "PATCH",
             headers: {
@@ -237,8 +239,11 @@ export async function listarAlunosAdminPaginado<T = AlunoAdmin>(
     searchParams.set("page", String(params.page ?? 0));
     searchParams.set("size", String(params.size ?? 10));
 
+    const url = criarUrlBff("/bff/alunos/admin/paginado");
+    url.search = searchParams.toString();
+
     const res = await fetch(
-        `${getBffUrl()}/bff/alunos/admin/paginado?${searchParams.toString()}`,
+        url,
         {
             headers: {
                 Cookie: cookieHeader,
