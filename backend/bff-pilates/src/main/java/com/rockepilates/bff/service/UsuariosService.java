@@ -98,6 +98,24 @@ public class UsuariosService {
         }
     }
 
+    public UsuarioResponse atualizarUsuario(
+            String authorizationHeader,
+            Long id,
+            UpdateUsuarioRequest request
+    ) {
+        log.info("Iniciando atualização de usuário. id={}", id);
+
+        try {
+            var response = client.atualizarUsuario(authorizationHeader, id, request);
+
+            log.info("Usuário atualizado com sucesso. id={}", id);
+
+            return response.data();
+        } catch (FeignException ex) {
+            throw FeignErrorHandler.handle(ex);
+        }
+    }
+
     public LoginResponse login(LoginRequest request) {
         log.info("Iniciando login de usuário. email={}", request.email());
 
