@@ -189,6 +189,8 @@ export function FinanceiroAdminTable({
         useState<PeriodoFiltro>("TODOS");
 
     useEffect(() => {
+        // Atualiza a cópia editável após refresh dos dados do servidor.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPagamentosAtuais(pagamentos);
     }, [pagamentos]);
 

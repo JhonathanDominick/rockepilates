@@ -6,7 +6,13 @@ function getBaseUrl(): string {
     );
 }
 
-export async function listarDepoimentos() {
+export type DepoimentoPublico = {
+    id: number;
+    nome: string;
+    mensagem: string;
+};
+
+export async function listarDepoimentos(): Promise<DepoimentoPublico[]> {
     const response = await fetch(
         `${getBaseUrl()}/bff/depoimentos`,
         {

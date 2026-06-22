@@ -1,3 +1,6 @@
+import org.gradle.testing.jacoco.tasks.JacocoCoverageVerification
+import org.gradle.testing.jacoco.tasks.JacocoReport
+
 plugins {
     java
     id("org.springframework.boot") version "3.2.0" apply false
@@ -25,5 +28,34 @@ subprojects {
 
     tasks.withType<Test> {
         useJUnitPlatform()
+        finalizedBy(tasks.withType<JacocoReport>())
+    }
+
+    tasks.withType<JacocoReport> {
+        dependsOn(tasks.withType<Test>())
+
+        reports {
+            xml.required.set(true)
+            html.required.set(true)
+        }
+    }
+
+    tasks.withType<JacocoCoverageVerification> {
+        dependsOn(tasks.withType<Test>())
+
+        violationRules {
+            rule {
+                includes = listOf(
+                    "com.rockepilates.bff.service.LoginRateLimitService",
+                    "com.rockepilates.gerenciador.service.FinanceiroService"
+                )
+
+                limit {
+                    counter = "LINE"
+                    value = "COVEREDRATIO"
+                    minimum = "0.60".toBigDecimal()
+                }
+            }
+        }
     }
 }

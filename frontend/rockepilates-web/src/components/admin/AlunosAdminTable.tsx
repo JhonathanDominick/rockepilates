@@ -24,6 +24,11 @@ export type AlunoAdmin = {
     statusPagamentoAtual: string;
     dataVencimento: string;
     dataCancelamento: string | null;
+    dataNascimento?: string;
+    objetivo?: string | null;
+    observacoesSaude?: string | null;
+    observacoesInternas?: string | null;
+    mensagemProfessora?: string | null;
 };
 
 type AlunosAdminTableProps = {
@@ -294,6 +299,8 @@ export function AlunosAdminTable({
         useState<ConfirmacaoPagamento | null>(null);
 
     useEffect(() => {
+        // Atualiza a cópia editável após refresh dos dados do servidor.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAlunos(alunosIniciais);
     }, [alunosIniciais]);
 

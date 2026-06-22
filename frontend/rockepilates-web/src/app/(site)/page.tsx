@@ -10,12 +10,14 @@ import { getConfigs } from "@/lib/api/config";
 import { Testimonials } from "@/components/Testimonials";
 import { listarDepoimentos } from "@/lib/api/depoimentos";
 import { TestimonialForm } from "@/components/TestimonialForm";
+import type { SiteConfig } from "@/lib/api/config";
+import type { DepoimentoPublico } from "@/lib/api/depoimentos";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-    let configs: Record<string, any> = {};
-    let depoimentos = [];
+    let configs: Record<string, SiteConfig | null> = {};
+    let depoimentos: DepoimentoPublico[] = [];
 
     try {
         configs = await getConfigs([
@@ -71,13 +73,20 @@ export default async function Home() {
         configs["home.benefits.item.5"]?.valor,
     ].filter((item): item is string => !!item?.trim());
 
-    const plans = [1, 2, 3]
-        .map((index) => ({
-            title: configs[`home.plans.${index}.title`]?.valor,
-            price: configs[`home.plans.${index}.price`]?.valor,
-            description: configs[`home.plans.${index}.description`]?.valor,
-        }))
-        .filter((plan) => plan.title?.trim() && plan.price?.trim());
+    const plans = [1, 2, 3].flatMap((index) => {
+        const title = configs[`home.plans.${index}.title`]?.valor?.trim();
+        const price = configs[`home.plans.${index}.price`]?.valor?.trim();
+
+        if (!title || !price) {
+            return [];
+        }
+
+        return [{
+            title,
+            price,
+            description: configs[`home.plans.${index}.description`]?.valor ?? "",
+        }];
+    });
 
     return (
         <main className="flex flex-col">

@@ -1,4 +1,6 @@
 import { cookies } from "next/headers";
+import type { AlunoAdmin } from "@/components/admin/AlunosAdminTable";
+import type { PagamentoHistorico } from "@/lib/api/admin-alunos-client";
 
 function getBffUrl() {
     return process.env.BFF_INTERNAL_URL || process.env.NEXT_PUBLIC_BFF_URL;
@@ -31,12 +33,12 @@ async function extrairErro(res: Response, fallback: string) {
     }
 }
 
-async function extrairData(res: Response) {
+async function extrairData<T>(res: Response): Promise<T> {
     const data = await res.json();
-    return data?.data ?? data;
+    return (data?.data ?? data) as T;
 }
 
-export async function listarAlunosAdmin() {
+export async function listarAlunosAdmin(): Promise<AlunoAdmin[]> {
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
 
@@ -51,16 +53,18 @@ export async function listarAlunosAdmin() {
         throw new Error(await extrairErro(res, "Erro ao listar alunos"));
     }
 
-    return extrairData(res);
+    return extrairData<AlunoAdmin[]>(res);
 }
 
-export async function buscarAlunoAdminPorId(alunoId: number) {
+export async function buscarAlunoAdminPorId(alunoId: number): Promise<AlunoAdmin | null> {
     const alunos = await listarAlunosAdmin();
 
-    return alunos.find((aluno: any) => aluno.alunoId === alunoId) ?? null;
+    return alunos.find((aluno) => aluno.alunoId === alunoId) ?? null;
 }
 
-export async function listarPagamentosPorAssinaturaAdmin(assinaturaId: number) {
+export async function listarPagamentosPorAssinaturaAdmin(
+    assinaturaId: number
+): Promise<PagamentoHistorico[]> {
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
 
@@ -80,7 +84,7 @@ export async function listarPagamentosPorAssinaturaAdmin(assinaturaId: number) {
         );
     }
 
-    return extrairData(res);
+    return extrairData<PagamentoHistorico[]>(res);
 }
 
 export async function atualizarObservacoesInternasAdmin(
@@ -200,7 +204,7 @@ export async function atualizarMensagemProfessoraAdmin(
     }
 }
 
-export async function listarAlunosAdminPaginado<T = any>(
+export async function listarAlunosAdminPaginado<T = AlunoAdmin>(
     params: ListarAlunosAdminParams
 ): Promise<AlunosAdminPaginadoResponse<T>> {
     const cookieStore = await cookies();
@@ -252,5 +256,5 @@ export async function listarAlunosAdminPaginado<T = any>(
         );
     }
 
-    return extrairData(res);
+    return extrairData<AlunosAdminPaginadoResponse<T>>(res);
 }

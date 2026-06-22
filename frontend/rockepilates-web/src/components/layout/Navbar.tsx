@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 import { Container } from "@/components/layout/Container";
 import { logoutAluno } from "@/lib/api/aluno-auth";
 
@@ -76,11 +77,11 @@ export function Navbar() {
     return (
         <header className="sticky top-0 z-50 border-b border-white/10 bg-headerGradient backdrop-blur-md">
             <Container className="flex items-center justify-between py-4">
-                <a href="/" className="flex items-center">
+                <Link href="/" className="flex items-center">
                     <span className="text-lg font-semibold tracking-tight !text-white">
                         Rocker Pilates
                     </span>
-                </a>
+                </Link>
 
                 <nav className="hidden lg:flex items-center gap-8">
                     {menuItems.map((item) => (
@@ -94,22 +95,22 @@ export function Navbar() {
                     ))}
 
                     {!aluno && (
-                        <a
+                        <Link
                             href="/login"
                             className="text-sm font-medium !text-white transition-colors duration-200 hover:!text-brand-red"
                         >
                             Login
-                        </a>
+                        </Link>
                     )}
                 </nav>
 
                 {!aluno ? (
-                    <a
+                    <Link
                         href="/cadastro-aluno"
                         className="inline-flex items-center justify-center rounded-full bg-brand-red px-5 py-2.5 text-sm font-semibold !text-white transition-all duration-200 hover:bg-brand-redDark hover:scale-[1.03]"
                     >
                         Agendar Aula
-                    </a>
+                    </Link>
                 ) : (
                     <div className="relative">
                         <button
@@ -123,12 +124,12 @@ export function Navbar() {
 
                         {menuAberto && (
                             <div className="absolute right-0 mt-3 w-40 rounded-2xl border border-[#dce8e5] bg-white p-2 shadow-xl">
-                                <a
+                                <Link
                                     href="/aluno/perfil"
                                     className="block rounded-xl px-4 py-2 text-sm font-bold text-[#10263d] hover:bg-[#eaf7f5]"
                                 >
                                     Meu perfil
-                                </a>
+                                </Link>
 
                                 <button
                                     type="button"
