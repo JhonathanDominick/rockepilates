@@ -8,7 +8,7 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/gerenciador_db}
     username: ${DB_USERNAME:rocker}
-    password: ${DB_PASSWORD:rocker123}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
@@ -42,7 +42,7 @@ storage:
 
 internal:
   service:
-    token: ${INTERNAL_SERVICE_TOKEN:rockepilates-internal-token-local}
+    token: ${INTERNAL_SERVICE_TOKEN}
 
 management:
   endpoints:
@@ -52,5 +52,5 @@ management:
 
 jwt:
   aluno:
-    secret: ${JWT_ALUNO_SECRET:rockepilates-aluno-secret-key-dev-precisa-ter-mais-de-32-caracteres}
+    secret: ${JWT_ALUNO_SECRET}
     expiration: ${JWT_ALUNO_EXPIRATION:86400000}

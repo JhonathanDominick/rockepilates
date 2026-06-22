@@ -2,7 +2,19 @@ function getBffUrl() {
     return process.env.NEXT_PUBLIC_BFF_URL || "http://localhost:8080";
 }
 
-export async function cadastrarAluno(data: any) {
+export type CadastroAlunoRequest = {
+    nome: string;
+    email: string;
+    telefone: string;
+    dataNascimento: string;
+    objetivo: string;
+    observacoesSaude: string;
+    tipoPlano: string;
+    senha: string;
+    aceiteTermos: boolean;
+};
+
+export async function cadastrarAluno(data: CadastroAlunoRequest) {
     const res = await fetch(`${getBffUrl()}/bff/alunos`, {
         method: "POST",
         headers: {

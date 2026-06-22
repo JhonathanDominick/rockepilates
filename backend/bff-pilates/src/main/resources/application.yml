@@ -28,13 +28,13 @@ usuarios:
 
 internal:
   service:
-    token: ${INTERNAL_SERVICE_TOKEN:rockepilates-internal-token-local}
+    token: ${INTERNAL_SERVICE_TOKEN}
 
 jwt:
   admin:
-    secret: ${JWT_SECRET:NPQV4SOF9JGL7gUwFFUXy_68nLyjj9kMOPckZl2gZF6XbFE9NI0xKJOwl3bey-LB}
+    secret: ${JWT_SECRET}
   aluno:
-    secret: ${JWT_ALUNO_SECRET:rockepilates-aluno-secret-key-dev-precisa-ter-mais-de-32-caracteres}
+    secret: ${JWT_ALUNO_SECRET}
 
 resilience4j:
 

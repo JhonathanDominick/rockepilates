@@ -10,6 +10,7 @@ import {
     buscarAlunoAdminPorId,
     listarPagamentosPorAssinaturaAdmin,
 } from "@/lib/api/admin-alunos";
+import type { PagamentoHistorico } from "@/lib/api/admin-alunos-client";
 
 type PageProps = {
     params: Promise<{
@@ -60,7 +61,7 @@ function getStatusClass(status: string) {
     return "bg-[#eef7f6] text-[#255252] border-[#cfe7e4]";
 }
 
-function somarPorStatus(pagamentos: any[], status: string) {
+function somarPorStatus(pagamentos: PagamentoHistorico[], status: string) {
     return pagamentos
         .filter((pagamento) => pagamento.status === status)
         .reduce((total, pagamento) => total + pagamento.valor, 0);
@@ -85,7 +86,7 @@ export default async function AdminAlunoDetalhePage({ params }: PageProps) {
         aluno.assinaturaId
     );
 
-    const pagamentosOrdenados = [...pagamentos].sort((a: any, b: any) =>
+    const pagamentosOrdenados = [...pagamentos].sort((a, b) =>
         b.dataVencimento.localeCompare(a.dataVencimento)
     );
 
@@ -221,7 +222,7 @@ export default async function AdminAlunoDetalhePage({ params }: PageProps) {
                 alunoId={aluno.alunoId}
                 nome={aluno.nome}
                 telefone={aluno.telefone}
-                dataNascimento={aluno.dataNascimento}
+                dataNascimento={aluno.dataNascimento ?? ""}
                 objetivo={aluno.objetivo ?? ""}
                 observacoesSaude={aluno.observacoesSaude ?? ""}
             />
@@ -334,7 +335,7 @@ export default async function AdminAlunoDetalhePage({ params }: PageProps) {
                         </thead>
 
                         <tbody className="divide-y divide-[#e1ece9]">
-                        {pagamentosOrdenados.map((pagamento: any) => {
+                        {pagamentosOrdenados.map((pagamento) => {
                             const pagamentoAtual =
                                 pagamento.dataVencimento ===
                                 aluno.dataVencimento &&

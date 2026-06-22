@@ -26,6 +26,8 @@ export function FinanceiroAlunoClient({
     const [fimAtual, setFimAtual] = useState(fim ?? "");
 
     useEffect(() => {
+        // Estado local acompanha os parâmetros confirmados após a navegação.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setStatusAtual(status);
         setInicioAtual(inicio ?? "");
         setFimAtual(fim ?? "");

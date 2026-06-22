@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RockerPilates Web
 
-## Getting Started
+Interface do RockerPilates construída com Next.js e TypeScript. O frontend acessa exclusivamente o BFF; regras de negócio e credenciais dos serviços internos não ficam expostas ao navegador.
 
-First, run the development server:
+A visão completa do produto, arquitetura e decisões de engenharia está no [README principal](../../README.md).
+
+## Desenvolvimento local
+
+Requisitos: Node.js 22 e o BFF disponível na URL configurada.
 
 ```bash
+cp .env.example .env.local
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+A aplicação fica disponível em `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Qualidade
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run build
+```
 
-## Learn More
+Essas duas verificações são obrigatórias no GitHub Actions antes de integrar mudanças em `develop` ou `main`.
 
-To learn more about Next.js, take a look at the following resources:
+## Segurança
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Tokens de sessão são mantidos em cookies `HttpOnly` pelo BFF.
+- Nenhuma credencial real deve ser versionada.
+- Dados e imagens de demonstração precisam ser fictícios e anonimizados.

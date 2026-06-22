@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cadastrarAluno } from "@/lib/api/alunos";
@@ -25,16 +25,21 @@ export default function CadastroAlunoPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    function handleChange(e: any) {
-        const { name, value, type, checked } = e.target;
+    function handleChange(
+        e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    ) {
+        const { name, value } = e.target;
+        const nextValue = e.target instanceof HTMLInputElement && e.target.type === "checkbox"
+            ? e.target.checked
+            : value;
 
         setForm((prev) => ({
             ...prev,
-            [name]: type === "checkbox" ? checked : value,
+            [name]: nextValue,
         }));
     }
 
-    async function handleSubmit(e: any) {
+    async function handleSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
         setLoading(true);
@@ -46,8 +51,8 @@ export default function CadastroAlunoPage() {
             return;
         }
 
-        if (form.senha.length < 6) {
-            setError("A senha deve ter pelo menos 6 caracteres.");
+        if (form.senha.length < 8 || !/[A-Za-z]/.test(form.senha) || !/\d/.test(form.senha)) {
+            setError("A senha deve ter ao menos 8 caracteres, uma letra e um número.");
             setLoading(false);
             return;
         }
@@ -69,8 +74,8 @@ export default function CadastroAlunoPage() {
 
             router.push("/aluno/perfil");
             router.refresh();
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Erro ao cadastrar aluno.");
         } finally {
             setLoading(false);
         }
@@ -186,7 +191,7 @@ export default function CadastroAlunoPage() {
                             value={form.senha}
                             onChange={handleChange}
                             required
-                            minLength={6}
+                            minLength={8}
                             className="rounded-2xl border border-[#dce8e5] p-3 outline-none transition focus:border-[#0d6666]"
                         />
 
@@ -197,7 +202,7 @@ export default function CadastroAlunoPage() {
                             value={form.confirmarSenha}
                             onChange={handleChange}
                             required
-                            minLength={6}
+                            minLength={8}
                             className="rounded-2xl border border-[#dce8e5] p-3 outline-none transition focus:border-[#0d6666]"
                         />
                     </div>
