@@ -1,5 +1,9 @@
 # RockerPilates
 
+[![Quality](https://github.com/JhonathanDominick/rockepilates/actions/workflows/quality.yml/badge.svg)](https://github.com/JhonathanDominick/rockepilates/actions/workflows/quality.yml)
+[![CodeQL](https://github.com/JhonathanDominick/rockepilates/actions/workflows/codeql.yml/badge.svg)](https://github.com/JhonathanDominick/rockepilates/actions/workflows/codeql.yml)
+[![Secret scan](https://github.com/JhonathanDominick/rockepilates/actions/workflows/secrets.yml/badge.svg)](https://github.com/JhonathanDominick/rockepilates/actions/workflows/secrets.yml)
+
 Sistema de gestão para estúdio de pilates construído com **Java 21**, **Spring Boot**, **PostgreSQL**, **Next.js** e **Docker**.
 
 > Portfolio preview: o projeto está em homologação e ainda não deve ser tratado como pronto para produção com dados reais.
@@ -19,7 +23,7 @@ Pequenos estúdios precisam acompanhar alunos, planos, vencimentos e conteúdo d
 
 ## Demonstração anonimizada
 
-As imagens e o vídeo do case serão publicados somente com dados fictícios. O roteiro e os critérios de anonimização estão em [`docs/portfolio/README.md`](docs/portfolio/README.md).
+As imagens e o vídeo do case serão publicados somente com dados fictícios. O roteiro, os critérios de anonimização e a base de personas estão em [docs/portfolio/README.md](docs/portfolio/README.md).
 
 Uma instância pública ainda não está disponível porque HTTPS, backup/restauração e o checklist de produção precisam ser validados primeiro.
 
@@ -131,6 +135,13 @@ O estado e os bloqueadores para produção estão documentados em [`docs/seguran
 - adicionar logs estruturados e rastreabilidade entre serviços;
 - concluir deploy seguro com HTTPS e dados fictícios;
 - publicar vídeo curto do fluxo completo.
+
+Issues públicas acompanham esse roadmap:
+
+- [#133](https://github.com/JhonathanDominick/rockepilates/issues/133) ampliar cobertura de autenticação e autorização;
+- [#134](https://github.com/JhonathanDominick/rockepilates/issues/134) preparar demonstração segura e anonimizada;
+- [#135](https://github.com/JhonathanDominick/rockepilates/issues/135) adicionar logs estruturados e correlation ID;
+- [#136](https://github.com/JhonathanDominick/rockepilates/issues/136) concluir checklist de anonimização do portfólio.
 
 ## Autor
 
