@@ -15,8 +15,8 @@ function getBffUrl() {
 }
 
 const menuItems = [
-    { label: "Benefícios", href: "/#beneficios" },
     { label: "Aulas & Planos", href: "/#aulas" },
+    { label: "Benefícios", href: "/#beneficios" },
     { label: "Evelyn Pinheiro", href: "/#evelyn-pinheiro" },
     { label: "Depoimentos", href: "/#depoimentos" },
 ];
@@ -109,7 +109,7 @@ export function Navbar() {
                         href="/cadastro-aluno"
                         className="inline-flex items-center justify-center rounded-full bg-brand-red px-5 py-2.5 text-sm font-semibold !text-white transition-all duration-200 hover:bg-brand-redDark hover:scale-[1.03]"
                     >
-                        Agendar Aula
+                        Começar agora
                     </Link>
                 ) : (
                     <div className="relative">
