@@ -1,6 +1,6 @@
 # Dados ficticios para demonstracao
 
-Use este arquivo como base para screenshots, video e ambiente de portfolio. Nenhum dado abaixo representa aluno, professora, pagamento, telefone, e-mail ou operacao real da cliente.
+Use este arquivo como base para screenshots, video e ambiente de demonstracao segura. Nenhum dado abaixo representa aluno, professora, pagamento, telefone, e-mail ou operacao real da cliente.
 
 ## Personas
 
