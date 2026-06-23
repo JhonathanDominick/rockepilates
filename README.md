@@ -113,7 +113,7 @@ npm run lint
 npm run build
 ```
 
-O pipeline também executa CodeQL e varredura de secrets. A cobertura atual ainda é inicial e inclui testes de resumo financeiro, marcação/cancelamento de pagamentos, invalidação de sessão por senha e rate limit de login; o roadmap mantém a ampliação da cobertura como trabalho explícito.
+O pipeline também executa CodeQL e varredura de secrets. A cobertura automatizada ainda está em expansão e já inclui testes para resumo financeiro, marcação/cancelamento de pagamentos, invalidação de sessão por senha e rate limit de login.
 
 ## Segurança
 
