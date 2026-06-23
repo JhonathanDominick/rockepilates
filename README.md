@@ -1,5 +1,9 @@
 # RockerPilates
 
+[![Quality](https://github.com/JhonathanDominick/rockepilates/actions/workflows/quality.yml/badge.svg)](https://github.com/JhonathanDominick/rockepilates/actions/workflows/quality.yml)
+[![CodeQL](https://github.com/JhonathanDominick/rockepilates/actions/workflows/codeql.yml/badge.svg)](https://github.com/JhonathanDominick/rockepilates/actions/workflows/codeql.yml)
+[![Secret scan](https://github.com/JhonathanDominick/rockepilates/actions/workflows/secrets.yml/badge.svg)](https://github.com/JhonathanDominick/rockepilates/actions/workflows/secrets.yml)
+
 Sistema de gestão para estúdio de pilates construído com **Java 21**, **Spring Boot**, **PostgreSQL**, **Next.js** e **Docker**.
 
 > Portfolio preview: o projeto está em homologação e ainda não deve ser tratado como pronto para produção com dados reais.
@@ -19,7 +23,7 @@ Pequenos estúdios precisam acompanhar alunos, planos, vencimentos e conteúdo d
 
 ## Demonstração anonimizada
 
-As imagens e o vídeo do case serão publicados somente com dados fictícios. O roteiro e os critérios de anonimização estão em [`docs/portfolio/README.md`](docs/portfolio/README.md).
+As imagens e o vídeo do case serão publicados somente com dados fictícios. O roteiro, os critérios de anonimização e a base de personas estão em [docs/portfolio/README.md](docs/portfolio/README.md).
 
 Uma instância pública ainda não está disponível porque HTTPS, backup/restauração e o checklist de produção precisam ser validados primeiro.
 
@@ -27,7 +31,7 @@ Uma instância pública ainda não está disponível porque HTTPS, backup/restau
 
 ```mermaid
 flowchart LR
-    UI["Next.js<br/>site, admin e portal"] --> BFF["BFF Spring Boot<br/>cookies, JWT e resiliência"]
+    UI["Next.js<br/>site, admin e portal"] --> BFF["Backend for Frontend Spring Boot<br/>cookies, JWT e resiliência"]
     BFF --> USR["usuarios-service<br/>admin e identidade"]
     BFF --> GER["gerenciador-service<br/>alunos, CMS e financeiro"]
     USR --> PG[(PostgreSQL)]
@@ -42,7 +46,7 @@ O repositório é um monorepo com três módulos backend:
 
 ### Decisões de engenharia
 
-**BFF como fronteira externa.** O frontend não acessa os serviços internos diretamente. Autenticação, cookies, tratamento de falhas e composição das respostas ficam centralizados no BFF.
+**Backend for Frontend como fronteira externa.** O frontend não acessa os serviços internos diretamente. Autenticação, cookies, tratamento de falhas e composição das respostas ficam centralizados no `bff-pilates`.
 
 **Financeiro assistido, não automático.** O sistema registra, calcula e alerta; a responsável pelo estúdio confirma pagamentos e cancelamentos. Essa escolha evita decisões financeiras irreversíveis sem intervenção humana.
 
@@ -94,7 +98,7 @@ Serviços locais:
 | Componente | URL |
 | --- | --- |
 | Frontend | `http://localhost:3000` |
-| BFF | `http://localhost:8080` |
+| Backend for Frontend (`bff-pilates`) | `http://localhost:8080` |
 | Usuários | `http://localhost:8081` |
 | Gerenciador | `http://localhost:8082` |
 
@@ -109,11 +113,11 @@ npm run lint
 npm run build
 ```
 
-O pipeline também executa CodeQL e varredura de secrets. Os primeiros testes automatizados cobrem regras financeiras, invalidação de sessão e rate limit; o roadmap mantém a ampliação da cobertura como trabalho explícito.
+O pipeline também executa CodeQL e varredura de secrets. A cobertura atual ainda é inicial e inclui testes de resumo financeiro, marcação/cancelamento de pagamentos, invalidação de sessão por senha e rate limit de login; o roadmap mantém a ampliação da cobertura como trabalho explícito.
 
 ## Segurança
 
-O projeto inclui cookies `HttpOnly`, CORS configurável, headers HTTP, rate limit, invalidação de sessão, token interno entre serviços e validação de upload. Secrets não possuem fallback versionado e devem ser fornecidos por `.env` ou pelo mecanismo do ambiente.
+O projeto inclui cookies `HttpOnly`, CORS configurável, headers HTTP, rate limit, invalidação de sessão, token interno entre serviços e validação de upload. Secrets reais não devem ser versionados; o repositório mantém apenas `.env.example` com placeholders, e o Compose exige valores obrigatórios via `.env` ou mecanismo seguro do ambiente.
 
 O estado e os bloqueadores para produção estão documentados em [`docs/seguranca-producao.md`](docs/seguranca-producao.md). Não use dados reais antes de concluir HTTPS, firewall, backup/restauração e homologação.
 
@@ -131,6 +135,13 @@ O estado e os bloqueadores para produção estão documentados em [`docs/seguran
 - adicionar logs estruturados e rastreabilidade entre serviços;
 - concluir deploy seguro com HTTPS e dados fictícios;
 - publicar vídeo curto do fluxo completo.
+
+Issues públicas acompanham esse roadmap:
+
+- [#133](https://github.com/JhonathanDominick/rockepilates/issues/133) ampliar cobertura de autenticação e autorização;
+- [#134](https://github.com/JhonathanDominick/rockepilates/issues/134) preparar demonstração segura e anonimizada;
+- [#135](https://github.com/JhonathanDominick/rockepilates/issues/135) adicionar logs estruturados e correlation ID;
+- [#136](https://github.com/JhonathanDominick/rockepilates/issues/136) concluir checklist de anonimização do portfólio.
 
 ## Autor
 
