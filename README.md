@@ -4,13 +4,13 @@
 [![CodeQL](https://github.com/JhonathanDominick/rockepilates/actions/workflows/codeql.yml/badge.svg)](https://github.com/JhonathanDominick/rockepilates/actions/workflows/codeql.yml)
 [![Secret scan](https://github.com/JhonathanDominick/rockepilates/actions/workflows/secrets.yml/badge.svg)](https://github.com/JhonathanDominick/rockepilates/actions/workflows/secrets.yml)
 
-Sistema de gestão para estúdio de pilates construído com **Java 21**, **Spring Boot**, **PostgreSQL**, **Next.js** e **Docker**.
+Projeto real em desenvolvimento para o site e sistema de gestão da marca **RockerPilates**, construído com **Java 21**, **Spring Boot**, **PostgreSQL**, **Next.js** e **Docker**.
 
-> Portfolio preview: o projeto está em homologação e ainda não deve ser tratado como pronto para produção com dados reais.
+> Projeto real em desenvolvimento: o repositório documenta decisões técnicas e evolução do sistema sem expor dados reais, credenciais, infraestrutura sensível ou informações operacionais da cliente.
 
 ## O problema
 
-Pequenos estúdios precisam acompanhar alunos, planos, vencimentos e conteúdo do site sem perder o controle humano sobre decisões financeiras. O RockerPilates centraliza essa operação em uma aplicação com painel administrativo e portal do aluno.
+Pequenos estúdios precisam acompanhar alunos, planos, vencimentos e conteúdo do site sem perder o controle humano sobre decisões financeiras. O RockerPilates centraliza essa operação em uma aplicação real com site público, painel administrativo e portal do aluno.
 
 ## A solução
 
@@ -21,11 +21,11 @@ Pequenos estúdios precisam acompanhar alunos, planos, vencimentos e conteúdo d
 - CMS básico para conteúdo e depoimentos;
 - proteção de sessão, rate limit, headers de segurança e fallbacks entre serviços.
 
-## Demonstração anonimizada
+## Demonstração segura
 
-As imagens e o vídeo do case serão publicados somente com dados fictícios. O roteiro, os critérios de anonimização e a base de personas estão em [docs/portfolio/README.md](docs/portfolio/README.md).
+Qualquer imagem, vídeo ou material público do sistema deve usar somente dados fictícios. O roteiro, os critérios de anonimização e a base de personas estão em [docs/demo-segura/README.md](docs/demo-segura/README.md).
 
-Uma instância pública ainda não está disponível porque HTTPS, backup/restauração e o checklist de produção precisam ser validados primeiro.
+Uma instância pública de demonstração ainda não está disponível porque a prioridade é proteger a cliente: HTTPS, backup/restauração, infraestrutura e checklist de produção precisam ser validados antes de qualquer exposição externa.
 
 ## Arquitetura
 
@@ -133,15 +133,15 @@ O estado e os bloqueadores para produção estão documentados em [`docs/seguran
 - ampliar testes unitários e de integração com PostgreSQL;
 - validar backup e restauração em ambiente limpo;
 - adicionar logs estruturados e rastreabilidade entre serviços;
-- concluir deploy seguro com HTTPS e dados fictícios;
-- publicar vídeo curto do fluxo completo.
+- concluir deploy seguro com HTTPS antes de qualquer exposição pública;
+- publicar material demonstrativo somente com dados fictícios e revisão de segurança.
 
 Issues públicas acompanham esse roadmap:
 
 - [#133](https://github.com/JhonathanDominick/rockepilates/issues/133) ampliar cobertura de autenticação e autorização;
-- [#134](https://github.com/JhonathanDominick/rockepilates/issues/134) preparar demonstração segura e anonimizada;
+- [#134](https://github.com/JhonathanDominick/rockepilates/issues/134) preparar demonstração segura com dados fictícios;
 - [#135](https://github.com/JhonathanDominick/rockepilates/issues/135) adicionar logs estruturados e correlation ID;
-- [#136](https://github.com/JhonathanDominick/rockepilates/issues/136) concluir checklist de anonimização do portfólio.
+- [#136](https://github.com/JhonathanDominick/rockepilates/issues/136) concluir checklist de anonimização da demonstração segura.
 
 ## Autor
 

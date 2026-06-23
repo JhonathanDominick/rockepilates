@@ -1,8 +1,8 @@
-# Material de portfólio
+# Material de demonstração segura
 
-Esta pasta receberá somente material produzido com dados fictícios.
+Esta pasta organiza somente material demonstrativo produzido com dados fictícios para apresentar o projeto sem expor informações reais da cliente.
 
-Use [dados-ficticios.md](dados-ficticios.md) como fonte única para nomes, e-mails, telefones, valores e depoimentos usados em screenshots ou vídeo.
+Use [dados-ficticios.md](dados-ficticios.md) como fonte única para nomes, e-mails, telefones, valores e depoimentos usados em screenshots, vídeo ou apresentação pública.
 
 ## Capturas previstas
 
@@ -29,5 +29,5 @@ O vídeo deve ter entre 60 e 90 segundos e mostrar:
 - não gravar telas da cliente ou banco de produção;
 - remover metadados dos arquivos antes da publicação;
 - revisar cada frame antes da publicação;
-- manter a demonstração identificada como ambiente de portfólio.
+- manter qualquer demonstração identificada como ambiente fictício, sem dados reais da operação RockerPilates.
 
