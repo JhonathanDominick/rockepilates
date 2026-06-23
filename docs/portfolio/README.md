@@ -2,6 +2,8 @@
 
 Esta pasta receberá somente material produzido com dados fictícios.
 
+Use [dados-ficticios.md](dados-ficticios.md) como fonte única para nomes, e-mails, telefones, valores e depoimentos usados em screenshots ou vídeo.
+
 ## Capturas previstas
 
 1. `dashboard-admin.webp`: visão geral com valores e nomes fictícios;
@@ -22,8 +24,10 @@ O vídeo deve ter entre 60 e 90 segundos e mostrar:
 ## Checklist de anonimização
 
 - usar nomes, e-mails, telefones e valores fictícios;
+- usar ambiente local ou de demonstração, nunca banco real da cliente;
 - não mostrar domínio, IP, logs, tokens, cookies ou variáveis reais;
 - não gravar telas da cliente ou banco de produção;
+- remover metadados dos arquivos antes da publicação;
 - revisar cada frame antes da publicação;
 - manter a demonstração identificada como ambiente de portfólio.
 
