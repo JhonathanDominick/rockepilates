@@ -31,9 +31,9 @@ Uma instância pública de demonstração ainda não está disponível porque a 
 
 ```mermaid
 flowchart LR
-    UI["Next.js<br/>site, admin e portal"] --> BFF["Backend for Frontend Spring Boot<br/>cookies, JWT e resiliência"]
-    BFF --> USR["usuarios-service<br/>admin e identidade"]
-    BFF --> GER["gerenciador-service<br/>alunos, CMS e financeiro"]
+    UI["Next.js: site, admin e portal"] --> BFF["bff-pilates: Backend for Frontend"]
+    BFF --> USR["usuarios-service: admin e identidade"]
+    BFF --> GER["gerenciador-service: alunos, CMS e financeiro"]
     USR --> PG[(PostgreSQL)]
     GER --> PG
 ```
