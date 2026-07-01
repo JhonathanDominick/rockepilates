@@ -3,8 +3,8 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 
 plugins {
     java
-    id("org.springframework.boot") version "3.2.0" apply false
-    id("io.spring.dependency-management") version "1.1.4" apply false
+    id("org.springframework.boot") version "3.5.16" apply false
+    id("io.spring.dependency-management") version "1.1.7" apply false
     jacoco
 }
 
