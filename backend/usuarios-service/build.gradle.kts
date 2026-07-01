@@ -10,7 +10,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.17")
 
     implementation("io.jsonwebtoken:jjwt-api:${property("jjwtVersion")}")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:${property("jjwtVersion")}")
@@ -28,6 +28,6 @@ dependencies {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.cloud:spring-cloud-dependencies:2023.0.5")
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:2023.0.6")
     }
 }
