@@ -4,9 +4,35 @@ services:
 
   usuarios-service:
     ports: !reset []
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
 
   gerenciador-service:
     ports: !reset []
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?Defina INTERNAL_SERVICE_TOKEN no .env de producao}
 
   bff-pilates:
-    ports: !reset []
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      APP_MODE: ${APP_MODE:-v1}
+      APP_COOKIE_SECURE: ${APP_COOKIE_SECURE:?Defina APP_COOKIE_SECURE=true no .env de producao}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:?Defina APP_CORS_ALLOWED_ORIGINS com o dominio real}
+      APP_SECURITY_HSTS_ENABLED: ${APP_SECURITY_HSTS_ENABLED:-false}
+
+  frontend:
+    build:
+      args:
+        NEXT_PUBLIC_BFF_URL: ${NEXT_PUBLIC_BFF_URL:?Defina NEXT_PUBLIC_BFF_URL com o dominio HTTPS real}
+        NEXT_PUBLIC_APP_MODE: ${NEXT_PUBLIC_APP_MODE:-v1}
+        NEXT_PUBLIC_ENABLE_FUTURE_ADMIN: ${NEXT_PUBLIC_ENABLE_FUTURE_ADMIN:-false}
+    environment:
+      NEXT_PUBLIC_BFF_URL: ${NEXT_PUBLIC_BFF_URL:?Defina NEXT_PUBLIC_BFF_URL com o dominio HTTPS real}
+      NEXT_PUBLIC_APP_MODE: ${NEXT_PUBLIC_APP_MODE:-v1}
+      NEXT_PUBLIC_ENABLE_FUTURE_ADMIN: ${NEXT_PUBLIC_ENABLE_FUTURE_ADMIN:-false}
+      BFF_INTERNAL_URL: ${BFF_INTERNAL_URL:-http://bff-pilates:8080}
+    ports:
+      - "127.0.0.1:3000:3000"
