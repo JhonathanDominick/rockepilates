@@ -3,9 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-function getBffUrl() {
-    return process.env.NEXT_PUBLIC_BFF_URL || "http://localhost:8080";
-}
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -22,23 +19,21 @@ export default function AdminLoginPage() {
         setMessage(null);
 
         try {
-            const response = await fetch(
-                `${getBffUrl()}/bff/usuarios/login`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({ email, senha }),
-                }
-            );
+            const response = await fetch("/api/admin/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({ email, senha }),
+            });
 
             if (!response.ok) {
                 throw new Error("Login inválido");
             }
 
-            router.push("/admin");
+            router.replace("/admin/site");
+            router.refresh();
         } catch (error) {
             console.error("Erro no login:", error);
             setMessage("E-mail ou senha inválidos");

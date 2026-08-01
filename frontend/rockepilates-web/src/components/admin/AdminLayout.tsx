@@ -20,16 +20,26 @@ type AdminLayoutProps = {
     children: ReactNode;
 };
 
-const menuItems = [
-    { href: "/admin/dashboard", label: "Dashboard", icon: FileText },
-    { href: "/admin", label: "CMS do site", icon: FileText },
+const menuItemsV1 = [
+    { href: "/admin/site", label: "Editar site", icon: FileText },
     { href: "/admin/depoimentos", label: "Depoimentos", icon: MessageSquareText },
+];
+
+const menuItemsFuturos = [
+    { href: "/admin/dashboard", label: "Dashboard", icon: FileText },
     { href: "/admin/alunos", label: "Alunos", icon: UsersRound },
     { href: "/admin/financeiro", label: "Financeiro", icon: WalletCards },
 ];
 
+function isFutureAdminEnabled() {
+    return process.env.NEXT_PUBLIC_ENABLE_FUTURE_ADMIN === "true";
+}
+
 function AdminSidebar() {
     const pathname = usePathname();
+    const menuItems = isFutureAdminEnabled()
+        ? [...menuItemsV1, ...menuItemsFuturos]
+        : menuItemsV1;
 
     return (
         <>
@@ -41,7 +51,7 @@ function AdminSidebar() {
                 <h2 className="mt-3 text-2xl font-bold">RockerPilates</h2>
 
                 <p className="mt-2 text-sm text-white/75">
-                    Painel administrativo
+                    Landing e CMS
                 </p>
             </div>
 
@@ -71,18 +81,14 @@ function AdminSidebar() {
 }
 
 export function AdminLayout({
-                                title,
-                                description,
-                                children,
-                            }: AdminLayoutProps) {
+    title,
+    description,
+    children,
+}: AdminLayoutProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
         <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#10263d] via-[#0f4650] to-[#075b5c] text-white">
-            <div className="pointer-events-none absolute left-[-120px] top-[-120px] h-80 w-80 rounded-full bg-[#7fd8d4]/20 blur-3xl" />
-            <div className="pointer-events-none absolute right-[-140px] top-40 h-96 w-96 rounded-full bg-[#ef4b3f]/20 blur-3xl" />
-            <div className="pointer-events-none absolute bottom-[-160px] left-1/3 h-96 w-96 rounded-full bg-[#7fd8d4]/10 blur-3xl" />
-
             <div className="relative z-10 mx-auto flex w-full max-w-[1760px] items-start gap-6 px-4 py-5 md:px-8 md:py-8 2xl:px-10">
                 <aside className="sticky top-8 hidden h-fit w-72 shrink-0 rounded-[28px] border border-white/10 bg-white/5 p-5 shadow-2xl backdrop-blur lg:block">
                     <AdminSidebar />

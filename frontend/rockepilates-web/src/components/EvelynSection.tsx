@@ -1,4 +1,5 @@
 import { Container } from "@/components/layout/Container";
+import { getYoutubeEmbedUrl, resolveMediaUrl } from "@/lib/site-media";
 
 type EvelynSectionProps = {
     title?: string;
@@ -8,22 +9,23 @@ type EvelynSectionProps = {
     mediaType?: string;
     ctaText?: string;
     ctaButton?: string;
+    ctaUrl: string;
 };
 
 export function EvelynSection({
-                                  title,
-                                  subtitle,
-                                  description,
-                                  image,
-                                  mediaType,
-                                  ctaText,
-                                  ctaButton,
-                              }: EvelynSectionProps) {
-    const mediaUrl = image?.trim()
-        ? `${process.env.NEXT_PUBLIC_BFF_URL}${image}`
-        : null;
-
-    const isVideo = mediaType?.toUpperCase() === "VIDEO";
+    title,
+    subtitle,
+    description,
+    image,
+    mediaType,
+    ctaText,
+    ctaButton,
+    ctaUrl,
+}: EvelynSectionProps) {
+    const isConfiguredVideo = mediaType?.toUpperCase() === "VIDEO";
+    const mediaUrl = resolveMediaUrl(image);
+    const youtubeEmbedUrl = getYoutubeEmbedUrl(image, { autoplay: true });
+    const isVideo = isConfiguredVideo || Boolean(youtubeEmbedUrl);
 
     return (
         <section id="evelyn-pinheiro" className="bg-brand-red px-6 py-20 text-white lg:px-8">
@@ -31,7 +33,15 @@ export function EvelynSection({
                 <div className="grid items-center gap-10 lg:grid-cols-[0.85fr_1fr]">
                     <div className="overflow-hidden rounded-[30px] border border-white/20 bg-white/10 p-3 shadow-soft">
                         <div className="overflow-hidden rounded-[24px] border border-white/10">
-                            {mediaUrl ? (
+                            {youtubeEmbedUrl ? (
+                                <iframe
+                                    src={youtubeEmbedUrl}
+                                    title={title?.trim() || "Evelyn Pinheiro"}
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowFullScreen
+                                    className="aspect-[4/5] w-full"
+                                />
+                            ) : mediaUrl ? (
                                 isVideo ? (
                                     <video
                                         src={mediaUrl}
@@ -51,7 +61,7 @@ export function EvelynSection({
                                 )
                             ) : (
                                 <div className="flex aspect-[4/5] items-center justify-center bg-white/10 text-white/70">
-                                    Mídia da Evelyn
+                                    Midia da Evelyn
                                 </div>
                             )}
                         </div>
@@ -72,27 +82,25 @@ export function EvelynSection({
 
                         <p className="mt-6 whitespace-pre-line text-lg leading-8 text-white/90">
                             {description?.trim() ||
-                                "Minha missão é ajudar você a construir um corpo forte, consciente e livre de dores através do pilates."}
+                                "Minha missao e ajudar voce a construir um corpo forte, consciente e livre de dores atraves do pilates."}
                         </p>
 
-                        {(ctaText?.trim() || ctaButton?.trim()) && (
-                            <div className="mt-8">
-                                {ctaText?.trim() && (
-                                    <p className="text-lg font-medium text-white/90">
-                                        {ctaText}
-                                    </p>
-                                )}
+                        <div className="mt-8">
+                            {ctaText?.trim() && (
+                                <p className="text-lg font-medium text-white/90">
+                                    {ctaText}
+                                </p>
+                            )}
 
-                                {ctaButton?.trim() && (
-                                    <a
-                                        href="/cadastro-aluno"
-                                        className="mt-4 inline-flex rounded-full bg-white px-7 py-3 text-base font-semibold !text-brand-red transition hover:bg-white/90"
-                                    >
-                                        {ctaButton}
-                                    </a>
-                                )}
-                            </div>
-                        )}
+                            <a
+                                href={ctaUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-4 inline-flex rounded-full bg-white px-7 py-3 text-base font-semibold !text-brand-red transition hover:bg-white/90"
+                            >
+                                {ctaButton?.trim() || "Agendar aula"}
+                            </a>
+                        </div>
                     </div>
                 </div>
             </Container>

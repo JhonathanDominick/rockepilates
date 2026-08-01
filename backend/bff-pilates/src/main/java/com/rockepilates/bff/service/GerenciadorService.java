@@ -8,13 +8,25 @@ import com.rockepilates.bff.exception.FeignErrorHandler;
 import feign.FeignException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class GerenciadorService {
+
+    private static final Set<String> PUBLIC_EXTERNAL_CONFIG_KEYS = Set.of(
+            "external.seufisio.agendaUrl",
+            "external.seufisio.appAndroidUrl",
+            "external.seufisio.appIosUrl",
+            "external.rockeracademy.url",
+            "external.maps.reviewsUrl",
+            "external.whatsappUrl"
+    );
 
     private final GerenciadorClient client;
     private final UsuariosService usuariosService;
@@ -24,13 +36,10 @@ public class GerenciadorService {
         this.usuariosService = usuariosService;
     }
 
-    // =========================
-    // 🔐 MÉTODO CENTRAL (TOKEN)
-    // =========================
     private String extrairAuthorization(HttpServletRequest request) {
 
         if (request.getCookies() == null) {
-            throw new RuntimeException("Token não encontrado");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token nao encontrado");
         }
 
         for (Cookie cookie : request.getCookies()) {
@@ -39,12 +48,9 @@ public class GerenciadorService {
             }
         }
 
-        throw new RuntimeException("Token não encontrado");
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token nao encontrado");
     }
 
-    // =========================
-    // 💾 SALVAR CONFIG
-    // =========================
     public SiteConfigResponse salvar(HttpServletRequest request, SiteConfigRequest requestBody) {
 
         String authorization = extrairAuthorization(request);
@@ -58,10 +64,11 @@ public class GerenciadorService {
         }
     }
 
-    // =========================
-    // 🔍 BUSCAR
-    // =========================
     public SiteConfigResponse buscar(String chave) {
+        if (!isPublicConfigKey(chave)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Configuracao nao encontrada");
+        }
+
         try {
             return client.buscar(chave).data();
         } catch (FeignException ex) {
@@ -69,10 +76,21 @@ public class GerenciadorService {
         }
     }
 
-    // =========================
-    // 📄 LISTAR
-    // =========================
-    public List<SiteConfigResponse> listar() {
+    public List<SiteConfigResponse> listarPublicas() {
+        try {
+            return client.listar().data().stream()
+                    .filter(config -> isPublicConfigKey(config.chave()))
+                    .toList();
+        } catch (FeignException ex) {
+            throw FeignErrorHandler.handle(ex);
+        }
+    }
+
+    public List<SiteConfigResponse> listar(HttpServletRequest request) {
+        String authorization = extrairAuthorization(request);
+
+        usuariosService.validarAdmin(authorization);
+
         try {
             return client.listar().data();
         } catch (FeignException ex) {
@@ -80,9 +98,6 @@ public class GerenciadorService {
         }
     }
 
-    // =========================
-    // 📤 UPLOAD DE MÍDIA
-    // =========================
     public MediaUploadResponse uploadMedia(HttpServletRequest request, MultipartFile file) {
 
         String authorization = extrairAuthorization(request);
@@ -96,9 +111,6 @@ public class GerenciadorService {
         }
     }
 
-    // =========================
-    // ⚠️ SEM VALIDAÇÃO (cuidado)
-    // =========================
     public SiteConfigResponse salvarSemValidacaoAdmin(SiteConfigRequest request) {
         try {
             return client.salvar(request).data();
@@ -107,4 +119,8 @@ public class GerenciadorService {
         }
     }
 
+    private boolean isPublicConfigKey(String chave) {
+        return chave != null &&
+                (chave.startsWith("home.") || PUBLIC_EXTERNAL_CONFIG_KEYS.contains(chave));
+    }
 }

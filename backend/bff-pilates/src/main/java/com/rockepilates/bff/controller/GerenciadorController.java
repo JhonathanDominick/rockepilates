@@ -26,9 +26,14 @@ public class GerenciadorController {
         return service.salvar(request, body);
     }
 
+    @GetMapping("/public")
+    public List<SiteConfigResponse> listarPublicas() {
+        return service.listarPublicas();
+    }
+
     @GetMapping
-    public List<SiteConfigResponse> listar() {
-        return service.listar();
+    public List<SiteConfigResponse> listar(HttpServletRequest request) {
+        return service.listar(request);
     }
 
     @GetMapping("/{chave}")

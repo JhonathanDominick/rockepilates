@@ -1,28 +1,32 @@
 import { Container } from "@/components/layout/Container";
+import { getYoutubeEmbedUrl, resolveMediaUrl } from "@/lib/site-media";
 
 type HeroProps = {
     title?: string;
     subtitle?: string;
     backgroundImage?: string;
     mediaType?: string;
+    agendaUrl: string;
+    mapsUrl: string;
 };
 
 export function Hero({
-                         title,
-                         subtitle,
-                         backgroundImage,
-                         mediaType,
-                     }: HeroProps) {
+    title,
+    subtitle,
+    backgroundImage,
+    mediaType,
+    agendaUrl,
+    mapsUrl,
+}: HeroProps) {
     const safeTitle = title?.trim() || "Pilates para transformar sua rotina";
     const safeSubtitle =
         subtitle?.trim() ||
-        "Aulas, conteúdo e acompanhamento para evoluir com consciência corporal.";
+        "Aulas, conteudo e acompanhamento para evoluir com consciencia corporal.";
 
-    const mediaUrl = backgroundImage?.trim()
-        ? `${process.env.NEXT_PUBLIC_BFF_URL}${backgroundImage}`
-        : null;
-
-    const isVideo = mediaType?.toUpperCase() === "VIDEO";
+    const isConfiguredVideo = mediaType?.toUpperCase() === "VIDEO";
+    const mediaUrl = resolveMediaUrl(backgroundImage);
+    const youtubeEmbedUrl = getYoutubeEmbedUrl(backgroundImage, { autoplay: true });
+    const isVideo = isConfiguredVideo || Boolean(youtubeEmbedUrl);
 
     const mediaClassName = "h-full w-full object-cover";
 
@@ -43,26 +47,38 @@ export function Hero({
                             {safeSubtitle}
                         </p>
 
-                        <div className="mt-8 flex gap-4">
+                        <div className="mt-8 flex flex-wrap gap-4">
                             <a
-                                href="/cadastro-aluno"
+                                href={agendaUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="rounded-full bg-brand-red px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-redDark"
                             >
-                                Começar agora
+                                Agendar aula
                             </a>
 
                             <a
-                                href="#beneficios"
+                                href={mapsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
                             >
-                                Saiba mais
+                                Localizacao
                             </a>
                         </div>
                     </div>
 
                     <div className="relative flex justify-center">
-                        <div className="h-[520px] md:h-[700px] lg:h-[720px] w-full max-w-[420px] overflow-hidden rounded-3xl shadow-soft">
-                            {mediaUrl ? (
+                        <div className="h-[520px] w-full max-w-[420px] overflow-hidden rounded-3xl shadow-soft md:h-[700px] lg:h-[720px]">
+                            {youtubeEmbedUrl ? (
+                                <iframe
+                                    src={youtubeEmbedUrl}
+                                    title="Rocker Pilates"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowFullScreen
+                                    className={mediaClassName}
+                                />
+                            ) : mediaUrl ? (
                                 isVideo ? (
                                     <video
                                         src={mediaUrl}
@@ -82,7 +98,7 @@ export function Hero({
                                 )
                             ) : (
                                 <div className="flex h-full items-center justify-center bg-white/10 text-white/60">
-                                    Mídia do CMS
+                                    Midia do CMS
                                 </div>
                             )}
                         </div>

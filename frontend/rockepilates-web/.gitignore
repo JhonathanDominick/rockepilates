@@ -38,5 +38,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# uploads locais (NÃO versionar)
-public/img/
+# midias locais enviadas em runtime (NAO versionar)
+public/uploads/
+public/video/
+public/videos/
+
+# public/img contem assets estaticos da landing e deve ser versionado.
