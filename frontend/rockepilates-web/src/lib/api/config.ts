@@ -15,6 +15,10 @@ function getBaseUrl(): string {
     );
 }
 
+function configsToRecord(configs: SiteConfig[]): Record<string, SiteConfig | null> {
+    return Object.fromEntries(configs.map((config) => [config.chave, config]));
+}
+
 export async function getConfig(chave: string): Promise<SiteConfig> {
     const response = await fetch(
         `${getBaseUrl()}/bff/configs/${chave}`,
@@ -23,8 +27,8 @@ export async function getConfig(chave: string): Promise<SiteConfig> {
         }
     );
 
-    if (!response.ok) {
-        throw new Error("Erro ao buscar configuração do site");
+    if (response.ok === false) {
+        throw new Error("Erro ao buscar configuracao do site");
     }
 
     return response.json();
@@ -35,14 +39,30 @@ export async function getAllConfigs(): Promise<SiteConfig[]> {
         `${getBaseUrl()}/bff/configs`,
         {
             cache: "no-store",
+            credentials: "include",
         }
     );
 
-    if (!response.ok) {
-        throw new Error("Erro ao buscar configurações do site");
+    if (response.ok === false) {
+        throw new Error("Erro ao buscar configuracoes do site");
     }
 
     return response.json();
+}
+
+export async function getPublicConfigs(): Promise<Record<string, SiteConfig | null>> {
+    const response = await fetch(
+        `${getBaseUrl()}/bff/configs/public`,
+        {
+            cache: "no-store",
+        }
+    );
+
+    if (response.ok === false) {
+        throw new Error("Erro ao buscar configuracoes publicas do site");
+    }
+
+    return configsToRecord(await response.json());
 }
 
 export async function getConfigs(
@@ -80,10 +100,10 @@ export async function salvarConfigSite(config: {
         }
     );
 
-    if (!response.ok) {
+    if (response.ok === false) {
         const errorText = await response.text();
         throw new Error(
-            `Erro ao salvar configuração. Status: ${response.status}. Body: ${errorText}`
+            `Erro ao salvar configuracao. Status: ${response.status}. Body: ${errorText}`
         );
     }
 

@@ -19,6 +19,8 @@ export type CampoAdmin = {
     chave: string;
     label: string;
     ajuda?: string;
+    tipo?: ConfigTipo;
+    valorPadrao?: string;
 };
 
 export type SecaoAdmin = {

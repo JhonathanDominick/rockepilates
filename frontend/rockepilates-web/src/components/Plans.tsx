@@ -1,6 +1,4 @@
-"use client";
 import { Container } from "@/components/layout/Container";
-import { useRouter } from "next/navigation";
 
 type Plan = {
     title: string;
@@ -8,26 +6,34 @@ type Plan = {
     description: string;
 };
 
+type PlansProps = {
+    plans?: Plan[];
+    agendaUrl: string;
+};
+
 const fallbackPlans: Plan[] = [
     {
-        title: "Plano Iniciante",
-        price: "R$ 99/mês",
-        description: "Acesso às aulas básicas e acompanhamento inicial.",
+        title: "Sessoes em grupo",
+        price: "Agende online",
+        description:
+            "Aulas com atencao proxima, ritmo seguro e foco nas necessidades de cada aluno.",
     },
     {
-        title: "Plano Intermediário",
-        price: "R$ 149/mês",
-        description: "Aulas completas + acompanhamento contínuo.",
+        title: "Sessoes individuais",
+        price: "Horarios pelo app",
+        description:
+            "Atendimento personalizado para quem precisa de acompanhamento exclusivo.",
     },
     {
-        title: "Plano Avançado",
-        price: "R$ 199/mês",
-        description: "Treinos personalizados e suporte completo.",
+        title: "Pilates clinico",
+        price: "Consulte disponibilidade",
+        description:
+            "Pratica orientada para reabilitacao, mobilidade e melhora da qualidade de vida.",
     },
 ];
 
-export function Plans({ plans = fallbackPlans }: { plans?: Plan[] }) {
-    const router = useRouter();
+export function Plans({ plans, agendaUrl }: PlansProps) {
+    const visiblePlans = plans && plans.length > 0 ? plans : fallbackPlans;
 
     return (
         <section id="aulas" className="bg-white py-24">
@@ -38,12 +44,12 @@ export function Plans({ plans = fallbackPlans }: { plans?: Plan[] }) {
                     </span>
 
                     <h2 className="mt-6 text-3xl font-semibold text-brand-navy md:text-4xl">
-                        Escolha o plano ideal para você
+                        Escolha como quer praticar Pilates
                     </h2>
                 </div>
 
                 <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                    {plans.map((plan) => (
+                    {visiblePlans.map((plan) => (
                         <div
                             key={plan.title}
                             className="flex flex-col rounded-3xl border border-gray-200 p-8 shadow-sm transition hover:shadow-md"
@@ -60,12 +66,14 @@ export function Plans({ plans = fallbackPlans }: { plans?: Plan[] }) {
                                 {plan.description}
                             </p>
 
-                            <button
-                                onClick={() => router.push("/cadastro-aluno")}
+                            <a
+                                href={agendaUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="mt-8 inline-flex items-center justify-center rounded-full bg-brand-red px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-redDark"
                             >
-                                Começar agora
-                            </button>
+                                Agendar aula
+                            </a>
                         </div>
                     ))}
                 </div>
