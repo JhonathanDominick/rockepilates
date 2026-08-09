@@ -15,7 +15,7 @@ services:
 
   bff-pilates:
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:${BFF_HOST_PORT:-18080}:8080"
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       APP_MODE: ${APP_MODE:-v1}
@@ -35,4 +35,4 @@ services:
       NEXT_PUBLIC_ENABLE_FUTURE_ADMIN: ${NEXT_PUBLIC_ENABLE_FUTURE_ADMIN:-false}
       BFF_INTERNAL_URL: ${BFF_INTERNAL_URL:-http://bff-pilates:8080}
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:${FRONTEND_HOST_PORT:-3000}:3000"
