@@ -18,6 +18,18 @@ get_env() {
   grep -E "^${key}=" "${ENV_FILE}" | tail -n 1 | cut -d= -f2-
 }
 
+get_env_or_default() {
+  local key="$1"
+  local default="$2"
+  local value
+  value="$(get_env "${key}" || true)"
+  if [ -z "${value}" ]; then
+    echo "${default}"
+  else
+    echo "${value}"
+  fi
+}
+
 require_env() {
   local key="$1"
   if ! grep -qE "^${key}=.+" "${ENV_FILE}"; then
@@ -81,8 +93,12 @@ main() {
   info "Subindo stack de producao"
   "${COMPOSE[@]}" up -d --build
 
-  wait_for "frontend local" "curl -fsSI http://127.0.0.1:3000"
-  wait_for "BFF health local" "curl -fsS http://127.0.0.1:8080/bff/health | grep -q 'UP'"
+  local frontend_host_port bff_host_port
+  frontend_host_port="$(get_env_or_default FRONTEND_HOST_PORT 3000)"
+  bff_host_port="$(get_env_or_default BFF_HOST_PORT 18080)"
+
+  wait_for "frontend local" "curl -fsSI http://127.0.0.1:${frontend_host_port}"
+  wait_for "BFF health local" "curl -fsS http://127.0.0.1:${bff_host_port}/bff/health | grep -q 'UP'"
 
   "${COMPOSE[@]}" ps
   info "Deploy concluido localmente. Nginx/HTTPS ainda precisam estar configurados para acesso publico."

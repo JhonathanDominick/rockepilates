@@ -87,7 +87,7 @@ Neste ponto, frontend e BFF devem responder apenas localmente na VPS:
 
 ```text
 127.0.0.1:3000
-127.0.0.1:8080
+127.0.0.1:18080
 ```
 
 PostgreSQL e servicos internos nao devem ter porta publica.
