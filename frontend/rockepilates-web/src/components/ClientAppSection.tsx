@@ -53,7 +53,7 @@ export function ClientAppSection({
     const safeTitle = title?.trim() || "Agende e acompanhe suas aulas pelo app";
     const safeDescription =
         description?.trim() ||
-        "Marque horarios, acompanhe sua rotina e solicite o QR Code de acesso diretamente no studio.";
+        "Marque horários, acompanhe sua rotina e solicite o QR Code de acesso diretamente no studio.";
     const mediaValue = image?.trim() || DEFAULT_APP_IMAGE_URL;
     const isConfiguredVideo = mediaType?.toUpperCase() === "VIDEO";
     const embedUrl = getYoutubeEmbedUrl(mediaValue);
@@ -119,13 +119,13 @@ export function ClientAppSection({
                                 <StoreBadge
                                     href={appAndroidUrl}
                                     src="/img/playstore.png"
-                                    alt="Disponivel no Google Play"
+                                    alt="Disponível no Google Play"
                                 />
 
                                 <StoreBadge
                                     href={appIosUrl}
                                     src="/img/appstore.png"
-                                    alt="Disponivel na App Store"
+                                    alt="Disponível na App Store"
                                 />
                             </div>
                         )}

@@ -37,7 +37,7 @@ export function TestimonialForm() {
         }
 
         if (nomeLimpo.length > NOME_MAX) {
-            setError(`O nome deve ter no maximo ${NOME_MAX} caracteres.`);
+            setError(`O nome deve ter no máximo ${NOME_MAX} caracteres.`);
             return;
         }
 
@@ -47,7 +47,7 @@ export function TestimonialForm() {
         }
 
         if (mensagemLimpa.length > MENSAGEM_MAX) {
-            setError(`A mensagem deve ter no maximo ${MENSAGEM_MAX} caracteres.`);
+            setError(`A mensagem deve ter no máximo ${MENSAGEM_MAX} caracteres.`);
             return;
         }
 
@@ -78,15 +78,15 @@ export function TestimonialForm() {
             <div className="mx-auto max-w-xl">
                 <div className="mb-8 text-center">
                     <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-brand-red">
-                        Avaliacoes
+                        Avaliações
                     </p>
 
                     <h2 className="text-3xl font-semibold text-brand-ink">
-                        Deixe sua avaliacao
+                        Deixe sua avaliação
                     </h2>
 
                     <p className="mt-3 text-sm text-brand-text">
-                        Sua mensagem sera analisada antes de aparecer no site.
+                        Sua mensagem será analisada antes de aparecer no site.
                     </p>
                 </div>
 
@@ -130,7 +130,7 @@ export function TestimonialForm() {
                                 setSuccess(false);
                                 setError(null);
                             }}
-                            placeholder="Conte como foi sua experiencia"
+                            placeholder="Conte como foi sua experiência"
                             required
                             minLength={MENSAGEM_MIN}
                             maxLength={MENSAGEM_MAX}
@@ -145,12 +145,12 @@ export function TestimonialForm() {
                         disabled={formularioInvalido}
                         className="rounded-2xl bg-brand-red px-6 py-3 font-semibold text-white transition hover:bg-brand-redDark disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                        {loading ? "Enviando..." : "Enviar avaliacao"}
+                        {loading ? "Enviando..." : "Enviar avaliação"}
                     </button>
 
                     {success && (
                         <p className="rounded-2xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
-                            Avaliacao enviada! Aguarde aprovacao.
+                            Avaliação enviada! Aguarde aprovação.
                         </p>
                     )}
 

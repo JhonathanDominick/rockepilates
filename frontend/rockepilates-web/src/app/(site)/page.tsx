@@ -41,7 +41,7 @@ export default async function HomePage() {
     try {
         depoimentos = await listarDepoimentos();
     } catch (error) {
-        console.error("Erro ao buscar depoimentos publicos:", error);
+        console.error("Erro ao buscar depoimentos públicos:", error);
     }
 
     const agendaUrl = normalizarUrlExterna(

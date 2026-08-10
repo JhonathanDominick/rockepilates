@@ -1,4 +1,4 @@
-import type { SecaoAdmin } from "./admin-types";
+﻿import type { SecaoAdmin } from "./admin-types";
 import {
     DEFAULT_AGENDA_URL,
     DEFAULT_APP_ANDROID_URL,
@@ -14,58 +14,58 @@ export const ALLOWED_IMAGE_EXTENSIONS = ".jpg,.jpeg,.png,.webp";
 
 const DEFAULT_HOME_TITLE = "Pilates para transformar sua rotina";
 const DEFAULT_HOME_SUBTITLE =
-    "Aulas, conteudo e acompanhamento para evoluir com consciencia corporal.";
+    "Aulas, conteúdo e acompanhamento para evoluir com consciência corporal.";
 
-const DEFAULT_BENEFITS_TITLE = "Ao praticar Pilates na Rocker, voce...";
+const DEFAULT_BENEFITS_TITLE = "Ao praticar Pilates na Rocker, você...";
 const DEFAULT_BENEFITS = [
-    "Melhore sua postura e alivie dores nas costas com exercicios supervisionados.",
-    "Ganhe mais flexibilidade e forca sem impacto nas articulacoes.",
-    "Aumente sua consciencia corporal e previna lesoes no dia a dia.",
+    "Melhore sua postura e alivie dores nas costas com exercícios supervisionados.",
+    "Ganhe mais flexibilidade e força sem impacto nas articulações.",
+    "Aumente sua consciência corporal e previna lesões no dia a dia.",
 ];
 
 const DEFAULT_PLANS = [
     {
-        title: "Sessoes em grupo",
+        title: "Sessões em grupo",
         price: "Agende online",
         description:
-            "Aulas com atencao proxima, ritmo seguro e foco nas necessidades de cada aluno.",
+            "Aulas com atenção próxima, ritmo seguro e foco nas necessidades de cada aluno.",
     },
     {
-        title: "Sessoes individuais",
+        title: "Sessões individuais",
         price: "Horarios pelo app",
         description:
             "Atendimento personalizado para quem precisa de acompanhamento exclusivo.",
     },
     {
-        title: "Pilates clinico",
+        title: "Pilates clínico",
         price: "Consulte disponibilidade",
         description:
-            "Pratica orientada para reabilitacao, mobilidade e melhora da qualidade de vida.",
+            "Prática orientada para reabilitação, mobilidade e melhora da qualidade de vida.",
     },
 ];
 
 const DEFAULT_EVELYN_TITLE = "Prazer, Evelyn Pinheiro";
 const DEFAULT_EVELYN_SUBTITLE = "Especialista em Pilates e movimento consciente";
 const DEFAULT_EVELYN_DESCRIPTION =
-    "Minha missao e ajudar voce a construir um corpo forte, consciente e livre de dores atraves do pilates.";
+    "Minha missão é ajudar você a construir um corpo forte, consciente e livre de dores através do pilates.";
 const DEFAULT_EVELYN_CTA_BUTTON = "Agendar aula";
 
 const DEFAULT_APP_TITLE = "Agende e acompanhe suas aulas pelo app";
 const DEFAULT_APP_DESCRIPTION =
-    "Marque horarios, acompanhe sua rotina e solicite o QR Code de acesso diretamente no studio.";
+    "Marque horários, acompanhe sua rotina e solicite o QR Code de acesso diretamente no studio.";
 
 const DEFAULT_CTA_TITLE = "Agende sua aula na Rocker Pilates";
 const DEFAULT_CTA_BUTTON = "Agendar aula";
 
 export const secoesAdmin: SecaoAdmin[] = [
     {
-        titulo: "Topo da pagina",
-        descricao: "Conteudo principal que aparece assim que o visitante entra no site.",
+        titulo: "Topo da página",
+        descricao: "Conteúdo principal que aparece assim que o visitante entra no site.",
         campos: [
             {
                 chave: "home.title",
-                label: "Titulo principal",
-                ajuda: "Frase grande de destaque da pagina inicial.",
+                label: "Título principal",
+                ajuda: "Frase grande de destaque da página inicial.",
                 valorPadrao: DEFAULT_HOME_TITLE,
             },
             {
@@ -76,20 +76,20 @@ export const secoesAdmin: SecaoAdmin[] = [
             },
             {
                 chave: "home.hero.image",
-                label: "Midia principal",
-                ajuda: "Imagem ou video exibido no topo da pagina.",
+                label: "Mídia principal",
+                ajuda: "Imagem ou vídeo exibido no topo da página.",
                 tipo: "IMAGE",
             },
         ],
     },
     {
-        titulo: "Links externos da primeira versao",
-        descricao: "Destinos dos botoes da landing. Nesta v1, os visitantes sao enviados para os canais que a cliente ja usa.",
+        titulo: "Links externos da primeira versão",
+        descricao: "Destinos dos botões da landing. Nesta v1, os visitantes são enviados para os canais que a cliente já usa.",
         campos: [
             {
                 chave: "external.seufisio.agendaUrl",
                 label: "Agenda online",
-                ajuda: "Link principal dos botoes Agendar aula.",
+                ajuda: "Link principal dos botões Agendar aula.",
                 valorPadrao: DEFAULT_AGENDA_URL,
             },
             {
@@ -107,7 +107,7 @@ export const secoesAdmin: SecaoAdmin[] = [
             {
                 chave: "external.whatsappUrl",
                 label: "WhatsApp",
-                ajuda: "Opcional. Use um link wa.me ou API do WhatsApp, se a cliente quiser exibir esse botao.",
+                ajuda: "Opcional. Use um link wa.me ou API do WhatsApp, se a cliente quiser exibir esse botão.",
                 valorPadrao: DEFAULT_WHATSAPP_URL,
             },
             {
@@ -125,12 +125,12 @@ export const secoesAdmin: SecaoAdmin[] = [
         ],
     },
     {
-        titulo: "Beneficios",
-        descricao: "Textos da secao que mostra os principais beneficios do pilates.",
+        titulo: "Benefícios",
+        descricao: "Textos da seção que mostra os principais benefícios do pilates.",
         campos: [
             {
                 chave: "home.benefits.title",
-                label: "Titulo da secao",
+                label: "Título da seção",
                 valorPadrao: DEFAULT_BENEFITS_TITLE,
             },
             {
@@ -152,7 +152,7 @@ export const secoesAdmin: SecaoAdmin[] = [
     },
     {
         titulo: "Aulas e planos da landing",
-        descricao: "Textos exibidos na pagina publica. Os botoes levam para a agenda online atual.",
+        descricao: "Textos exibidos na página pública. Os botões levam para a agenda online atual.",
         campos: [
             {
                 chave: "home.plans.1.title",
@@ -207,7 +207,7 @@ export const secoesAdmin: SecaoAdmin[] = [
         campos: [
             {
                 chave: "home.evelyn.title",
-                label: "Titulo",
+                label: "Título",
                 valorPadrao: DEFAULT_EVELYN_TITLE,
             },
             {
@@ -217,14 +217,14 @@ export const secoesAdmin: SecaoAdmin[] = [
             },
             {
                 chave: "home.evelyn.description",
-                label: "Descricao",
+                label: "Descrição",
                 valorPadrao: DEFAULT_EVELYN_DESCRIPTION,
             },
-            { chave: "home.evelyn.image", label: "Midia da Evelyn", tipo: "IMAGE" },
-            { chave: "home.evelyn.cta.text", label: "Texto antes do botao" },
+            { chave: "home.evelyn.image", label: "Mídia da Evelyn", tipo: "IMAGE" },
+            { chave: "home.evelyn.cta.text", label: "Texto antes do botão" },
             {
                 chave: "home.evelyn.cta.button",
-                label: "Texto do botao",
+                label: "Texto do botão",
                 valorPadrao: DEFAULT_EVELYN_CTA_BUTTON,
             },
         ],
@@ -235,12 +235,12 @@ export const secoesAdmin: SecaoAdmin[] = [
         campos: [
             {
                 chave: "home.app.title",
-                label: "Titulo",
+                label: "Título",
                 valorPadrao: DEFAULT_APP_TITLE,
             },
             {
                 chave: "home.app.description",
-                label: "Descricao",
+                label: "Descrição",
                 valorPadrao: DEFAULT_APP_DESCRIPTION,
             },
             {
@@ -254,24 +254,24 @@ export const secoesAdmin: SecaoAdmin[] = [
     },
     {
         titulo: "Chamada final",
-        descricao: "Ultima chamada de acao antes do fim da pagina. O botao tambem leva para a agenda online.",
+        descricao: "Última chamada de ação antes do fim da página. O botão também leva para a agenda online.",
         campos: [
             {
                 chave: "home.cta.title",
-                label: "Titulo da chamada",
+                label: "Título da chamada",
                 valorPadrao: DEFAULT_CTA_TITLE,
             },
             {
                 chave: "home.cta.button",
-                label: "Texto do botao",
+                label: "Texto do botão",
                 valorPadrao: DEFAULT_CTA_BUTTON,
             },
-            { chave: "home.cta.image", label: "Midia de fundo", tipo: "IMAGE" },
+            { chave: "home.cta.image", label: "Mídia de fundo", tipo: "IMAGE" },
         ],
     },
     {
         titulo: "Sobre",
-        descricao: "Texto institucional da secao sobre. Se ficar vazio, a secao nao aparece na landing.",
+        descricao: "Texto institucional da seção sobre. Se ficar vazio, a seção não aparece na landing.",
         campos: [{ chave: "home.about.text", label: "Texto sobre" }],
     },
 ];

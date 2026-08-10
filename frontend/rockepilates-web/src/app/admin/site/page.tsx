@@ -95,16 +95,16 @@ function validarArquivo(file: File, tipo: ConfigTipo): string | null {
         }
 
         if (!extensoesPermitidas.includes(extensao)) {
-            return "A imagem deve ter extensao .jpg, .jpeg, .png ou .webp.";
+            return "A imagem deve ter extensão .jpg, .jpeg, .png ou .webp.";
         }
 
         if (tamanhoMb > MAX_IMAGE_SIZE_MB) {
-            return `A imagem deve ter no maximo ${MAX_IMAGE_SIZE_MB}MB.`;
+            return `A imagem deve ter no máximo ${MAX_IMAGE_SIZE_MB}MB.`;
         }
     }
 
     if (tipo === "VIDEO") {
-        return "Upload local de video foi desativado. Use imagem neste campo por enquanto.";
+        return "Upload local de vídeo foi desativado. Use imagem neste campo por enquanto.";
     }
 
     return null;
@@ -206,7 +206,7 @@ export default function AdminPage() {
             setSuccessKey(config.chave);
             mostrarMensagem("Campo salvo com sucesso.", "success");
         } catch (error) {
-            console.error("Erro ao salvar configuracao:", error);
+            console.error("Erro ao salvar configuração:", error);
             mostrarMensagem("Erro ao salvar campo.", "error");
         } finally {
             setSavingKey(null);
@@ -286,7 +286,7 @@ export default function AdminPage() {
     return (
         <AdminLayout
             title="Editar site"
-            description="Edite textos, imagens e links publicos exibidos na landing RockerPilates."
+            description="Edite textos, imagens e links públicos exibidos na landing RockerPilates."
         >
             <AdminHeader onLogout={handleLogout} />
 

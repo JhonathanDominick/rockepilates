@@ -28,7 +28,7 @@ export async function getConfig(chave: string): Promise<SiteConfig> {
     );
 
     if (response.ok === false) {
-        throw new Error("Erro ao buscar configuracao do site");
+        throw new Error("Erro ao buscar configuração do site");
     }
 
     return response.json();
@@ -103,7 +103,7 @@ export async function salvarConfigSite(config: {
     if (response.ok === false) {
         const errorText = await response.text();
         throw new Error(
-            `Erro ao salvar configuracao. Status: ${response.status}. Body: ${errorText}`
+            `Erro ao salvar configuração. Status: ${response.status}. Body: ${errorText}`
         );
     }
 

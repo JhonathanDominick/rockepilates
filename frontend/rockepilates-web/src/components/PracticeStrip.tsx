@@ -7,7 +7,7 @@ export function PracticeStrip() {
         <section className="bg-brand-sky px-6 py-8 lg:px-8">
             <Container className="text-center">
                 <p className="text-sm font-bold uppercase tracking-[0.28em] text-brand-navy/80">
-                    O que voce desenvolve na pratica
+                    O que você desenvolve na prática
                 </p>
 
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">

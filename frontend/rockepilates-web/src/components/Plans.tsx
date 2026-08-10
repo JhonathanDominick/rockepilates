@@ -13,22 +13,22 @@ type PlansProps = {
 
 const fallbackPlans: Plan[] = [
     {
-        title: "Sessoes em grupo",
+        title: "Sessões em grupo",
         price: "Agende online",
         description:
-            "Aulas com atencao proxima, ritmo seguro e foco nas necessidades de cada aluno.",
+            "Aulas com atenção próxima, ritmo seguro e foco nas necessidades de cada aluno.",
     },
     {
-        title: "Sessoes individuais",
+        title: "Sessões individuais",
         price: "Horarios pelo app",
         description:
             "Atendimento personalizado para quem precisa de acompanhamento exclusivo.",
     },
     {
-        title: "Pilates clinico",
+        title: "Pilates clínico",
         price: "Consulte disponibilidade",
         description:
-            "Pratica orientada para reabilitacao, mobilidade e melhora da qualidade de vida.",
+            "Prática orientada para reabilitação, mobilidade e melhora da qualidade de vida.",
     },
 ];
 

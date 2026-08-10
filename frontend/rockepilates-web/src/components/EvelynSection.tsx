@@ -61,7 +61,7 @@ export function EvelynSection({
                                 )
                             ) : (
                                 <div className="flex aspect-[4/5] items-center justify-center bg-white/10 text-white/70">
-                                    Midia da Evelyn
+                                    Mídia da Evelyn
                                 </div>
                             )}
                         </div>
@@ -82,7 +82,7 @@ export function EvelynSection({
 
                         <p className="mt-6 whitespace-pre-line text-lg leading-8 text-white/90">
                             {description?.trim() ||
-                                "Minha missao e ajudar voce a construir um corpo forte, consciente e livre de dores atraves do pilates."}
+                                "Minha missão é ajudar você a construir um corpo forte, consciente e livre de dores através do pilates."}
                         </p>
 
                         <div className="mt-8">
