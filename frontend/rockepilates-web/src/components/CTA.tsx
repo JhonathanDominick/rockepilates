@@ -35,7 +35,7 @@ export function CTA({
                 <div className="relative min-h-[340px] bg-[#dce8e5]">
                     <iframe
                         src={googleMapEmbedUrl}
-                        title="Localizacao da Rocker Pilates no Google Maps"
+                        title="Localização da Rocker Pilates no Google Maps"
                         loading="lazy"
                         referrerPolicy="no-referrer-when-downgrade"
                         className="pointer-events-none absolute inset-0 h-full w-full border-0 grayscale-[15%]"
@@ -47,14 +47,14 @@ export function CTA({
                         href={mapsUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        aria-label="Abrir localizacao da Rocker Pilates no Google Maps"
+                        aria-label="Abrir localização da Rocker Pilates no Google Maps"
                         className="absolute inset-0 z-10"
                     />
 
                     <div className="pointer-events-none absolute bottom-6 left-6 right-6 z-20 flex flex-col gap-4 text-white sm:flex-row sm:items-end sm:justify-between">
                         <div>
                             <span className="inline-flex rounded-full bg-white/90 px-4 py-1 text-xs font-bold uppercase tracking-[0.18em] text-brand-navy">
-                                Localizacao
+                                Localização
                             </span>
                             <h2 className="mt-4 text-3xl font-semibold leading-tight">
                                 Rocker Pilates Studio
@@ -66,7 +66,7 @@ export function CTA({
 
                         <span className="inline-flex w-fit items-center justify-center gap-2 rounded-full bg-brand-red px-5 py-3 text-sm font-bold text-white shadow-lg shadow-black/20">
                             <MapPin size={18} aria-hidden="true" />
-                            Localizacao
+                            Localização
                         </span>
                     </div>
                 </div>
