@@ -25,8 +25,8 @@ export function Testimonials({ depoimentos, mapsReviewsUrl }: Props) {
 
                 {depoimentos.length === 0 && (
                     <p className="mt-10 max-w-2xl text-gray-600">
-                        Em breve novos depoimentos aprovados serao publicados por aqui.
-                        Enquanto isso, confira as avaliacoes publicas do studio.
+                        Em breve novos depoimentos aprovados serão publicados por aqui.
+                        Enquanto isso, confira as avaliações públicas do studio.
                     </p>
                 )}
 
@@ -59,7 +59,7 @@ export function Testimonials({ depoimentos, mapsReviewsUrl }: Props) {
                         rel="noopener noreferrer"
                         className="mt-10 inline-flex rounded-full border border-brand-red px-6 py-3 text-sm font-bold text-brand-red transition hover:bg-brand-red hover:text-white"
                     >
-                        Ver avaliacoes no Google
+                        Ver avaliações no Google
                     </a>
                 )}
             </Container>

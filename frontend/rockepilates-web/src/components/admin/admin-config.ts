@@ -100,8 +100,8 @@ export const secoesAdmin: SecaoAdmin[] = [
             },
             {
                 chave: "external.maps.reviewsUrl",
-                label: "Google Maps / avaliacoes",
-                ajuda: "Link usado em prova social, localizacao e avaliacoes publicas.",
+                label: "Google Maps / avaliações",
+                ajuda: "Link usado em prova social, localização e avaliações públicas.",
                 valorPadrao: DEFAULT_MAPS_REVIEWS_URL,
             },
             {
@@ -231,7 +231,7 @@ export const secoesAdmin: SecaoAdmin[] = [
     },
     {
         titulo: "App para clientes",
-        descricao: "Bloco com agenda, localizacao e app da rotina do aluno.",
+        descricao: "Bloco com agenda, localização e app da rotina do aluno.",
         campos: [
             {
                 chave: "home.app.title",
