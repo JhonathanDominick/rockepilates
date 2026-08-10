@@ -21,7 +21,7 @@ export function Hero({
     const safeTitle = title?.trim() || "Pilates para transformar sua rotina";
     const safeSubtitle =
         subtitle?.trim() ||
-        "Aulas, conteudo e acompanhamento para evoluir com consciencia corporal.";
+        "Aulas, conteúdo e acompanhamento para evoluir com consciência corporal.";
 
     const isConfiguredVideo = mediaType?.toUpperCase() === "VIDEO";
     const mediaUrl = resolveMediaUrl(backgroundImage);
@@ -98,7 +98,7 @@ export function Hero({
                                 )
                             ) : (
                                 <div className="flex h-full items-center justify-center bg-white/10 text-white/60">
-                                    Midia do CMS
+                                    Mídia do CMS
                                 </div>
                             )}
                         </div>

@@ -91,7 +91,7 @@ export function ScrollRevealSection() {
 
                     <div className="relative z-[3] mx-auto flex h-full w-[min(1100px,92vw)] flex-col items-center">
                         <h2 className="max-w-[980px] px-2 pt-[30vh] text-center text-[clamp(2.6rem,5vw,5rem)] font-semibold uppercase leading-[0.95] tracking-normal text-brand-ink">
-                            A Rocker Pilates encontra voce no ponto em que voce esta.
+                            A Rocker Pilates encontra você no ponto em que você está.
                         </h2>
 
                         <div className="relative z-[3] mt-[5vh] flex min-h-[190px] w-[min(900px,82vw)] flex-col justify-center gap-3 rounded-[20px] bg-white/92 px-8 py-10 text-center text-[1.08rem] shadow-[0_8px_24px_rgba(0,0,0,0.11)] md:px-12">
@@ -112,7 +112,7 @@ export function ScrollRevealSection() {
                                     transform: `translateY(${18 - 18 * mapRange(progress, 0.22, 0.46, 0, 1)}px)`,
                                 }}
                             >
-                                Cada aluno evolui no proprio ritmo, sem pressao vazia.
+                                Cada aluno evolui no próprio ritmo, sem pressão vazia.
                             </p>
                         </div>
                     </div>

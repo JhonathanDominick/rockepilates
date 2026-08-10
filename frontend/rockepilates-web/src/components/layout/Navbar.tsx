@@ -20,7 +20,7 @@ function getBffUrl() {
 }
 
 const menuItems = [
-    { label: "Beneficios", href: "/#beneficios" },
+    { label: "Benefícios", href: "/#beneficios" },
     { label: "Aulas & Planos", href: "/#aulas" },
     { label: "Evelyn Pinheiro", href: "/#evelyn-pinheiro" },
     { label: "Depoimentos", href: "/#depoimentos" },
@@ -141,7 +141,7 @@ export function Navbar() {
                         rel="noopener noreferrer"
                         className="text-sm font-medium !text-white/80 transition-colors duration-200 hover:!text-white"
                     >
-                        Formacao de professores
+                        Formação de professores
                     </a>
                 </nav>
 

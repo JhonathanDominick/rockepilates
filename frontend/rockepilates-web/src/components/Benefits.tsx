@@ -6,22 +6,22 @@ type BenefitsProps = {
 };
 
 export function Benefits({ title, items }: BenefitsProps) {
-    const safeTitle = title?.trim() || "Ao praticar Pilates na Rocker, voce...";
+    const safeTitle = title?.trim() || "Ao praticar Pilates na Rocker, você...";
 
     const safeItems =
         items.length > 0
             ? items
             : [
-                  "Melhore sua postura e alivie dores nas costas com exercicios supervisionados.",
-                  "Ganhe mais flexibilidade e forca sem impacto nas articulacoes.",
-                  "Aumente sua consciencia corporal e previna lesoes no dia a dia.",
+                  "Melhore sua postura e alivie dores nas costas com exercícios supervisionados.",
+                  "Ganhe mais flexibilidade e força sem impacto nas articulações.",
+                  "Aumente sua consciência corporal e previna lesões no dia a dia.",
               ];
 
     return (
         <section id="beneficios" className="bg-brand-cream px-6 py-20 lg:px-8">
             <Container className="text-center">
                 <span className="inline-flex rounded-full bg-brand-red px-4 py-1 text-sm font-semibold uppercase tracking-[0.18em] text-white">
-                    Beneficios
+                    Benefícios
                 </span>
 
                 <h2 className="mx-auto mt-6 max-w-4xl text-3xl font-semibold leading-tight text-brand-navy md:text-4xl">

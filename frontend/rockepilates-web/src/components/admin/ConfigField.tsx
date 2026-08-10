@@ -99,11 +99,11 @@ export function ConfigField({
             {podeSerMidia && (
                 <div className="mt-4 rounded-2xl border border-[#dce8e5] bg-[#f3faf8] p-4">
                     <p className="text-sm font-bold text-[#10263d]">
-                        Tipo de conteudo
+                        Tipo de conteúdo
                     </p>
 
                     <p className="mt-1 text-xs leading-5 text-[#607579]">
-                        Use imagem enviada pelo CMS, caminho publico do site ou link/ID de video do YouTube.
+                        Use imagem enviada pelo CMS, caminho público do site ou link/ID de vídeo do YouTube.
                     </p>
 
                     <select
@@ -162,7 +162,7 @@ export function ConfigField({
                         </p>
 
                         <p className="mt-1 text-xs leading-5 text-[#607579]">
-                            Aceita JPG, PNG ou WEBP. Tamanho maximo: {MAX_IMAGE_SIZE_MB}MB.
+                            Aceita JPG, PNG ou WEBP. Tamanho máximo: {MAX_IMAGE_SIZE_MB}MB.
                         </p>
 
                         <input
@@ -212,7 +212,7 @@ export function ConfigField({
             {podeSerMidia && tipo === "VIDEO" && (
                 <div className="mt-4">
                     <label className="text-sm font-bold text-[#10263d]">
-                        Link ou ID do video
+                        Link ou ID do vídeo
                     </label>
 
                     <input
@@ -249,8 +249,8 @@ export function ConfigField({
                     ) : (
                         <p className="mt-3 text-sm text-[#607579]">
                             {valorPreenchido
-                                ? "Nao foi possivel reconhecer esse video. Use URL de video, Shorts ou ID do YouTube."
-                                : "Nenhum video selecionado ainda."}
+                                ? "Não foi possível reconhecer esse vídeo. Use URL de vídeo, Shorts ou ID do YouTube."
+                                : "Nenhum vídeo selecionado ainda."}
                         </p>
                     )}
 
@@ -261,7 +261,7 @@ export function ConfigField({
                             rel="noopener noreferrer"
                             className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-[#0d6666] transition hover:text-brand-red"
                         >
-                            Ver video em nova aba
+                            Ver vídeo em nova aba
                             <ExternalLink size={14} aria-hidden="true" />
                         </a>
                     )}
@@ -272,7 +272,7 @@ export function ConfigField({
                         disabled={salvando}
                         className="mt-3 block rounded-2xl bg-[#ef4b3f] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#ef4b3f]/20 transition hover:-translate-y-[1px] hover:bg-[#dc3f34] hover:shadow-[#ef4b3f]/30 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                        {salvando ? "Salvando..." : "Salvar video"}
+                        {salvando ? "Salvando..." : "Salvar vídeo"}
                     </button>
                 </div>
             )}
