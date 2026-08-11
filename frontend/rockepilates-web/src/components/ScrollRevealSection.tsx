@@ -102,7 +102,7 @@ export function ScrollRevealSection() {
                                     transform: `translateY(${18 - 18 * mapRange(progress, 0.08, 0.3, 0, 1)}px)`,
                                 }}
                             >
-                                Pilates com acolhimento, tecnica e direcao clara.
+                                Pilates com acolhimento, técnica e direção clara.
                             </p>
 
                             <p
