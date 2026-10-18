@@ -1,7 +1,7 @@
 [build]
   base = "frontend/rockepilates-web"
   command = "npm run build"
-  publish = "frontend/rockepilates-web/.next"
+  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "22"
