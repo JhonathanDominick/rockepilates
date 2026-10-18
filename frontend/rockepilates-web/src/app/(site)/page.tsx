@@ -26,6 +26,8 @@ import type { DepoimentoPublico } from "@/lib/api/depoimentos";
 
 export const dynamic = "force-dynamic";
 
+const backendDisponivel = process.env.NEXT_PUBLIC_BACKEND_ENABLED === "true";
+
 /*
  * Fallbacks temporários para a hospedagem emergencial na Vercel.
  *
@@ -139,26 +141,28 @@ export default async function HomePage() {
      * Na Vercel, enquanto o backend estiver fora do ar,
      * a página simplesmente segue usando os fallbacks locais.
      */
-    try {
-        configs = await getPublicConfigs();
-    } catch (error) {
-        console.error(
-            "Backend indisponível. Usando conteúdo local temporário:",
-            error
-        );
-    }
+    if (backendDisponivel) {
+        try {
+            configs = await getPublicConfigs();
+        } catch (error) {
+            console.error(
+                "Backend indisponível. Usando conteúdo local temporário:",
+                error
+            );
+        }
 
-    /*
-     * Mantemos também a busca original dos depoimentos.
-     * Quando o backend voltar, eles reaparecem automaticamente.
-     */
-    try {
-        depoimentos = await listarDepoimentos();
-    } catch (error) {
-        console.error(
-            "Backend de depoimentos indisponível:",
-            error
-        );
+        /*
+         * Mantemos também a busca original dos depoimentos.
+         * Quando o backend voltar, eles reaparecem automaticamente.
+         */
+        try {
+            depoimentos = await listarDepoimentos();
+        } catch (error) {
+            console.error(
+                "Backend de depoimentos indisponível:",
+                error
+            );
+        }
     }
 
     const agendaUrl = normalizarUrlExterna(

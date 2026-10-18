@@ -19,6 +19,8 @@ function getBffUrl() {
     return process.env.NEXT_PUBLIC_BFF_URL || "http://localhost:8080";
 }
 
+const backendDisponivel = process.env.NEXT_PUBLIC_BACKEND_ENABLED === "true";
+
 const menuItems = [
     { label: "Benefícios", href: "/#beneficios" },
     { label: "Aulas & Planos", href: "/#aulas" },
@@ -42,7 +44,7 @@ export function Navbar() {
 
     useEffect(() => {
         async function carregarLinksExternos() {
-            if (isAdminRoute) {
+            if (isAdminRoute || !backendDisponivel) {
                 return;
             }
 
@@ -72,7 +74,7 @@ export function Navbar() {
         }
 
         async function carregarAluno() {
-            if (isAdminRoute || isAuthAlunoRoute) {
+            if (isAdminRoute || isAuthAlunoRoute || !backendDisponivel) {
                 setAluno(null);
                 return;
             }
