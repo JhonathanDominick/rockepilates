@@ -7,6 +7,7 @@ const NOME_MIN = 2;
 const NOME_MAX = 80;
 const MENSAGEM_MIN = 10;
 const MENSAGEM_MAX = 500;
+const envioDisponivel = process.env.NEXT_PUBLIC_TESTIMONIALS_ENABLED === "true";
 
 export function TestimonialForm() {
     const [nome, setNome] = useState("");
@@ -23,10 +24,15 @@ export function TestimonialForm() {
         nomeLimpo.length > NOME_MAX ||
         mensagemLimpa.length < MENSAGEM_MIN ||
         mensagemLimpa.length > MENSAGEM_MAX ||
-        loading;
+        loading ||
+        !envioDisponivel;
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+
+        if (!envioDisponivel) {
+            return;
+        }
 
         setSuccess(false);
         setError(null);
@@ -86,7 +92,9 @@ export function TestimonialForm() {
                     </h2>
 
                     <p className="mt-3 text-sm text-brand-text">
-                        Sua mensagem será analisada antes de aparecer no site.
+                        {envioDisponivel
+                            ? "Sua mensagem será analisada antes de aparecer no site."
+                            : "O envio de avaliações está temporariamente indisponível enquanto restauramos o serviço."}
                     </p>
                 </div>
 
@@ -107,7 +115,7 @@ export function TestimonialForm() {
                             required
                             minLength={NOME_MIN}
                             maxLength={NOME_MAX}
-                            disabled={loading}
+                            disabled={loading || !envioDisponivel}
                             className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-brand-ink outline-none transition focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 disabled:cursor-not-allowed disabled:bg-gray-100"
                         />
                     </div>
@@ -134,7 +142,7 @@ export function TestimonialForm() {
                             required
                             minLength={MENSAGEM_MIN}
                             maxLength={MENSAGEM_MAX}
-                            disabled={loading}
+                            disabled={loading || !envioDisponivel}
                             rows={5}
                             className="w-full resize-none rounded-2xl border border-gray-200 px-4 py-3 text-brand-ink outline-none transition focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 disabled:cursor-not-allowed disabled:bg-gray-100"
                         />
