@@ -55,3 +55,6 @@ backup-*.zip
 backup-*.tar.gz
 *.dump
 *.backup
+
+# Local Netlify folder
+.netlify
